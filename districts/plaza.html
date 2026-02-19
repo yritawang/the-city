@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Plaza - Belonging</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/district.css">
+</head>
+<body>
+  <!-- Entering Overlay -->
+  <div class="entering-overlay" id="entering-overlay">
+    <h1 class="entering-text">Entering the Plaza</h1>
+  </div>
+
+  <!-- District Content -->
+  <div class="district-content hidden" id="district-content">
+    <!-- Intro -->
+    <div class="plaza-screen" id="plaza-intro">
+      <div class="plaza-header">
+        <button class="back-btn mono" id="back-btn">Back to the city</button>
+        <h2 class="plaza-title">The Plaza (Belonging)</h2>
+      </div>
+      
+      <div class="plaza-prompt-container">
+        <h1 class="plaza-main-prompt">Think of a place where you felt connected to a community.</h1>
+        <h3 class="plaza-sub-prompt">A place where you connected with a group.</h3>
+        
+        <button class="ready-btn mono hidden" id="ready-btn">Ready?</button>
+      </div>
+    </div>
+
+    <!-- Questions -->
+    <div class="plaza-screen hidden" id="plaza-questions">
+      <div class="plaza-header">
+        <button class="back-btn mono" id="questions-back-btn">Back to the city</button>
+        <h2 class="plaza-title">The Plaza (Belonging)</h2>
+      </div>
+
+      <div class="questions-container">
+        <!-- Active Question Card -->
+        <div class="question-card">
+          <div class="question-content">
+            <h1 class="question-main" id="question-main"></h1>
+            <h3 class="question-sub" id="question-sub"></h3>
+            <textarea 
+              class="question-input" 
+              id="question-input" 
+              placeholder="Add text here"
+              rows="8"
+            ></textarea>
+          </div>
+          
+          <div class="question-nav">
+            <button class="nav-btn mono" id="prev-btn">Back</button>
+            <span class="question-progress mono" id="question-progress">1/6</span>
+            <button class="nav-btn mono" id="next-btn">Next</button>
+          </div>
+        </div>
+
+        <!-- Stacked Previous Cards -->
+        <div class="stacked-cards" id="stacked-cards"></div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Completion Screen -->
+    <div class="plaza-screen hidden" id="plaza-completion">
+      <div class="plaza-header">
+        <h2 class="plaza-title">The Plaza (Belonging)</h2>
+      </div>
+      
+      <div class="completion-container">
+        <h1 class="completion-title">You've completed<br>The Plaza</h1>
+        
+        <div class="completion-place">
+          <span class="location-icon">📍</span>
+          <p class="place-name" id="completion-place-name"></p>
+        </div>
+        
+        <p class="completion-tagline">is a place you existed with others in.</p>
+        
+        <div class="completion-buttons">
+          <button class="completion-btn mono" id="complete-districts-btn">Complete other districts</button>
+          <button class="completion-btn mono" id="customize-btn">Customize this district</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/district.js"></script>
+  <script src="../js/plaza.js"></script>
+</body>
+</html>

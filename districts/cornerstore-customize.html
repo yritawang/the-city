@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Cornerstore - Customize</title>
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/customize.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+</head>
+<body>
+
+  <!-- Side Drawer (visible in graph mode) -->
+  <div class="side-drawer cornerstore-drawer" id="side-drawer">
+    <div class="drawer-tab" id="drawer-tab">&#8250;</div>
+    <div class="drawer-content">
+      <h2 class="drawer-title">The Cornerstore</h2>
+      <p class="drawer-subtitle mono" id="drawer-district-name"></p>
+
+      <div class="skin-selector">
+        <p class="mono skin-label">Skin</p>
+        <div class="skin-options">
+          <div class="skin-thumb active" data-skin="0">
+            <img src="../assets/districts/cornerstore-unlocked.png" alt="Skin 1">
+          </div>
+          <div class="skin-thumb" data-skin="1">
+            <img src="../assets/districts/cornerstore-skin2.png" alt="Skin 2">
+          </div>
+          <div class="skin-thumb" data-skin="2">
+            <img src="../assets/districts/cornerstore-skin3.png" alt="Skin 3">
+          </div>
+        </div>
+      </div>
+
+      <p class="mono drawer-date" id="drawer-date"></p>
+    </div>
+  </div>
+
+  <!-- Main Layout -->
+  <div class="customize-layout" id="customize-layout">
+
+    <!-- Left Panel -->
+    <div class="customize-left cornerstore-left" id="customize-left">
+      <div class="left-header">
+        <button class="back-btn mono" id="back-btn">Back to the city</button>
+      </div>
+
+      <div class="district-preview">
+        <div class="district-image-container">
+          <img src="../assets/districts/cornerstore-unlocked.png" alt="Cornerstore" class="district-preview-img" id="district-preview-img">
+        </div>
+
+        <div class="skin-options">
+          <div class="skin-thumb active" data-skin="0">
+            <img src="../assets/districts/cornerstore-unlocked.png" alt="Skin 1">
+          </div>
+          <div class="skin-thumb" data-skin="1">
+            <img src="../assets/districts/cornerstore-skin2.png" alt="Skin 2">
+          </div>
+          <div class="skin-thumb" data-skin="2">
+            <img src="../assets/districts/cornerstore-skin3.png" alt="Skin 3">
+          </div>
+        </div>
+
+        <p class="mono district-date" id="district-date"></p>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="customize-right" id="customize-right">
+      <div class="right-header">
+        <div class="right-header-top">
+          <h1 class="district-title" id="district-title"></h1>
+          <button class="icon-btn mono" id="edit-name-btn">&#9998;</button>
+        </div>
+        <p class="mono location-line">
+          Location of the Cornerstore: 
+          <span class="serif location-value" id="location-value"></span>
+        </p>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="view-toggle">
+        <button class="toggle-btn mono active" id="journal-toggle">Journal</button>
+        <button class="toggle-btn mono" id="graph-toggle">Graph View</button>
+        <button class="toggle-btn mono" id="save-btn">Save</button>
+      </div>
+
+      <!-- Journal View -->
+      <div class="journal-view" id="journal-view">
+        <div class="journal-entries" id="journal-entries">
+          <!-- Entries rendered by JS -->
+        </div>
+      </div>
+
+      <!-- Graph View Canvas -->
+      <div class="graph-view hidden" id="graph-view">
+        <div id="p5-canvas-container"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Edit Name Overlay -->
+  <div class="overlay" id="edit-name-overlay">
+    <div class="overlay-content">
+      <h2>Rename your Cornerstore</h2>
+      <input type="text" class="city-name-input" id="new-name-input" placeholder="Enter a name">
+      <div class="overlay-buttons">
+        <button class="overlay-btn mono" id="cancel-rename-btn">Cancel</button>
+        <button class="overlay-btn mono primary" id="save-rename-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/customize.js"></script>
+</body>
+</html>

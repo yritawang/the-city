@@ -1,0 +1,306 @@
+/* map.css */
+/* Map Header */
+.map-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 3rem;
+  position: relative;
+}
+
+.header-btn {
+  font-family: var(--font-whois);
+  font-size: 1rem;
+  background: none;
+  border: none;
+  color: var(--color-black);
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  transition: opacity 0.2s;
+}
+
+.header-btn:hover {
+  opacity: 0.6;
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.header-title h1 {
+  font-size: 2.8rem;
+  font-weight: normal;
+  cursor: pointer;
+  transition: text-decoration 0.2s;
+}
+
+.header-title h1:hover {
+  text-decoration: underline;
+}
+
+.location-icon {
+  font-size: 1.5rem;
+}
+
+/* Subheader */
+.map-subheader {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.map-subheader p {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* Map Container */
+.map-container {
+  width: 100%;
+  height: calc(100vh - 180px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.map-districts {
+  position: relative;
+  width: 1100px;
+  height: 750px;
+}
+
+/* District Base Styles */
+.district {
+  position: absolute;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.district-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+.district-label {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-whois);
+  font-size: 0.85rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* District States */
+/* Locked state - default */
+.district.locked .district-image {
+  opacity: 1;
+}
+
+/* Hover state */
+.district.locked:hover .district-image {
+  opacity: 1;
+}
+
+.district.locked:hover .district-label {
+  opacity: 1;
+}
+
+/* Unlocked state */
+.district.unlocked .district-image {
+  opacity: 1;
+}
+
+.district.unlocked .district-label {
+  opacity: 1;
+}
+
+/* cornerstore bottom left */
+#cornerstore {
+  bottom: 100px;
+  left: 160px;
+  width: 360px;
+  height: 360px;
+  z-index: 11;
+
+}
+
+#plaza {
+  bottom: 80px;
+  right: 80px;
+  width: 360px;
+  height: 360px;
+  z-index: 11;
+}
+
+/* shrine center */
+#shrine {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 360px;
+  height: 360px;
+  z-index: 10;
+}
+
+/* garden top left */
+#garden {
+  top: 80px;
+  left: 140px;
+  width: 360px;
+  height: 360px;
+}
+
+/* tower top right */
+#tower {
+  top: 80px;
+  right: 140px;
+  width: 360px;
+  height: 360px;
+}
+
+/* Hover effect - slight lift */
+.district:hover {
+  transform: translateY(-5px);
+}
+
+#shrine:hover {
+  transform: translate(-50%, calc(-50% - 5px));
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .map-districts {
+    width: 700px;
+    height: 500px;
+  }
+  
+  #garden { width: 220px; height: 220px; }
+  #cornerstore { width: 190px; height: 190px; }
+  #shrine { width: 240px; height: 240px; }
+  #tower { width: 200px; height: 260px; }
+  #plaza { width: 220px; height: 220px; }
+}
+
+/* City Name Overlay */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(16, 16, 16, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.overlay-content {
+  background-color: var(--color-bg);
+  padding: 3rem;
+  border-radius: 4px;
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+.overlay-content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.overlay-content p {
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+  opacity: 0.8;
+}
+
+.city-name-input {
+  width: 100%;
+  padding: 1rem;
+  font-family: var(--font-meta);
+  font-size: 1.1rem;
+  border: 1px solid var(--color-black);
+  background-color: var(--color-bg);
+  color: var(--color-black);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.city-name-input:focus {
+  outline: none;
+  border-width: 2px;
+}
+
+.overlay-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.overlay-btn {
+  font-family: var(--font-whois);
+  font-size: 0.9rem;
+  padding: 0.75rem 2rem;
+  background: none;
+  border: 1px solid var(--color-black);
+  color: var(--color-black);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.overlay-btn:hover {
+  background-color: var(--color-black);
+  color: var(--color-bg);
+}
+
+.overlay-btn.primary {
+  background-color: var(--color-black);
+  color: var(--color-bg);
+}
+
+.overlay-btn.primary:hover {
+  opacity: 0.8;
+}
+
+.district-label {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-whois);
+  font-size: 0.85rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  white-space: nowrap;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.district-custom-name {
+  font-family: var(--font-whois);
+  font-size: 0.85rem;
+}

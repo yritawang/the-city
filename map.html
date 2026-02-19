@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>the city</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/map.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="map-header">
+    <button class="header-btn" id="guide-btn">Guide</button>
+    <div class="header-title">
+      <span class="location-icon">📍</span>
+      <h1>Somewhere I Belong</h1>
+    </div>
+    <button class="header-btn" id="share-btn">Share</button>
+  </header>
+
+  <!-- Subheader -->
+  <div class="map-subheader">
+    <p class="mono">Click on a district to start</p>
+  </div>
+
+  <!-- Map Container -->
+  <div class="map-container">
+    <div class="map-districts">
+      <!-- Garden (top-left) -->
+      <div class="district" id="garden" data-district="garden" data-emotion="growth">
+        <img src="assets/districts/garden-locked.png" alt="Garden District" class="district-image">
+        <div class="district-label">growth</div>
+      </div>
+
+      <!-- Cornerstore (bottom-left) -->
+      <div class="district" id="cornerstore" data-district="cornerstore" data-emotion="comfort">
+        <img src="assets/districts/cornerstore-locked.png" alt="Cornerstore District" class="district-image">
+        <div class="district-label">routine</div>
+      </div>
+
+      <!-- Shrine (center) -->
+      <div class="district" id="shrine" data-district="shrine" data-emotion="memory">
+        <img src="assets/districts/shrine-locked.png" alt="Shrine District" class="district-image">
+        <div class="district-label">reverence</div>
+      </div>
+
+      <!-- Tower (top-right) -->
+      <div class="district" id="tower" data-district="tower" data-emotion="perspective">
+        <img src="assets/districts/tower-locked.png" alt="Tower District" class="district-image">
+        <div class="district-label">solitude</div>
+      </div>
+
+      <!-- Plaza (bottom-right) -->
+      <div class="district" id="plaza" data-district="plaza" data-emotion="belonging">
+        <img src="assets/districts/plaza-locked.png" alt="Plaza District" class="district-image">
+        <div class="district-label">community</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- City Name Overlay -->
+  <div class="overlay" id="city-name-overlay">
+    <div class="overlay-content">
+      <h2>Name Your City</h2>
+      <p class="serif">What would you like to call your emotional hometown?</p>
+      <input 
+        type="text" 
+        class="city-name-input" 
+        id="city-name-input" 
+        placeholder="Somewhere I Belong"
+        maxlength="50"
+      >
+      <div class="overlay-buttons">
+        <button class="overlay-btn" id="cancel-btn">Cancel</button>
+        <button class="overlay-btn primary" id="save-name-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/map.js"></script>
+</body>
+</html>

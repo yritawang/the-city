@@ -1,0 +1,99 @@
+/* Design System */
+@font-face {
+  font-family: 'Hershey';
+  src: url('../fonts/Hershey-Noailles-Futura-Simplex-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Meta';
+  src: url('../fonts/Meta-old-French.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Whois';
+  src: url('../fonts/whois-mono.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  --color-bg: #F7F2F1;
+  --color-black: #101010;
+  --color-shrine: #DD6204;
+  --color-shrine-card: #FCEBDF;
+  --color-garden: #6A6405;
+  --color-garden-card: #FAF4F0;
+  --color-cornerstore: #D05038;
+  --color-cornerstore-card: #FAF4F0;
+  --color-tower: #205A97;
+  --color-tower-card: #FAF4F0;
+  --color-plaza: #614973;
+  --color-plaza-card: #FAF4F0;
+  --color-card-1: #E0D0C5;
+  --color-card-2: #D4B49D;
+  --color-card-3: #BE9A80;
+  --color-card-4: #AC8467;
+  --color-card-5: #9F6F4C;
+  
+  --font-hershey: 'Hershey', sans-serif;
+  --font-meta: 'Meta', serif;
+  --font-whois: 'Whois', monospace;
+}
+
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-black);
+  font-family: var(--font-meta);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Typography */
+h1, h2, h3 {
+  font-family: var(--font-hershey);
+  font-weight: normal;
+}
+
+p, .serif {
+  font-family: var(--font-meta);
+}
+
+.mono, button {
+  font-family: var(--font-whois);
+}
+
+/* Utility Classes */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.hidden {
+  display: none;
+}
+
+/* Transitions */
+.fade-in {
+  animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
