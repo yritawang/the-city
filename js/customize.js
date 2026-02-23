@@ -80,14 +80,34 @@ const DISTRICT_CONFIG = {
   }
 };
 
-const KEYWORD_CATEGORIES = {
-  smell: ['smell', 'scent', 'aroma', 'fragrance'],
-  sound: ['sound', 'noise', 'music', 'voice', 'silence'],
-  feeling: ['feel', 'warm', 'cold', 'safe', 'happy', 'sad', 'love', 'comfort'],
-  people: ['mother', 'father', 'family', 'friend', 'grandmother'],
-  memory: ['remember', 'memory', 'forget', 'past', 'childhood'],
-  place: ['kitchen', 'room', 'house', 'home', 'street', 'city']
-};
+// keywords
+const STOPWORDS = new Set([
+  'i', 'me', 'my', 'we', 'our', 'you', 'your', 'it', 'its', 'the', 'a', 'an',
+  'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'this',
+  'that', 'was', 'is', 'are', 'were', 'be', 'been', 'have', 'had', 'has',
+  'do', 'did', 'would', 'could', 'there', 'they', 'them', 'what', 'when',
+  'where', 'how', 'so', 'if', 'as', 'by', 'from', 'not', 'no', 'just',
+  'about', 'up', 'out', 'like', 'than', 'more', 'can', 'will', 'one', 'all',
+  'also', 'into', 'who', 'which', 'their', 'its', 'his', 'her', 'he', 'she',
+  'place', 'feel', 'felt', 'think', 'thought', 'remember', 'know', 'still',
+  'even', 'very', 'much', 'many', 'some', 'any', 'time', 'way'
+]);
+
+function extractKeywords(text, topN = 8) {
+  const words = text
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, '')   // strip punctuation
+    .split(/\s+/)
+    .filter(w => w.length > 3 && !STOPWORDS.has(w));
+
+  const freq = {};
+  words.forEach(w => freq[w] = (freq[w] || 0) + 1);
+
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN)
+    .map(([word, count]) => ({ word, count }));
+}
 
 const config = DISTRICT_CONFIG[CURRENT_DISTRICT];
 const QUESTIONS = config.questions;
@@ -245,69 +265,201 @@ function initGraph() {
   const container = document.getElementById('p5-canvas-container');
   if (!container) return;
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
-  
+
+  // Create info panel if it doesn't exist
+  let infoPanel = document.getElementById('constellation-panel');
+  if (!infoPanel) {
+    infoPanel = document.createElement('div');
+    infoPanel.id = 'constellation-panel';
+    infoPanel.style.cssText = `
+      position: absolute;
+      right: 2rem;
+      top: 2rem;
+      width: 260px;
+      background: white;
+      border: 1px solid #101010;
+      padding: 1.5rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      pointer-events: none;
+      line-height: 1.6;
+      z-index: 10;
+    `;
+    document.getElementById('graph-view').appendChild(infoPanel);
+  }
+
   const nodes = [];
-  const edges = [];
-  const found = new Set();
-  
-  sessions.forEach((s, i) => {
-    nodes.push({ id: `s${i}`, type: 'session', label: s.date, x: 0, y: 0, vx: 0, vy: 0 });
-    const txt = Object.values(s.answers).join(' ').toLowerCase();
-    Object.entries(KEYWORD_CATEGORIES).forEach(([cat, kws]) => {
-      if (kws.some(k => txt.includes(k))) {
-        const cid = `c-${cat}`;
-        if (!found.has(cid)) {
-          found.add(cid);
-          nodes.push({ id: cid, type: 'concept', label: cat, x: 0, y: 0, vx: 0, vy: 0 });
-        }
-        edges.push({ source: `s${i}`, target: cid });
+  const latestSession = sessions[sessions.length - 1];
+
+  if (!latestSession) {
+    container.innerHTML = '<p class="mono" style="opacity:0.5;padding:2rem">Complete the flow to see your constellation.</p>';
+    return;
+  }
+
+  // Extract keywords and track which questions they appear in
+  const allText = Object.values(latestSession.answers).join(' ');
+  const topKeywords = extractKeywords(allText, 12);
+
+  // For each keyword, find all questions it appears in
+  const keywordSources = {};
+  topKeywords.forEach(({ word }) => {
+    keywordSources[word] = [];
+    Object.entries(latestSession.answers).forEach(([i, answer]) => {
+      if (parseInt(i) === 5) return; // skip naming question
+      if (answer.toLowerCase().includes(word)) {
+        keywordSources[word].push({
+          question: QUESTIONS[i],
+          snippet: answer.length > 100 ? answer.slice(0, 100) + '…' : answer
+        });
       }
     });
   });
-  
-  if (nodes.length === 0) {
-    container.innerHTML = '<p class="mono" style="opacity:0.5;padding:2rem">Complete the flow to see your graph.</p>';
-    return;
-  }
-  
+
+  topKeywords.forEach(({ word, count }) => {
+    nodes.push({
+      id: `k-${word}`,
+      label: word,
+      count,
+      sources: keywordSources[word],
+      x: 0, y: 0, vx: 0, vy: 0,
+      settled: false
+    });
+  });
+
   graphSketch = new p5((sk) => {
     let W, H;
+    let selectedNode = null;
     const COL = config.color;
+    let frame = 0;
+
     sk.setup = () => {
-      W = container.offsetWidth;
-      H = container.offsetHeight;
+      W = container.offsetWidth || 800;
+      H = container.offsetHeight || 600;
       sk.createCanvas(W, H).parent('p5-canvas-container');
       sk.textFont('monospace');
-      nodes.forEach(n => { n.x = W/2 + (Math.random()-0.5)*400; n.y = H/2 + (Math.random()-0.5)*300; });
+
+      // Start nodes scattered
+      nodes.forEach((n, i) => {
+        const angle = (i / nodes.length) * Math.PI * 2;
+        n.x = W / 2 + Math.cos(angle) * 200;
+        n.y = H / 2 + Math.sin(angle) * 150;
+      });
     };
+
     sk.draw = () => {
       sk.background('#F7F2F1');
-      // Forces
-      for (let i=0; i<nodes.length; i++) {
-        for (let j=i+1; j<nodes.length; j++) {
-          const a=nodes[i], b=nodes[j], dx=b.x-a.x, dy=b.y-a.y, d=Math.max(Math.sqrt(dx*dx+dy*dy),1), f=3000/(d*d);
-          a.vx-=(dx/d)*f; a.vy-=(dy/d)*f; b.vx+=(dx/d)*f; b.vy+=(dy/d)*f;
+      frame++;
+
+      // Damping increases over time — nodes gradually settle
+      const damping = frame < 180 ? 0.92 : 0.96 + Math.min((frame - 180) * 0.0002, 0.035);
+
+      // Repulsion
+      for (let i = 0; i < nodes.length; i++) {
+        for (let j = i + 1; j < nodes.length; j++) {
+          const a = nodes[i], b = nodes[j];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const d = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+          const f = 2500 / (d * d);
+          a.vx -= (dx / d) * f; a.vy -= (dy / d) * f;
+          b.vx += (dx / d) * f; b.vy += (dy / d) * f;
         }
       }
-      edges.forEach(e => {
-        const s=nodes.find(n=>n.id===e.source), t=nodes.find(n=>n.id===e.target);
-        if (s&&t) { const dx=t.x-s.x, dy=t.y-s.y; s.vx+=dx*0.05; s.vy+=dy*0.05; t.vx-=dx*0.05; t.vy-=dy*0.05; }
-      });
-      nodes.forEach(n => { n.vx+=(W/2-n.x)*0.01; n.vy+=(H/2-n.y)*0.01; n.vx*=0.85; n.vy*=0.85; n.x+=n.vx; n.y+=n.vy; });
-      // Draw
-      sk.strokeWeight(1); sk.stroke(16,16,16,60);
-      edges.forEach(e => { const s=nodes.find(n=>n.id===e.source), t=nodes.find(n=>n.id===e.target); if(s&&t) sk.line(s.x,s.y,t.x,t.y); });
+
+      // Gentle gravity to center
       nodes.forEach(n => {
+        n.vx += (W / 2 - n.x) * 0.003;
+        n.vy += (H / 2 - n.y) * 0.003;
+        n.vx *= damping;
+        n.vy *= damping;
+        n.x += n.vx;
+        n.y += n.vy;
+      });
+
+      // Draw nodes
+      nodes.forEach(n => {
+        const size = 28 + (n.count * 10);
+        const isSelected = selectedNode === n;
+        const isHovered = sk.dist(sk.mouseX, sk.mouseY, n.x, n.y) < size / 2;
+
+        // Subtle pulse on selected node
+        const pulse = isSelected ? Math.sin(frame * 0.05) * 3 : 0;
+
         sk.noStroke();
-        if (n.type==='session') { sk.fill(COL); sk.circle(n.x,n.y,44); }
-        else { sk.fill('#101010'); sk.circle(n.x,n.y,26); }
-        sk.fill('#101010'); sk.textSize(n.type==='session'?11:10); sk.textAlign(sk.CENTER,sk.TOP);
-        sk.text(n.label,n.x,n.y+(n.type==='session'?26:17));
+        if (isSelected) {
+          // outer ring
+          sk.fill(COL + '33');
+          sk.circle(n.x, n.y, size + 16 + pulse);
+        }
+
+        sk.fill(isSelected ? '#101010' : isHovered ? COL : COL + 'CC');
+        sk.circle(n.x, n.y, size + pulse);
+
+        sk.fill('white');
+        sk.textSize(n.count > 2 ? 11 : 9);
+        sk.textAlign(sk.CENTER, sk.CENTER);
+        sk.text(n.label, n.x, n.y);
+
+        // Small dot indicator if word appears in multiple answers
+        if (n.sources.length > 1) {
+          sk.fill('white');
+          sk.circle(n.x + size / 2 - 6, n.y - size / 2 + 6, 10);
+          sk.fill(isSelected ? '#101010' : COL);
+          sk.textSize(7);
+          sk.text(n.sources.length, n.x + size / 2 - 6, n.y - size / 2 + 6);
+        }
       });
     };
-    let drag=null;
-    sk.mousePressed=()=>nodes.forEach(n=>{if(sk.dist(sk.mouseX,sk.mouseY,n.x,n.y)<25)drag=n;});
-    sk.mouseDragged=()=>{if(drag){drag.x=sk.mouseX;drag.y=sk.mouseY;drag.vx=drag.vy=0;}};
-    sk.mouseReleased=()=>drag=null;
+
+    sk.mousePressed = () => {
+      let clicked = null;
+      nodes.forEach(n => {
+        const size = 28 + (n.count * 10);
+        if (sk.dist(sk.mouseX, sk.mouseY, n.x, n.y) < size / 2) clicked = n;
+      });
+
+      if (clicked) {
+        selectedNode = clicked;
+        showInfoPanel(clicked, infoPanel);
+      } else {
+        selectedNode = null;
+        infoPanel.style.opacity = '0';
+        infoPanel.style.pointerEvents = 'none';
+      }
+    };
+
+    // Cursor change on hover
+    sk.mouseMoved = () => {
+      let onNode = false;
+      nodes.forEach(n => {
+        const size = 28 + (n.count * 10);
+        if (sk.dist(sk.mouseX, sk.mouseY, n.x, n.y) < size / 2) onNode = true;
+      });
+      container.style.cursor = onNode ? 'pointer' : 'default';
+    };
+
   }, container);
+}
+
+function showInfoPanel(node, panel) {
+  const appearsIn = node.sources.length === 0
+    ? '<p style="opacity:0.5">No specific question found.</p>'
+    : node.sources.map(s => `
+        <div style="margin-bottom:1.2rem">
+          <div style="opacity:0.5;margin-bottom:0.3rem;font-size:0.8rem">${s.question}</div>
+          <div style="font-family:serif;font-size:0.9rem">${s.snippet}</div>
+        </div>
+      `).join('');
+
+  panel.innerHTML = `
+    <div style="margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center">
+      <strong style="font-size:1rem">${node.label}</strong>
+      <span style="opacity:0.4;font-size:0.75rem">${node.sources.length} answer${node.sources.length !== 1 ? 's' : ''}</span>
+    </div>
+    ${appearsIn}
+  `;
+
+  panel.style.opacity = '1';
+  panel.style.pointerEvents = 'all';
 }

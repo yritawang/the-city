@@ -69,7 +69,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem 3rem;
-  flex-shrink: 0;
 }
 
 .back-btn {
@@ -121,9 +120,12 @@
   max-width: 700px;
 }
 
+.shrine-screen .ready-btn {
+  color: var(--color-shrine);
+}
+
 .ready-btn {
   background-color: white;
-  color: var(--color-shrine);
   border: none;
   padding: 1rem 3rem;
   font-size: 1.1rem;
@@ -184,12 +186,11 @@
   justify-content: center;
   padding: 2rem;
   position: relative;
-  margin-top: 0rem;
 }
 
 /* Question Card */
 .question-card {
-  background-color: var(--color-shrine-card);
+  background-color: white;
   border-radius: 12px;
   padding: 4rem 3rem 2rem;
   max-width: 900px;
@@ -228,13 +229,12 @@
   padding: 1.5rem;
   font-family: var(--font-meta);
   font-size: 1.1rem;
-  border: 1px solid var(--color-black);
+  border: 2px solid var(--color-black);
   background-color: white;
   color: var(--color-black);
-  resize: none;
-  min-height: 100px;
+  resize: vertical;
+  min-height: 200px;
   border-radius: 4px;
-  overflow: hidden;
 }
 
 .question-input:focus {
@@ -292,6 +292,7 @@
 }
 
 /* Stacked Cards */
+/* Stacked Cards */
 .stacked-cards {
   position: absolute;
   bottom: 3rem;
@@ -308,7 +309,6 @@
   position: absolute;
   width: 100%;
   height: 80px;
-  background-color: transparent;
   transition: all 0.3s ease;
   pointer-events: all;
   cursor: pointer;
@@ -317,11 +317,7 @@
 
 .stacked-card:hover {
   opacity: 0.9;
-  z-index: 100 !important;
-}
-
-.stacked-card:hover {
-  transform: scale(1.1) !important;
+  transform: scale(1.05);
   z-index: 100 !important;
 }
 
@@ -479,7 +475,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem 3rem;
-  flex-shrink: 0;
 }
 
 .garden-title {
@@ -516,6 +511,9 @@
   max-width: 700px;
 }
 
+.garden-screen .ready-btn {
+  color: var(--color-garden);
+}
 
 /* Cornerstore Screens */
 .cornerstore-screen {
@@ -531,7 +529,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem 3rem;
-  flex-shrink: 0;
 }
 
 .cornerstore-title {
@@ -568,9 +565,6 @@
   max-width: 700px;
 }
 
-.cornerstore-screen .question-card {
-  background-color: var(--color-cornerstore-card);
-}
 
 .cornerstore-screen .ready-btn {
   color: var(--color-cornerstore);
@@ -590,7 +584,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem 3rem;
-  flex-shrink: 0;
 }
 
 .tower-title {
@@ -627,9 +620,6 @@
   max-width: 700px;
 }
 
-.tower-screen .question-card {
-  background-color: var(--color-tower-card);
-}
 
 .tower-screen .ready-btn {
   color: var(--color-tower);
@@ -649,7 +639,6 @@
   justify-content: space-between;
   align-items: center;
   padding: 2rem 3rem;
-  flex-shrink: 0;
 }
 
 .plaza-title {
@@ -686,9 +675,6 @@
   max-width: 700px;
 }
 
-.plaza-screen .question-card {
-  background-color: var(--color-plaza-card);
-}
 
 .plaza-screen .ready-btn {
   color: var(--color-plaza);

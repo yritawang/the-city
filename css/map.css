@@ -1,5 +1,4 @@
 /* map.css */
-/* Map Header */
 .map-header {
   display: flex;
   justify-content: space-between;
@@ -24,6 +23,7 @@
 }
 
 .header-title {
+  font-family: var(--font-meta);
   display: flex;
   align-items: center;
   gap: 0.5rem;

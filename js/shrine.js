@@ -1,4 +1,3 @@
-// shrine.js
 // Shrine questions data
 const SHRINE_QUESTIONS = [
   {
@@ -60,10 +59,25 @@ document.addEventListener('DOMContentLoaded', () => {
   const questionInput = document.getElementById('question-input');
   if (questionInput) {
     questionInput.addEventListener('input', saveCurrentAnswer);
+    
+    // Keyboard navigation
+    questionInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        nextQuestion();
+      } else if (e.key === 'ArrowLeft' && e.ctrlKey) {
+        e.preventDefault();
+        prevQuestion();
+      } else if (e.key === 'ArrowRight' && e.ctrlKey) {
+        e.preventDefault();
+        nextQuestion();
+      }
+    });
   }
 });
 
 function goBackToCity() {
+  // Save progress before leaving
   saveProgress();
   window.location.href = '../map.html';
 }
@@ -135,16 +149,16 @@ function renderStackedCards() {
     card.className = 'stacked-card';
     card.style.backgroundColor = CARD_COLORS[i];
     
-    // Stack cards with vertical offset - trapezoid shape via clip-path
-    const verticalOffset = i * 20;
-    card.style.bottom = `${verticalOffset}px`;
+    // Stack cards with offset
+    const offset = (currentQuestion - i - 1) * 15;
+    card.style.bottom = `${offset}px`;
     card.style.zIndex = i;
     
     // Click to go back to that question
-    card.onclick = () => {
+    card.addEventListener('click', () => {
       currentQuestion = i;
       renderQuestion();
-    };
+    });
     
     container.appendChild(card);
   }
@@ -172,6 +186,7 @@ function nextQuestion() {
   saveCurrentAnswer();
   
   if (currentQuestion === 5) {
+    // Finish - complete the shrine
     completeShrine();
   } else {
     currentQuestion++;
@@ -187,7 +202,7 @@ function completeShrine() {
   districtStates.shrine = 'unlocked';
   localStorage.setItem('districtStates', JSON.stringify(districtStates));
   
-  // Save the shrine name (from question 6)
+  // Save the shrine name
   const shrineName = answers[5] || 'The Shrine';
   localStorage.setItem('shrine-name', shrineName);
   
@@ -196,40 +211,21 @@ function completeShrine() {
 }
 
 function showCompletionScreen() {
-  const questionsDiv = document.getElementById('shrine-questions');
-  const completionDiv = document.getElementById('shrine-completion');
-
-  if (questionsDiv) {
-    questionsDiv.classList.add('hidden');
-    questionsDiv.style.display = 'none';
-  }
-
-  if (completionDiv) {
-    completionDiv.classList.remove('hidden');
-    completionDiv.style.display = 'flex';
-  }
-
-  // Save session snapshot for journal
-  const session = {
-    date: new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }),
-    timestamp: Date.now(),
-    answers: { ...answers }
-  };
-  const savedSessions = JSON.parse(localStorage.getItem('shrine-sessions') || '[]');
-  savedSessions.push(session);
-  localStorage.setItem('shrine-sessions', JSON.stringify(savedSessions));
-  localStorage.setItem('shrine-date', session.date);
-
-  // Display user's answer from question 1
+  // Hide questions, show completion
+  document.getElementById('shrine-questions').classList.add('hidden');
+  document.getElementById('shrine-completion').classList.remove('hidden');
+  
+  // Display user's answer from question 1 (the place they named)
   const placeName = answers[0] || 'this place';
-  const placeNameEl = document.getElementById('completion-place-name');
-  if (placeNameEl) placeNameEl.textContent = placeName;
-
-  document.getElementById('complete-districts-btn').onclick = () => {
+  document.getElementById('completion-place-name').textContent = placeName;
+  
+  // Button handlers
+  document.getElementById('complete-districts-btn').addEventListener('click', () => {
     window.location.href = '../map.html';
-  };
-
-  document.getElementById('customize-btn').onclick = () => {
-    window.location.href = 'shrine-customize.html';
-  };
+  });
+  
+  document.getElementById('customize-btn').addEventListener('click', () => {
+    // TODO: Allow editing - for now, disabled
+    alert('Customization feature coming soon!');
+  });
 }

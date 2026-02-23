@@ -130,6 +130,7 @@ body {
 .district-title {
   font-family: var(--font-meta);
   font-size: 3.5rem;
+  line-height: 3.5rem;
   font-weight: normal;
   color: var(--color-black);
 }
@@ -265,10 +266,10 @@ body {
   font-size: 1rem;
 }
 
-/* Graph View */
 .graph-view {
   flex: 1;
   position: relative;
+  min-height: 0; 
 }
 
 .graph-view.hidden {
@@ -276,11 +277,15 @@ body {
 }
 
 #p5-canvas-container {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
 }
 
 #p5-canvas-container canvas {
+  display: block;
   width: 100% !important;
   height: 100% !important;
 }

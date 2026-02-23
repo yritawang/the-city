@@ -59,6 +59,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const questionInput = document.getElementById('question-input');
   if (questionInput) {
     questionInput.addEventListener('input', saveCurrentAnswer);
+    
+    // Keyboard navigation
+    questionInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        nextQuestion();
+      } else if (e.key === 'ArrowLeft' && e.ctrlKey) {
+        e.preventDefault();
+        prevQuestion();
+      } else if (e.key === 'ArrowRight' && e.ctrlKey) {
+        e.preventDefault();
+        nextQuestion();
+      }
+    });
   }
 });
 

@@ -1,4 +1,4 @@
-/* Design System */
+/* design system */
 @font-face {
   font-family: 'Hershey';
   src: url('../fonts/Hershey-Noailles-Futura-Simplex-Regular.ttf') format('truetype');
@@ -44,7 +44,7 @@
   --font-whois: 'Whois', monospace;
 }
 
-/* Reset & Base */
+/* base */
 * {
   margin: 0;
   padding: 0;
@@ -59,9 +59,9 @@ body {
   overflow-x: hidden;
 }
 
-/* Typography */
+/* type */
 h1, h2, h3 {
-  font-family: var(--font-hershey);
+  font-family: var(--font-meta);
   font-weight: normal;
 }
 
@@ -73,7 +73,7 @@ p, .serif {
   font-family: var(--font-whois);
 }
 
-/* Utility Classes */
+/* utility */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -84,7 +84,7 @@ p, .serif {
   display: none;
 }
 
-/* Transitions */
+/* transition */
 .fade-in {
   animation: fadeIn 0.8s ease-in;
 }
