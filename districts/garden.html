@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Garden - Growth</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>the garden</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/district.css">
 </head>
@@ -19,7 +20,7 @@
     <div class="garden-screen" id="garden-intro">
       <div class="garden-header">
         <button class="back-btn mono" id="back-btn">Back to the city</button>
-        <h2 class="garden-title">The Garden (Growth)</h2>
+        <h2 class="garden-title">The Garden: Growth</h2>
       </div>
       
       <div class="garden-prompt-container">
@@ -34,7 +35,7 @@
     <div class="garden-screen hidden" id="garden-questions">
       <div class="garden-header">
         <button class="back-btn mono" id="questions-back-btn">Back to the city</button>
-        <h2 class="garden-title">The Garden (Growth)</h2>
+        <h2 class="garden-title">The Garden: Growth</h2>
       </div>
 
       <div class="questions-container">
@@ -78,7 +79,7 @@
         <h1 class="completion-title">You've completed<br>The Garden</h1>
         
         <div class="completion-place">
-          <span class="location-icon">📍</span>
+        <i class="fa-solid fa-location-dot location-icon"></i>
           <p class="place-name" id="completion-place-name"></p>
         </div>
         
@@ -92,6 +93,7 @@
     </div>
   </div>
 
+  <script src="../js/achievements.js"></script>
   <script src="../js/district.js"></script>
   <script src="../js/garden.js"></script>
 </body>

@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Tower - Perspective</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>the tower</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/district.css">
 </head>
@@ -19,7 +20,7 @@
     <div class="tower-screen" id="tower-intro">
       <div class="tower-header">
         <button class="back-btn mono" id="back-btn">Back to the city</button>
-        <h2 class="tower-title">The Tower (Perspective)</h2>
+        <h2 class="tower-title">The Tower: Solitude</h2>
       </div>
       
       <div class="tower-prompt-container">
@@ -34,7 +35,7 @@
     <div class="tower-screen hidden" id="tower-questions">
       <div class="tower-header">
         <button class="back-btn mono" id="questions-back-btn">Back to the city</button>
-        <h2 class="tower-title">The Tower (Perspective)</h2>
+        <h2 class="tower-title">The Tower: Solitude</h2>
       </div>
 
       <div class="questions-container">
@@ -71,14 +72,14 @@
     <!-- Completion Screen -->
     <div class="tower-screen hidden" id="tower-completion">
       <div class="tower-header">
-        <h2 class="tower-title">The Tower (Perspective)</h2>
+        <h2 class="tower-title">The Tower: Solitude</h2>
       </div>
       
       <div class="completion-container">
         <h1 class="completion-title">You've completed<br>The Tower</h1>
         
         <div class="completion-place">
-          <span class="location-icon">📍</span>
+          <i class="fa-solid fa-location-dot location-icon"></i>
           <p class="place-name" id="completion-place-name"></p>
         </div>
         
@@ -92,6 +93,7 @@
     </div>
   </div>
 
+  <script src="../js/achievements.js"></script>
   <script src="../js/district.js"></script>
   <script src="../js/tower.js"></script>
 </body>

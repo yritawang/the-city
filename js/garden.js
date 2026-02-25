@@ -193,7 +193,7 @@ function showCompletionScreen() {
 
   // Save session snapshot
   const session = {
-    date: new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }),
+    date: new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }),
     timestamp: Date.now(),
     answers: { ...answers }
   };

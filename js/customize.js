@@ -144,8 +144,6 @@ function renderUI() {
   document.getElementById('district-title').textContent = districtData.name;
   document.getElementById('location-value').textContent = districtData.location;
   document.getElementById('district-date').textContent = `Date Last Edited: ${districtData.date}`;
-  document.getElementById('drawer-district-name').textContent = districtData.location;
-  document.getElementById('drawer-date').textContent = `Date Last Edited: ${districtData.date}`;
   updateSkinDisplay();
   renderJournalEntries();
 }
@@ -171,13 +169,16 @@ function renderJournalEntries() {
     return;
   }
   container.innerHTML = '';
-  [...sessions].sort((a, b) => b.timestamp - a.timestamp).forEach(session => {
+  [...sessions].sort((a, b) => b.timestamp - a.timestamp).forEach((session, idx) => {
     const entry = document.createElement('div');
     entry.className = 'journal-entry';
     entry.innerHTML = `
       <div class="journal-entry-header">
         <span class="journal-entry-date mono">${session.date}</span>
-        <span class="journal-entry-chevron">∨</span>
+        <div style="display:flex;align-items:center;gap:1rem">
+          <button class="delete-entry-btn mono" data-timestamp="${session.timestamp}">delete</button>
+          <span class="journal-entry-chevron">∨</span>
+        </div>
       </div>
       <div class="journal-entry-body">
         ${Object.entries(session.answers).map(([i, a]) => `
@@ -188,26 +189,47 @@ function renderJournalEntries() {
         `).join('')}
       </div>
     `;
-    entry.querySelector('.journal-entry-header').onclick = () => entry.classList.toggle('open');
+
+    entry.querySelector('.journal-entry-header').onclick = (e) => {
+      // don't toggle if delete was clicked
+      if (e.target.classList.contains('delete-entry-btn')) return;
+      entry.classList.toggle('open');
+    };
+
+    entry.querySelector('.delete-entry-btn').onclick = (e) => {
+      e.stopPropagation();
+      if (confirm('Delete this log entry?')) {
+        sessions = sessions.filter(s => s.timestamp !== session.timestamp);
+        localStorage.setItem(`${CURRENT_DISTRICT}-sessions`, JSON.stringify(sessions));
+        renderJournalEntries();
+      }
+    };
+
     container.appendChild(entry);
   });
 }
 
 function setupListeners() {
-  document.getElementById('back-btn').onclick = () => window.location.href = '../map.html';
+  const backBtn = document.getElementById('right-back-btn');
+if (backBtn) backBtn.onclick = () => window.location.href = '../map.html';
+
   document.getElementById('journal-toggle').onclick = switchToJournal;
   document.getElementById('graph-toggle').onclick = switchToGraph;
+
   document.getElementById('save-btn').onclick = () => {
     localStorage.setItem(`${CURRENT_DISTRICT}-skin`, currentSkin);
     alert('Saved!');
   };
+
   document.getElementById('edit-name-btn').onclick = () => {
     document.getElementById('new-name-input').value = districtData.name;
     document.getElementById('edit-name-overlay').classList.add('active');
   };
+
   document.getElementById('cancel-rename-btn').onclick = () => {
     document.getElementById('edit-name-overlay').classList.remove('active');
   };
+
   document.getElementById('save-rename-btn').onclick = () => {
     const n = document.getElementById('new-name-input').value.trim();
     if (n) {
@@ -217,6 +239,7 @@ function setupListeners() {
       document.getElementById('edit-name-overlay').classList.remove('active');
     }
   };
+
   document.getElementById('redo-btn').onclick = () => {
     if (confirm('Reset and restart?')) {
       localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
@@ -227,15 +250,9 @@ function setupListeners() {
       window.location.href = `${CURRENT_DISTRICT}.html`;
     }
   };
+
   document.querySelectorAll('.skin-thumb').forEach(t => {
     t.onclick = () => { currentSkin = parseInt(t.dataset.skin); updateSkinDisplay(); };
-  });
-  document.getElementById('drawer-tab').onclick = () => document.getElementById('side-drawer').classList.toggle('open');
-  document.addEventListener('mousemove', (e) => {
-    if (!isGraphMode) return;
-    const d = document.getElementById('side-drawer');
-    if (e.clientX < 20) d.classList.add('open');
-    else if (e.clientX > 320) d.classList.remove('open');
   });
 }
 
@@ -245,8 +262,7 @@ function switchToJournal() {
   document.getElementById('graph-toggle').classList.remove('active');
   document.getElementById('journal-view').classList.remove('hidden');
   document.getElementById('graph-view').classList.add('hidden');
-  document.getElementById('customize-layout').classList.remove('graph-mode');
-  document.getElementById('side-drawer').style.display = 'none';
+  // removed side-drawer and graph-mode class references
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
 }
 
@@ -256,8 +272,6 @@ function switchToGraph() {
   document.getElementById('journal-toggle').classList.remove('active');
   document.getElementById('journal-view').classList.add('hidden');
   document.getElementById('graph-view').classList.remove('hidden');
-  document.getElementById('customize-layout').classList.add('graph-mode');
-  document.getElementById('side-drawer').style.display = 'flex';
   setTimeout(initGraph, 500);
 }
 

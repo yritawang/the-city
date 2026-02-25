@@ -31,48 +31,33 @@ const CARD_COLORS = ['#E07058', '#C04028', '#A03018', '#802010', '#601808'];
 let currentQuestion = 0;
 let answers = {};
 
-// Cornerstore-specific logic
 document.addEventListener('DOMContentLoaded', () => {
   const readyBtn = document.getElementById('ready-btn');
   const backBtn = document.getElementById('back-btn');
   const questionsBackBtn = document.getElementById('questions-back-btn');
   
-  // Load saved answers if returning
   const savedAnswers = localStorage.getItem('cornerstore-answers');
   if (savedAnswers) {
     answers = JSON.parse(savedAnswers);
   }
 
-  // Show Ready button after 5 seconds
   setTimeout(() => {
     readyBtn.classList.remove('hidden');
   }, 8800);
 
-  // Back button handlers
   if (backBtn) backBtn.addEventListener('click', goBackToCity);
   if (questionsBackBtn) questionsBackBtn.addEventListener('click', goBackToCity);
+  if (readyBtn) {
+    readyBtn.addEventListener('click', () => {
+      console.log('Ready clicked, calling startQuestions');
+      startQuestions();
+    });
+  }
 
-  // Ready button - start questions
-  if (readyBtn) readyBtn.addEventListener('click', startQuestions);
-
-  // Save answer on input change
+  // Input save only — district.js handles Enter key
   const questionInput = document.getElementById('question-input');
   if (questionInput) {
     questionInput.addEventListener('input', saveCurrentAnswer);
-    
-    // Keyboard navigation
-    questionInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        nextQuestion();
-      } else if (e.key === 'ArrowLeft' && e.ctrlKey) {
-        e.preventDefault();
-        prevQuestion();
-      } else if (e.key === 'ArrowRight' && e.ctrlKey) {
-        e.preventDefault();
-        nextQuestion();
-      }
-    });
   }
 });
 
@@ -82,15 +67,19 @@ function goBackToCity() {
 }
 
 function startQuestions() {
-  document.getElementById('cornerstore-intro').classList.add('hidden');
-  document.getElementById('cornerstore-questions').classList.remove('hidden');
+  try { unlockAchievement('began-cornerstore'); } catch(e) {}
+
+  const intro = document.getElementById('cornerstore-intro');
+  const questions = document.getElementById('cornerstore-questions');
+
+  if (intro) { intro.classList.add('hidden'); intro.style.display = 'none'; }
+  if (questions) { questions.classList.remove('hidden'); questions.style.display = 'flex'; }
+
   currentQuestion = 0;
   renderQuestion();
-  
-  // Attach button listeners
+
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
-  
   if (prevBtn) prevBtn.onclick = prevQuestion;
   if (nextBtn) nextBtn.onclick = nextQuestion;
 }
@@ -105,7 +94,6 @@ function renderQuestion() {
   const input = document.getElementById('question-input');
   input.value = answers[currentQuestion] || '';
   
-  // Special styling for question 6 (naming)
   if (currentQuestion === 5) {
     questionCard.classList.add('naming');
   } else {
@@ -177,14 +165,13 @@ function nextQuestion() {
 }
 
 function completeCornerstore() {
+  unlockAchievement('completed-cornerstore');
   saveCurrentAnswer();
   
-  // Mark cornerstore as unlocked
   const districtStates = JSON.parse(localStorage.getItem('districtStates')) || {};
   districtStates.cornerstore = 'unlocked';
   localStorage.setItem('districtStates', JSON.stringify(districtStates));
   
-  // Save the cornerstore name
   const cornerstoreName = answers[5] || 'The Cornerstore';
   localStorage.setItem('cornerstore-name', cornerstoreName);
   
@@ -205,9 +192,8 @@ function showCompletionScreen() {
     completionDiv.style.display = 'flex';
   }
 
-  // Save session snapshot
   const session = {
-    date: new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }),
+    date: new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }),
     timestamp: Date.now(),
     answers: { ...answers }
   };

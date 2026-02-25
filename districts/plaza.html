@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Plaza - Belonging</title>
+  <title>the plaza</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/district.css">
 </head>
@@ -19,12 +19,12 @@
     <div class="plaza-screen" id="plaza-intro">
       <div class="plaza-header">
         <button class="back-btn mono" id="back-btn">Back to the city</button>
-        <h2 class="plaza-title">The Plaza (Belonging)</h2>
+        <h2 class="plaza-title">The Plaza: Community</h2>
       </div>
       
       <div class="plaza-prompt-container">
         <h1 class="plaza-main-prompt">Think of a place where you felt connected to a community.</h1>
-        <h3 class="plaza-sub-prompt">A place where you connected with a group.</h3>
+        <h3 class="plaza-sub-prompt">A place where you felt like you belonged to a group.</h3>
         
         <button class="ready-btn mono hidden" id="ready-btn">Ready?</button>
       </div>
@@ -34,7 +34,7 @@
     <div class="plaza-screen hidden" id="plaza-questions">
       <div class="plaza-header">
         <button class="back-btn mono" id="questions-back-btn">Back to the city</button>
-        <h2 class="plaza-title">The Plaza (Belonging)</h2>
+        <h2 class="plaza-title">The Plaza: Community</h2>
       </div>
 
       <div class="questions-container">
@@ -71,14 +71,14 @@
     <!-- Completion Screen -->
     <div class="plaza-screen hidden" id="plaza-completion">
       <div class="plaza-header">
-        <h2 class="plaza-title">The Plaza (Belonging)</h2>
+        <h2 class="plaza-title">The Plaza: Community</h2>
       </div>
       
       <div class="completion-container">
         <h1 class="completion-title">You've completed<br>The Plaza</h1>
         
         <div class="completion-place">
-          <span class="location-icon">📍</span>
+          <i class="fa-solid fa-location-dot location-icon"></i>
           <p class="place-name" id="completion-place-name"></p>
         </div>
         
@@ -92,6 +92,7 @@
     </div>
   </div>
 
+  <script src="../js/achievements.js"></script>
   <script src="../js/district.js"></script>
   <script src="../js/plaza.js"></script>
 </body>

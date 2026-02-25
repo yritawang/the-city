@@ -10,55 +10,18 @@
 </head>
 <body>
 
-  <!-- Side Drawer (visible in graph mode) -->
-  <div class="side-drawer" id="side-drawer">
-    <div class="drawer-tab" id="drawer-tab">&#8250;</div>
-    <div class="drawer-content">
-  <h2 class="drawer-title">The Shrine</h2>
-  <p class="drawer-subtitle mono" id="drawer-district-name"></p>
-
-  <div class="drawer-preview">
-    <img src="../assets/districts/shrine-unlocked.png" alt="Shrine" class="drawer-preview-img" id="drawer-preview-img">
-  </div>
-
-  <div class="skin-selector">
-    <p class="mono skin-label">Skin</p>
-    <div class="skin-options" id="drawer-skin-options">
-      <div class="skin-thumb active" data-skin="0" data-context="drawer">
-        <img src="../assets/districts/shrine-unlocked.png" alt="Skin 1">
-      </div>
-      <div class="skin-thumb" data-skin="1" data-context="drawer">
-        <img src="../assets/districts/shrine-skin2.png" alt="Skin 2">
-      </div>
-      <div class="skin-thumb" data-skin="2" data-context="drawer">
-        <img src="../assets/districts/shrine-skin3.png" alt="Skin 3">
-      </div>
-    </div>
-
-  <p class="mono drawer-date" id="drawer-date"></p>
-</div>
-
-      <p class="mono drawer-date" id="drawer-date"></p>
-    </div>
-  </div>
-
   <!-- Main Layout -->
   <div class="customize-layout" id="customize-layout">
 
-    <!-- Left Panel -->
-    <div class="customize-left" id="customize-left">
-      <div class="left-header">
-        <button class="back-btn mono" id="back-btn">Back to the city</button>
-      </div>
-
+    <!-- Left Sidebar -->
+    <div class="customize-left shrine-left" id="customize-left">
       <div class="district-preview">
         <div class="district-image-container">
           <img src="../assets/districts/shrine-unlocked.png" alt="Shrine" class="district-preview-img" id="district-preview-img">
         </div>
-
         <div class="skin-options">
           <div class="skin-thumb active" data-skin="0">
-            <img src="../assets/districts/shrine-unlocked.png" alt="Skin 1">
+            <img src="../assets/districts/shrine.png" alt="Skin 1">
           </div>
           <div class="skin-thumb" data-skin="1">
             <img src="../assets/districts/shrine-skin2.png" alt="Skin 2">
@@ -67,7 +30,6 @@
             <img src="../assets/districts/shrine-skin3.png" alt="Skin 3">
           </div>
         </div>
-
         <p class="mono district-date" id="district-date"></p>
       </div>
     </div>
@@ -75,10 +37,11 @@
     <!-- Right Panel -->
     <div class="customize-right" id="customize-right">
       <div class="right-header">
+        <button class="right-back-btn mono" id="right-back-btn">← Back to the city</button>
         <div class="right-header-top">
           <h1 class="district-title" id="district-title"></h1>
           <button class="icon-btn mono" id="edit-name-btn">&#9998;</button>
-            <button class="icon-btn mono" id="redo-btn">&#8635; Log again</button>
+          <button class="icon-btn mono" id="redo-btn">&#8635; Log again</button>
         </div>
         <p class="mono location-line">
           Location of the Shrine: 
@@ -96,11 +59,10 @@
       <!-- Journal View -->
       <div class="journal-view" id="journal-view">
         <div class="journal-entries" id="journal-entries">
-          <!-- Entries rendered by JS -->
         </div>
       </div>
 
-      <!-- Graph View Canvas -->
+      <!-- Graph / Constellation View -->
       <div class="graph-view hidden" id="graph-view">
         <div id="p5-canvas-container"></div>
       </div>
@@ -120,6 +82,7 @@
     </div>
   </div>
 
+  <script src="../js/achievements.js"></script>
   <script src="../js/customize.js"></script>
 </body>
 </html>

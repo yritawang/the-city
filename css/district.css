@@ -228,13 +228,12 @@
   width: 100%;
   padding: 1.5rem;
   font-family: var(--font-meta);
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   border: 2px solid var(--color-black);
   background-color: white;
   color: var(--color-black);
   resize: vertical;
   min-height: 200px;
-  border-radius: 4px;
 }
 
 .question-input:focus {
@@ -338,12 +337,18 @@
   justify-content: flex-end;
 }
 
+/* Replace the existing .progress-bar rule */
 .progress-bar {
   width: 100%;
   height: 0%;
-  background-color: var(--color-shrine-card);
   transition: height 0.3s ease;
 }
+
+.shrine-screen .progress-bar      { background-color: var(--color-shrine-card); }
+.garden-screen .progress-bar      { background-color: var(--color-garden-card); }
+.cornerstore-screen .progress-bar { background-color: var(--color-cornerstore-card); }
+.tower-screen .progress-bar       { background-color: var(--color-tower-card); }
+.plaza-screen .progress-bar       { background-color: var(--color-plaza-card); }
 
 /* Responsive Questions */
 @media (max-width: 768px) {
@@ -391,9 +396,9 @@
 
 .completion-place {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   margin-bottom: 0.5rem;
 }
 
@@ -423,7 +428,6 @@
 
 .completion-btn {
   background-color: white;
-  color: var(--color-shrine);
   border: none;
   padding: 1rem 2rem;
   font-size: 1rem;
@@ -431,6 +435,12 @@
   transition: all 0.3s ease;
   white-space: nowrap;
 }
+
+.shrine-screen .completion-btn   { color: var(--color-shrine); }
+.garden-screen .completion-btn   { color: var(--color-garden); }
+.cornerstore-screen .completion-btn { color: var(--color-cornerstore); }
+.tower-screen .completion-btn    { color: var(--color-tower); }
+.plaza-screen .completion-btn    { color: var(--color-plaza); }
 
 .completion-btn:hover {
   transform: scale(1.05);

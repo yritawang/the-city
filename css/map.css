@@ -1,67 +1,125 @@
-/* map.css */
+/* map.css — Japanese book binding header edition */
+
+:root {
+  --blue: #0A059B;
+  --blue-faint: rgba(10, 5, 155, 0.08);
+  --blue-mid: rgba(10, 5, 155, 0.2);
+}
+
+/* ─── HEADER: Japanese stab binding ─── */
 .map-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2rem 3rem;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  align-items: stretch;
+  border-bottom: 2px solid var(--blue);
+  height: 90px;
   position: relative;
 }
 
-.header-btn {
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 2rem 0 3.5rem;
+  border-right: 1px solid var(--blue);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.header-left:hover {
+  background-color: var(--blue);
+}
+
+.header-left:hover .header-title h1,
+.header-left:hover .location-icon {
+  color: white;
+}
+
+/* Center cell */
+.header-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--blue);
+  padding: 0 1.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.header-center p {
   font-family: var(--font-whois);
-  font-size: 1rem;
+  font-size: 0.85rem;
+  color: var(--blue);
+  opacity: 0.9;
+  letter-spacing: 0.02em;
+  transition: color 0.2s ease;
+  pointer-events: none;
+}
+
+.header-center:hover {
+  background-color: var(--blue);
+}
+
+.header-center:hover p {
+  color: white;
+  opacity: 1;
+}
+
+/* Right cell — nav buttons */
+.header-right {
+  display: flex;
+  align-items: stretch;
+}
+
+.header-btn {
+  flex: 1;
+  font-family: var(--font-whois);
+  font-size: 0.9rem;
   background: none;
   border: none;
-  color: var(--color-black);
+  border-right: 1px solid var(--blue);
+  color: var(--blue);
   cursor: pointer;
-  padding: 0.5rem 1rem;
-  transition: opacity 0.2s;
+  padding: 0;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  letter-spacing: 0.02em;
+}
+
+.header-btn:last-child {
+  border-right: none;
 }
 
 .header-btn:hover {
-  opacity: 0.6;
+  background-color: var(--blue);
+  color: white;
 }
 
+/* Title — pointer-events disabled so clicks pass through to .header-left */
 .header-title {
-  font-family: var(--font-meta);
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  gap: 0.6rem;
+  pointer-events: none;
 }
 
 .header-title h1 {
+  font-family: var(--font-meta);
   font-size: 2.8rem;
   font-weight: normal;
-  cursor: pointer;
-  transition: text-decoration 0.2s;
-}
-
-.header-title h1:hover {
-  text-decoration: underline;
+  color: var(--blue);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition: color 0.2s ease;
 }
 
 .location-icon {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
+  color: var(--blue);
 }
 
-/* Subheader */
-.map-subheader {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.map-subheader p {
-  font-size: 0.9rem;
-  opacity: 0.7;
-}
-
-/* Map Container */
+/* ─── Map Container ─── */
 .map-container {
   width: 100%;
-  height: calc(100vh - 180px);
+  height: calc(100vh - 90px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -74,7 +132,6 @@
   height: 750px;
 }
 
-/* District Base Styles */
 .district {
   position: absolute;
   cursor: pointer;
@@ -87,200 +144,6 @@
   object-fit: contain;
   display: block;
   transition: opacity 0.3s ease;
-}
-
-.district-label {
-  position: absolute;
-  top: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-whois);
-  font-size: 0.85rem;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  pointer-events: none;
-  white-space: nowrap;
-}
-
-/* District States */
-/* Locked state - default */
-.district.locked .district-image {
-  opacity: 1;
-}
-
-/* Hover state */
-.district.locked:hover .district-image {
-  opacity: 1;
-}
-
-.district.locked:hover .district-label {
-  opacity: 1;
-}
-
-/* Unlocked state */
-.district.unlocked .district-image {
-  opacity: 1;
-}
-
-.district.unlocked .district-label {
-  opacity: 1;
-}
-
-/* cornerstore bottom left */
-#cornerstore {
-  bottom: 100px;
-  left: 160px;
-  width: 360px;
-  height: 360px;
-  z-index: 11;
-
-}
-
-#plaza {
-  bottom: 80px;
-  right: 80px;
-  width: 360px;
-  height: 360px;
-  z-index: 11;
-}
-
-/* shrine center */
-#shrine {
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 360px;
-  height: 360px;
-  z-index: 10;
-}
-
-/* garden top left */
-#garden {
-  top: 80px;
-  left: 140px;
-  width: 360px;
-  height: 360px;
-}
-
-/* tower top right */
-#tower {
-  top: 80px;
-  right: 140px;
-  width: 360px;
-  height: 360px;
-}
-
-/* Hover effect - slight lift */
-.district:hover {
-  transform: translateY(-5px);
-}
-
-#shrine:hover {
-  transform: translate(-50%, calc(-50% - 5px));
-}
-
-/* Responsive */
-@media (max-width: 1024px) {
-  .map-districts {
-    width: 700px;
-    height: 500px;
-  }
-  
-  #garden { width: 220px; height: 220px; }
-  #cornerstore { width: 190px; height: 190px; }
-  #shrine { width: 240px; height: 240px; }
-  #tower { width: 200px; height: 260px; }
-  #plaza { width: 220px; height: 220px; }
-}
-
-/* City Name Overlay */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(16, 16, 16, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.overlay.active {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.overlay-content {
-  background-color: var(--color-bg);
-  padding: 3rem;
-  border-radius: 4px;
-  max-width: 500px;
-  width: 90%;
-  text-align: center;
-}
-
-.overlay-content h2 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-
-.overlay-content p {
-  font-size: 0.95rem;
-  margin-bottom: 2rem;
-  opacity: 0.8;
-}
-
-.city-name-input {
-  width: 100%;
-  padding: 1rem;
-  font-family: var(--font-meta);
-  font-size: 1.1rem;
-  border: 1px solid var(--color-black);
-  background-color: var(--color-bg);
-  color: var(--color-black);
-  margin-bottom: 1.5rem;
-  text-align: center;
-}
-
-.city-name-input:focus {
-  outline: none;
-  border-width: 2px;
-}
-
-.overlay-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.overlay-btn {
-  font-family: var(--font-whois);
-  font-size: 0.9rem;
-  padding: 0.75rem 2rem;
-  background: none;
-  border: 1px solid var(--color-black);
-  color: var(--color-black);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.overlay-btn:hover {
-  background-color: var(--color-black);
-  color: var(--color-bg);
-}
-
-.overlay-btn.primary {
-  background-color: var(--color-black);
-  color: var(--color-bg);
-}
-
-.overlay-btn.primary:hover {
-  opacity: 0.8;
 }
 
 .district-label {
@@ -298,9 +161,735 @@
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  color: var(--blue);
 }
 
-.district-custom-name {
+.district.locked .district-image { opacity: 1; }
+.district.locked:hover .district-image { opacity: 1; }
+.district.locked:hover .district-label { opacity: 1; }
+.district.unlocked .district-image { opacity: 1; }
+.district.unlocked .district-label { opacity: 1; }
+
+#cornerstore { bottom: 100px; left: 160px; width: 360px; height: 360px; z-index: 11; }
+#plaza { bottom: 80px; right: 80px; width: 360px; height: 360px; z-index: 11; }
+#shrine { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 360px; height: 360px; z-index: 10; }
+#garden { top: 80px; left: 140px; width: 360px; height: 360px; }
+#tower { top: 80px; right: 140px; width: 360px; height: 360px; }
+
+.district:hover { transform: translateY(-5px); }
+#shrine:hover { transform: translate(-50%, calc(-50% - 5px)); }
+
+/* ─── Overlay ─── */
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(10, 5, 155, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.overlay.active { opacity: 1; pointer-events: all; }
+
+.overlay-content {
+  background-color: var(--color-bg);
+  padding: 3rem;
+  border: 2px solid var(--blue);
+  max-width: 500px;
+  width: 90%;
+  text-align: center;
+}
+
+.overlay-content h2 { font-size: 1.5rem; color: var(--blue); margin-bottom: 1rem; }
+.overlay-content p { font-size: 0.95rem; margin-bottom: 2rem; opacity: 0.8; color: var(--blue); }
+
+.city-name-input {
+  width: 100%;
+  padding: 1rem;
+  font-family: var(--font-meta);
+  font-size: 1.1rem;
+  border: 1px solid var(--blue);
+  background-color: var(--color-bg);
+  color: var(--blue);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.city-name-input:focus { outline: none; border-width: 2px; }
+
+.overlay-buttons { display: flex; gap: 1rem; justify-content: center; }
+
+.overlay-btn {
   font-family: var(--font-whois);
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  padding: 0.75rem 2rem;
+  background: none;
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.overlay-btn:hover { background-color: var(--blue); color: var(--color-bg); }
+.overlay-btn.primary { background-color: var(--blue); color: var(--color-bg); }
+.overlay-btn.primary:hover { opacity: 0.8; }
+
+.district-custom-name { font-family: var(--font-whois); font-size: 0.85rem; color: var(--blue); }
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+  .map-districts { width: 700px; height: 500px; }
+  #garden { width: 220px; height: 220px; }
+  #cornerstore { width: 190px; height: 190px; }
+  #shrine { width: 240px; height: 240px; }
+  #tower { width: 200px; height: 260px; }
+  #plaza { width: 220px; height: 220px; }
+  .header-title h1 { font-size: 1.6rem; }
+}
+
+@media (max-width: 700px) {
+  .map-header { grid-template-columns: 1fr 1fr; height: auto; }
+  .header-center { display: none; }
+  .header-right { flex-wrap: wrap; }
+}
+
+/* Random district highlight pulse */
+.district-highlight {
+  animation: districtPulse 1.5s ease forwards;
+}
+
+@keyframes districtPulse {
+  0%   { transform: translateY(0); }
+  30%  { transform: translateY(-10px); }
+  70%  { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+
+#shrine.district-highlight {
+  animation: shrineDistrictPulse 1.5s ease forwards;
+}
+
+@keyframes shrineDistrictPulse {
+  0%   { transform: translate(-50%, -50%); }
+  30%  { transform: translate(-50%, calc(-50% - 10px)); }
+  70%  { transform: translate(-50%, calc(-50% - 8px)); }
+  100% { transform: translate(-50%, -50%); }
+}
+
+/* ─── ACHIEVEMENTS ─── */
+
+
+/* ─── ACHIEVEMENTS ─── */
+
+/* Toast — expands up from bottom left */
+.achievement-toast {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  width: 280px;
+  border: 2px solid var(--blue);
+  background-color: var(--color-bg);
+  display: grid;
+  grid-template-rows: auto auto;
+  z-index: 500;
+  cursor: pointer;
+  transform-origin: bottom left;
+  transform: scaleY(0);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.25s ease;
+}
+
+.achievement-toast.visible {
+  transform: scaleY(1);
+  opacity: 1;
+}
+
+.achievement-toast.fade-out {
+  transform: scaleY(0);
+  opacity: 0;
+  transition: transform 0.25s cubic-bezier(0.64, 0, 0.78, 0),
+              opacity 0.2s ease;
+}
+
+/* Wiggle on click */
+.achievement-toast.wiggle {
+  animation: toastWiggle 0.4s ease;
+}
+
+@keyframes toastWiggle {
+  0%   { transform: scaleY(1) rotate(0deg); }
+  25%  { transform: scaleY(1) rotate(1.5deg); }
+  50%  { transform: scaleY(1) rotate(-1.5deg); }
+  75%  { transform: scaleY(1) rotate(0.8deg); }
+  100% { transform: scaleY(1) rotate(0deg); }
+}
+
+/* Toast header */
+.achievement-toast-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--blue);
+  background-color: var(--blue);
+  transition: background-color 0.2s ease;
+}
+
+.achievement-toast:hover .achievement-toast-header {
+  background-color: white;
+}
+
+.achievement-toast-label {
+  font-family: var(--font-whois);
+  font-size: 0.7rem;
+  color: white;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+
+.achievement-toast:hover .achievement-toast-label {
+  color: var(--blue);
+}
+
+.achievement-toast-close {
+  font-family: var(--font-whois);
+  font-size: 0.75rem;
+  color: white;
+  opacity: 0.7;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.achievement-toast-close:hover { opacity: 1; }
+.achievement-toast:hover .achievement-toast-close { color: var(--blue); }
+
+/* Toast body */
+.achievement-toast-body { padding: 0.85rem 1rem; }
+
+.achievement-toast-title {
+  font-family: var(--font-whois);
+  font-size: 0.8rem;
+  color: var(--blue);
+  line-height: 1.4;
+}
+
+/* ─── ACHIEVEMENTS PANEL ─── */
+.achievements-panel {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  width: 280px;
+  border: 2px solid var(--blue);
+  background-color: var(--color-bg);
+  z-index: 499;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  transform-origin: bottom left;
+  transform: scaleY(0);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.25s ease;
+}
+
+.achievements-panel.visible {
+  transform: scaleY(1);
+  opacity: 1;
+}
+
+.achievements-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--blue);
+  background-color: var(--blue);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.achievements-panel-header:hover { background-color: white; }
+
+.achievements-panel-label {
+  font-family: var(--font-whois);
+  font-size: 0.7rem;
+  color: white;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+
+.achievements-panel-toggle {
+  font-family: var(--font-whois);
+  font-size: 0.75rem;
+  color: white;
+  transition: color 0.2s ease;
+}
+
+.achievements-panel-header:hover .achievements-panel-label,
+.achievements-panel-header:hover .achievements-panel-toggle {
+  color: var(--blue);
+}
+
+.achievements-panel-list {
+  overflow-y: auto;
+  flex: 1;
+}
+
+.achievement-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--blue);
+  font-family: var(--font-whois);
+  font-size: 0.78rem;
+  color: var(--blue);
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.achievement-item:last-child { border-bottom: none; }
+.achievement-item:hover { background-color: var(--blue); color: white; }
+
+.achievement-item-date {
+  display: block;
+  opacity: 0.5;
+  font-size: 0.68rem;
+  margin-top: 0.2rem;
+}
+
+.achievements-empty {
+  padding: 1.5rem 1rem;
+  font-family: var(--font-whois);
+  font-size: 0.78rem;
+  color: var(--blue);
+  opacity: 0.5;
+  text-align: center;
+}
+
+/* ─── TOGGLE BUTTON ─── */
+.achievements-toggle-btn {
+  position: fixed;
+  bottom: 2rem;
+  left: 2rem;
+  border: 2px solid var(--blue);
+  background-color: var(--color-bg);
+  width: 180px;
+  cursor: pointer;
+  z-index: 498;
+  display: flex;
+  align-items: stretch;
+}
+
+.achievements-btn-label {
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue);
+  letter-spacing: 0.03em;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  width: 100%;
+}
+
+.achievements-toggle-btn:hover .achievements-btn-label {
+  background-color: var(--blue);
+  color: white;
+}
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 1024px) {
+  .map-districts { width: 700px; height: 500px; }
+  #garden { width: 220px; height: 220px; }
+  #cornerstore { width: 190px; height: 190px; }
+  #shrine { width: 240px; height: 240px; }
+  #tower { width: 200px; height: 260px; }
+  #plaza { width: 220px; height: 220px; }
+  .header-title h1 { font-size: 1.6rem; }
+}
+
+@media (max-width: 700px) {
+  .map-header { grid-template-columns: 1fr 1fr; height: auto; }
+  .header-center { display: none; }
+  .header-right { flex-wrap: wrap; }
+}
+
+/* Random district highlight pulse */
+.district-highlight {
+  animation: districtPulse 1.5s ease forwards;
+}
+
+@keyframes districtPulse {
+  0%   { transform: translateY(0); }
+  30%  { transform: translateY(-10px); }
+  70%  { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+
+#shrine.district-highlight {
+  animation: shrineDistrictPulse 1.5s ease forwards;
+}
+
+@keyframes shrineDistrictPulse {
+  0%   { transform: translate(-50%, -50%); }
+  30%  { transform: translate(-50%, calc(-50% - 10px)); }
+  70%  { transform: translate(-50%, calc(-50% - 8px)); }
+  100% { transform: translate(-50%, -50%); }
+}
+
+/* ─── CUSTOMIZE PANEL (bottom right) ─── */
+
+.customize-toggle-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  border: 2px solid var(--blue);
+  background-color: var(--color-bg);
+  width: 180px;
+  cursor: pointer;
+  z-index: 498;
+  display: flex;
+  align-items: stretch;
+  transition: background-color 0.2s ease;
+}
+
+.customize-btn-label {
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue);
+  letter-spacing: 0.03em;
+  width: 100%;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.customize-toggle-btn:hover .customize-btn-label {
+  background-color: var(--blue);
+  color: white;
+}
+
+.customize-panel {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 240px;
+  border: 2px solid var(--blue);
+  background-color: var(--color-bg);
+  z-index: 499;
+  display: flex;
+  flex-direction: column;
+  transform-origin: bottom right;
+  transform: scaleY(0);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.25s ease;
+}
+
+.customize-panel.visible {
+  transform: scaleY(1);
+  opacity: 1;
+}
+
+.customize-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--blue);
+  background-color: var(--blue);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.customize-panel-header:hover {
+  background-color: white;
+}
+
+.customize-panel-header:hover .customize-panel-label,
+.customize-panel-header:hover .customize-panel-toggle {
+  color: var(--blue);
+}
+
+.customize-panel-label {
+  font-family: var(--font-whois);
+  font-size: 0.7rem;
+  color: white;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+
+.customize-panel-toggle {
+  font-family: var(--font-whois);
+  font-size: 0.75rem;
+  color: white;
+  transition: color 0.2s ease;
+}
+
+.customize-panel-body {
+  padding: 0;
+}
+
+/* Each customize row — same binding grid style */
+.customize-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: stretch;
+  border-bottom: 1px solid var(--blue);
+}
+
+.customize-row:last-child {
+  border-bottom: none;
+}
+
+.customize-row-label {
+  font-family: var(--font-whois);
+  font-size: 0.78rem;
+  color: var(--blue);
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+/* Toggle switch — binding style */
+.customize-toggle-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border-left: 1px solid var(--blue);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.customize-toggle-cell:hover {
+  background-color: var(--blue);
+}
+
+.customize-toggle-cell:hover .toggle-track {
+  border-color: white;
+}
+
+.toggle-track {
+  width: 32px;
+  height: 16px;
+  border: 1.5px solid var(--blue);
+  border-radius: 0;
+  position: relative;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  background-color: var(--blue);
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.toggle-track.on {
+  background-color: var(--blue);
+}
+
+.toggle-track.on .toggle-thumb {
+  transform: translateX(16px);
+  background-color: var(--color-bg);
+}
+
+/* ─── DARK MODE ─── */
+body.dark-mode {
+  --color-bg: #101010;
+  --blue: #EDDB97;
+  background-color: #101010;
+}
+
+body.dark-mode .customize-toggle-btn,
+body.dark-mode .customize-panel,
+body.dark-mode .achievement-toast,
+body.dark-mode .achievements-panel,
+body.dark-mode .achievements-toggle-btn {
+  background-color: #101010;
+}
+
+body.dark-mode .toggle-thumb {
+  background-color: #101010;
+}
+
+/* ─── CONSTELLATION ─── */
+
+.constellation-btn {
+  position: fixed;
+  bottom: 50%;
+  right: 2rem;
+  transform: translateY(50%);
+  border: 2px solid var(--blue);
+  background-color: var(--color-bg);
+  width: 180px;
+  cursor: pointer;
+  z-index: 498;
+  display: flex;
+  align-items: stretch;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  width: auto;
+}
+
+.constellation-btn-label {
+  padding: 1.2rem 0.65rem;
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue);
+  letter-spacing: 0.1em;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.constellation-btn:hover:not(.locked) .constellation-btn-label {
+  background-color: var(--blue);
+  color: white;
+}
+
+.constellation-btn.locked {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.constellation-btn.active .constellation-btn-label {
+  background-color: var(--blue);
+  color: white;
+}
+
+/* Full canvas overlay */
+.constellation-overlay {
+  position: fixed;
+  top: 90px; /* below header */
+  left: 0;
+  width: 100vw;
+  height: calc(100vh - 90px);
+  background-color: var(--color-bg);
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+.constellation-overlay.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.constellation-overlay.hidden {
+  display: none;
+}
+
+#constellation-canvas-container {
+  width: 100%;
+  height: 100%;
+}
+
+#constellation-canvas-container canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* Districts fade when constellation is active */
+.map-container.constellation-active {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  pointer-events: none;
+}
+
+/* ─── GUIDE OVERLAY ─── */
+
+.guide-overlay-content {
+  max-width: 520px;
+  width: 92%;
+  text-align: center;
+  padding: 3rem;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Slides */
+.guide-slides { flex: 1; display: flex; align-items: center; justify-content: center; }
+
+.guide-slide {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  animation: guideFadeIn 0.35s ease;
+}
+
+.guide-slide.active { display: flex; }
+
+@keyframes guideFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Concept slide */
+.guide-concept-title {
+  font-family: var(--font-meta);
+  font-size: 1.5rem;
+  font-weight: normal;
+  color: var(--blue);
+}
+
+.guide-concept-text {
+  font-family: var(--font-meta);
+  font-size: 0.9rem;
+  line-height: 1.85;
+  color: var(--color-black);
+  opacity: 0.8;
+}
+
+/* Step slides */
+.guide-step-title {
+  font-family: var(--font-meta);
+  font-size: 1.3rem;
+  font-weight: normal;
+  color: var(--color-black);
+  line-height: 1.4;
+}
+
+.guide-step-sub {
+  font-family: var(--font-whois);
+  font-size: 0.75rem;
+  color: var(--color-black);
+  opacity: 0.5;
+  line-height: 1.6;
+}
+
+.guide-step-sub:empty { display: none; }
+
+/* Nav row */
+.guide-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.guide-progress {
+  font-size: 0.75rem;
+  color: var(--blue);
+  opacity: 0.5;
+  min-width: 2.5rem;
+  text-align: center;
 }

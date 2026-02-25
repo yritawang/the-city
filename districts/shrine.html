@@ -3,23 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Shrine (Reverence)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <title>the shrine</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/district.css">
 </head>
 <body>
-  <!-- entering overlay -->
   <div class="entering-overlay" id="entering-overlay">
     <h1 class="entering-text">Entering the Shrine</h1>
   </div>
 
-  <!-- content -->
   <div class="district-content hidden" id="district-content">
-    <!-- intro -->
     <div class="shrine-screen" id="shrine-intro">
       <div class="shrine-header">
         <button class="back-btn mono" id="back-btn">Back to the city</button>
-        <h2 class="shrine-title">The Shrine (Reverence)</h2>
+        <h2 class="shrine-title">The Shrine: Reverence</h2>
       </div>
       <div class="shrine-prompt-container">
         <h1 class="shrine-main-prompt">Think of a place that feels sacred to you.</h1>
@@ -32,7 +30,7 @@
     <div class="shrine-screen hidden" id="shrine-questions">
       <div class="shrine-header">
         <button class="back-btn mono" id="questions-back-btn">Back to the city</button>
-        <h2 class="shrine-title">The Shrine (Reverence)</h2>
+        <h2 class="shrine-title">The Shrine: Reverence</h2>
       </div>
 
       <div class="questions-container">
@@ -73,7 +71,7 @@
       <div class="completion-container">
         <h1 class="completion-title">You've completed<br>The Shrine</h1>
         <div class="completion-place">
-          <span class="location-icon">📍</span>
+          <i class="fa-solid fa-location-dot location-icon"></i>
           <p class="place-name" id="completion-place-name"></p>
         </div>
         <p class="completion-tagline">is a place you respect.</p>
@@ -85,6 +83,7 @@
     </div>
   </div>
 
+  <script src="../js/achievements.js"></script>
   <script src="../js/district.js"></script>
   <script src="../js/shrine.js"></script>
 </body>
