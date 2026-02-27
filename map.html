@@ -12,11 +12,15 @@
   <header class="map-header">
     <div class="header-left">
       <div class="header-title">
-        <span class="location-icon">◎</span>
+        <span class="location-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <circle cx="12" cy="9" r="2.5"/>
+          </svg>
+        </span>
         <h1 id="city-title">Somewhere I Belong</h1>
       </div>
     </div>
-
     <div class="header-center">
       <p>Click on a district to start</p>
     </div>
@@ -25,66 +29,73 @@
       <button class="header-btn" id="about-btn">About</button>
       <button class="header-btn" id="share-btn">Share</button>
     </div>
-
-
-
   </header>
 
+  <!-- Visit mode: return button (fixed, top right, matches header height) -->
+  <button class="return-btn mono" id="return-btn">Return to Your City</button>
 
+  <!-- Visit mode: thin banner below header -->
+  <div class="visit-banner mono" id="visit-banner"></div>
+
+  <!-- Map -->
   <div class="map-container">
     <div class="map-districts">
-      <div class="district" id="garden" data-district="garden" data-emotion="growth">
+      <div class="district" id="garden" data-district="garden" data-emotion="Growth">
         <img src="assets/districts/garden-locked.png" alt="Garden District" class="district-image">
-        <div class="district-label">growth</div>
+        <div class="district-label"><span class="district-emotion-tag">Growth</span></div>
       </div>
-      <div class="district" id="cornerstore" data-district="cornerstore" data-emotion="comfort">
+      <div class="district" id="cornerstore" data-district="cornerstore" data-emotion="Routine">
         <img src="assets/districts/cornerstore-locked.png" alt="Cornerstore District" class="district-image">
-        <div class="district-label">routine</div>
+        <div class="district-label"><span class="district-emotion-tag">Routine</span></div>
       </div>
-      <div class="district" id="shrine" data-district="shrine" data-emotion="memory">
+      <div class="district" id="shrine" data-district="shrine" data-emotion="Reverence">
         <img src="assets/districts/shrine-locked.png" alt="Shrine District" class="district-image">
-        <div class="district-label">reverence</div>
+        <div class="district-label"><span class="district-emotion-tag">Reverence</span></div>
       </div>
-      <div class="district" id="tower" data-district="tower" data-emotion="perspective">
+      <div class="district" id="tower" data-district="tower" data-emotion="Solitude">
         <img src="assets/districts/tower-locked.png" alt="Tower District" class="district-image">
-        <div class="district-label">solitude</div>
+        <div class="district-label"><span class="district-emotion-tag">Solitude</span></div>
       </div>
-      <div class="district" id="plaza" data-district="plaza" data-emotion="belonging">
+      <div class="district" id="plaza" data-district="plaza" data-emotion="Community">
         <img src="assets/districts/plaza-locked.png" alt="Plaza District" class="district-image">
-        <div class="district-label">community</div>
-      </div>
-
-    </div>
-  </div>
-
-
-  <div class="overlay" id="city-name-overlay">
-    <div class="overlay-content">
-      <h2>Name Your City</h2>
-      <p class="serif">What would you like to call your emotional hometown?</p>
-      <input 
-        type="text" 
-        class="city-name-input" 
-        id="city-name-input" 
-        placeholder="Somewhere I Belong"
-        maxlength="50"
-      >
-      <div class="overlay-buttons">
-        <button class="overlay-btn" id="cancel-btn">Cancel</button>
-        <button class="overlay-btn primary" id="save-name-btn">Save</button>
+        <div class="district-label"><span class="district-emotion-tag">Community</span></div>
       </div>
     </div>
   </div>
 
+  <!-- Constellation button + overlay -->
   <div class="constellation-btn locked" id="constellation-btn">
     <span class="constellation-btn-label">City as Memories</span>
   </div>
   <div class="constellation-overlay hidden" id="constellation-overlay">
-    <div id="constellation-canvas-container"></div>
+    <div id="constellation-canvas-container">
+      <div class="constellation-info-panel" id="constellation-info-panel"></div>
+    </div>
   </div>
 
+  <!-- ─── CITY NAME OVERLAY ─── -->
+  <div class="overlay" id="city-name-overlay">
+    <div class="overlay-content">
+      <h2>Name Your City</h2>
+      <p class="serif">What would you like to call your emotional hometown?</p>
+      <input
+        type="text"
+        class="city-name-input"
+        id="city-name-input"
+        placeholder="Somewhere I Belong"
+        maxlength="50"
+      >
+      <div class="overlay-buttons">
+        <button class="overlay-btn mono" id="cancel-btn">Cancel</button>
+        <button class="overlay-btn mono primary" id="save-name-btn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── GUIDE OVERLAY (two tabs: Concept / The 5 Districts) ─── -->
   <div class="overlay" id="guide-overlay">
     <div class="overlay-content guide-overlay-content">
+
       <div class="guide-slides" id="guide-slides">
 
         <div class="guide-slide guide-slide-concept active" data-index="0">
@@ -96,16 +107,20 @@
           <h3 class="guide-step-title">Each district is related to an emotion.</h3>
           <p class="guide-step-sub">Hover over them to uncover information. Click on one to begin building your city.</p>
         </div>
+
         <div class="guide-slide" data-index="2">
           <h3 class="guide-step-title">Answer reflective questions about a place.</h3>
         </div>
+
         <div class="guide-slide" data-index="3">
           <h3 class="guide-step-title">Unlock your other districts to complete your map.</h3>
         </div>
+
         <div class="guide-slide" data-index="4">
           <h3 class="guide-step-title">Customize your responses.</h3>
           <p class="guide-step-sub">Edit your answers, change the district's look.</p>
         </div>
+
         <div class="guide-slide" data-index="5">
           <h3 class="guide-step-title">Share your map with your friends and family.</h3>
           <p class="guide-step-sub">Let the people in your life see the city you've built.</p>
@@ -119,6 +134,56 @@
         <button class="overlay-btn mono" id="guide-next">Next &#8594;</button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- ─── SHARE OVERLAY (two tabs: Share / Visitor's Log) ─── -->
+  <div class="overlay" id="share-overlay">
+    <div class="overlay-content share-overlay-content">
+
+      <div class="share-tabs">
+        <button class="share-tab active" id="share-tab-share">Share</button>
+        <button class="share-tab" id="share-tab-log">Visitor's Log</button>
+      </div>
+
+      <!-- Share tab -->
+      <div class="share-tab-panel active" id="share-panel-share">
+        <p class="share-intro serif">Share your city with someone. They can visit your map and constellation in a read-only view.</p>
+        <div class="share-code-display">
+          <span class="share-code-label mono">Your City Code</span>
+          <div class="share-code-box">
+            <span class="share-code-value mono" id="share-code-value">—</span>
+            <button class="share-copy-btn mono" id="share-copy-btn">Copy</button>
+          </div>
+        </div>
+        <p class="share-hint mono">Send this code to a friend. They paste it into their Visitor's Log to see your city.</p>
+      </div>
+
+      <!-- Visitor's Log tab -->
+      <div class="share-tab-panel hidden" id="share-panel-log">
+        <div class="visitor-log-input-row">
+          <input type="text" class="visitor-code-input mono" id="visitor-code-input" placeholder="Paste a city code…" maxlength="16">
+          <button class="overlay-btn mono primary" id="visitor-add-btn">Visit →</button>
+        </div>
+        <p class="visitor-error mono hidden" id="visitor-error">Invalid code. Please check and try again.</p>
+        <div class="visitor-cities-list" id="visitor-cities-list"></div>
+      </div>
+
+      <div class="overlay-footer">
+        <button class="overlay-btn mono" id="share-close-btn">Close ×</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ─── RETURN TO CITY CONFIRMATION ─── -->
+  <div class="overlay" id="return-overlay">
+    <div class="overlay-content return-overlay-content">
+      <h2 class="return-overlay-title">Are you sure you want to go back to your city?</h2>
+      <div class="overlay-buttons">
+        <button class="overlay-btn mono" id="return-no-btn">No</button>
+        <button class="overlay-btn mono primary" id="return-yes-btn">Yes</button>
+      </div>
     </div>
   </div>
 

@@ -1,90 +1,91 @@
-/* Lock scroll */
-body {
-  overflow: hidden;
-  height: 100vh;
+/* customize.css */
+
+:root {
+  --blue: #0A059B;
+  --blue-faint: rgba(10, 5, 155, 0.08);
 }
 
-/* ─── Main Layout ─── */
+html, body {
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+
+/* ─── layout ─── */
+
 .customize-layout {
   display: flex;
   width: 100vw;
   height: 100vh;
 }
 
-/* ─── Left Sidebar ─── */
+
+/* ─── left sidebar ─── */
+
 .customize-left {
   width: 22%;
-  min-width: 180px;
-  max-width: 240px;
+  min-width: 200px;
+  max-width: 260px;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 1.5rem 1rem;
   flex-shrink: 0;
   overflow: hidden;
 }
 
-/* Color variants */
 .customize-left.shrine-left      { background-color: var(--color-shrine); }
 .customize-left.garden-left      { background-color: var(--color-garden); }
 .customize-left.cornerstore-left { background-color: var(--color-cornerstore); }
 .customize-left.tower-left       { background-color: var(--color-tower); }
 .customize-left.plaza-left       { background-color: var(--color-plaza); }
 
-/* Hide old left-header — back button moves to right panel */
-.left-header {
-  display: none;
-}
-
-/* ─── District Preview ─── */
 .district-preview {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.75rem;
-  padding-top: 0.75rem;
-  padding-left: 0;
-  padding-right: 0;
+  padding: 1.25rem 1rem;
+  gap: 0.85rem;
+  overflow: hidden;
 }
 
 .district-image-container {
-  background-color: white;
-  border-radius: 4px;      
-  padding: 1.25rem;
   width: 100%;
-  padding: 1rem;
   aspect-ratio: 1;
+  background-color: white;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1rem;
+  flex-shrink: 0;
 }
 
 .district-preview-img {
-  width: 120%;
-  height: 120%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
-/* ─── Skin Options — vertical stack ─── */
+
+/* ─── skins — horizontal row ─── */
+
 .skin-options {
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  flex-direction: row;
+  gap: 0.4rem;
   width: 100%;
-  align-items: center;
+  flex-shrink: 0;
 }
 
 .skin-thumb {
-  width: 66px;
-  height: 66px;
-  border-radius: 2px;     
+  flex: 1;
+  aspect-ratio: 1;
   overflow: hidden;
   cursor: pointer;
   border: 2px solid transparent;
-  transition: all 0.2s;
-  padding: 0.5rem;
+  transition: border-color 0.2s;
+  padding: 0.3rem;
   background-color: white;
 }
 
@@ -92,138 +93,207 @@ body {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  display: block;
 }
 
-.skin-thumb.active {
-  border-color: white;
+.skin-thumb.active { border-color: white; }
+.skin-thumb:hover  { border-color: rgba(255, 255, 255, 0.55); }
+
+
+/* ─── save button in sidebar ─── */
+
+.sidebar-save-btn {
+  width: 100%;
+  background: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  font-family: var(--font-whois);
+  font-size: 0.88rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
 }
 
-.skin-thumb:hover {
-  border-color: rgba(255, 255, 255, 0.6);
-}
+.sidebar-save-btn:hover { opacity: 0.75; }
+
+.shrine-left      .sidebar-save-btn { color: var(--color-shrine); }
+.garden-left      .sidebar-save-btn { color: var(--color-garden); }
+.cornerstore-left .sidebar-save-btn { color: var(--color-cornerstore); }
+.tower-left       .sidebar-save-btn { color: var(--color-tower); }
+.plaza-left       .sidebar-save-btn { color: var(--color-plaza); }
+
+
+/* ─── date label ─── */
 
 .district-date {
   color: white;
-  font-size: 0.75rem;
-  opacity: 0.7;
-  margin-top: auto;
+  font-size: 0.72rem;
+  opacity: 0.55;
   text-align: center;
-  padding-bottom: 0.5rem;
+  margin-top: auto;
+  padding-bottom: 0.25rem;
+  flex-shrink: 0;
 }
 
-/* ─── Right Panel ─── */
+
+/* ─── right panel ─── */
+
 .customize-right {
   flex: 1;
   height: 100vh;
   background-color: var(--color-bg);
   display: flex;
   flex-direction: column;
-  padding: 2rem 3rem;
   overflow: hidden;
 }
 
-/* Back button — now lives in right panel */
-.right-back-btn {
-  font-family: var(--font-whois);
-  font-size: 0.85rem;
-  background: none;
-  border: none;
-  color: var(--color-black);
-  cursor: pointer;
-  padding: 0;
-  opacity: 0.5;
-  margin-bottom: 1.25rem;
-  display: block;
-  transition: opacity 0.2s;
-  text-align: left;
+
+/* ─── binding header ─── */
+
+.customize-header {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  align-items: stretch;
+  height: 90px;
+  border-bottom: 2px solid var(--blue);
+  flex-shrink: 0;
 }
 
-.right-back-btn:hover {
-  opacity: 1;
-}
-
-.right-header {
-  margin-bottom: 1.5rem;
-}
-
-.right-header-top {
+/* title cell — full hover fill like map header-left */
+.customize-header-title-cell {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 0.5rem;
-}
-
-.district-title {
-  font-family: var(--font-meta);
-  font-size: 3rem;
-  line-height: 1;
-  font-weight: normal;
-  color: var(--color-black);
-}
-
-.icon-btn {
-  background: none;
-  border: 1px solid var(--color-black);
-  padding: 0.4rem 0.6rem;
+  padding: 0 2rem 0 2.5rem;
+  border-right: 1px solid var(--blue);
+  overflow: hidden;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.2s;
+  transition: background-color 0.2s;
 }
 
-.icon-btn:hover {
-  background-color: var(--color-black);
-  color: var(--color-bg);
+.customize-header-title-cell:hover { background-color: var(--blue); }
+.customize-header-title-cell:hover .customize-header-title { color: white; border-bottom-color: transparent; }
+.customize-header-title-cell:hover .customize-header-title-input { color: white; border-bottom-color: white; caret-color: white; }
+
+/* title — normal display state */
+.customize-header-title {
+  font-family: var(--font-meta);
+  font-size: 2.6rem;
+  font-weight: normal;
+  color: var(--blue);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+/* input — shown when editing */
+.customize-header-title-input {
+  font-family: var(--font-meta);
+  font-size: 2.6rem;
+  font-weight: normal;
+  color: var(--blue);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--blue);
+  outline: none;
+  width: 100%;
+  line-height: 1;
+  padding: 0;
+  caret-color: var(--blue);
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.customize-header-title-input.hidden { display: none; }
+
+/* shared style for all 3 right cells */
+.customize-header-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--blue);
+  background: none;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  border-left: 1px solid var(--blue);
+  color: var(--blue);
+  font-family: var(--font-whois);
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s, color 0.2s;
+  padding: 0;
+}
+
+.customize-header-cell:hover {
+  background-color: var(--blue);
+  color: white;
+}
+
+
+/* ─── sub-header: location line ─── */
+
+.customize-subheader {
+  padding: 0.9rem 2.5rem;
+  border-bottom: 1px solid var(--blue);
+  flex-shrink: 0;
 }
 
 .location-line {
-  font-size: 0.95rem;
-  color: var(--color-black);
+  font-family: var(--font-whois);
+  font-size: 0.88rem;
+  color: var(--blue);
   opacity: 0.7;
 }
 
 .location-value {
-  font-size: 1rem;
+  font-family: var(--font-whois);
+  font-size: 0.88rem;
+  color: var(--blue);
   margin-left: 0.5rem;
   opacity: 1;
 }
 
-/* ─── View Toggle ─── */
+
+/* ─── view toggle — boxed buttons ─── */
+
 .view-toggle {
   display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 0.75rem;
+  padding: 1.25rem 2.5rem;
+  flex-shrink: 0;
   align-items: center;
 }
 
 .toggle-btn {
   background: none;
-  border: 1px solid var(--color-black);
-  padding: 0.5rem 1.5rem;
-  font-size: 0.9rem;
+  border: 1px solid var(--blue);
+  padding: 0.5rem 1.25rem;
+  font-family: var(--font-whois);
+  font-size: 0.88rem;
   cursor: pointer;
-  transition: all 0.2s;
-  color: var(--color-black);
+  color: var(--blue);
+  transition: background-color 0.2s, color 0.2s;
+  letter-spacing: 0.02em;
 }
 
-.toggle-btn:hover {
-  background-color: var(--color-black);
-  color: var(--color-bg);
-}
+.toggle-btn:hover  { background-color: rgba(10, 5, 155, 0.07); }
+.toggle-btn.active { background-color: var(--blue); color: white; border-color: var(--blue); }
 
-.toggle-btn.active {
-  background-color: var(--color-black);
-  color: var(--color-bg);
-}
 
-#save-btn {
-  margin-left: auto;
-}
+/* ─── journal view ─── */
 
-/* ─── Journal View ─── */
 .journal-view {
   flex: 1;
   overflow-y: auto;
+  padding: 2rem 2.5rem;
 }
+
+.journal-view.hidden { display: none; }
 
 .journal-entries {
   display: flex;
@@ -232,8 +302,7 @@ body {
 }
 
 .journal-entry {
-  border: 1px solid var(--color-black);
-  border-radius: 4px;
+  border: 1px solid var(--blue);
   overflow: hidden;
 }
 
@@ -246,71 +315,85 @@ body {
   transition: background-color 0.2s;
 }
 
-.journal-entry-header:hover {
-  background-color: rgba(16, 16, 16, 0.05);
-}
+.journal-entry-header:hover { background-color: rgba(10, 5, 155, 0.05); }
 
 .journal-entry-date {
   font-family: var(--font-whois);
   font-size: 0.9rem;
+  color: var(--blue);
+}
+
+.journal-entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .journal-entry-chevron {
   font-family: var(--font-whois);
   font-size: 1rem;
+  color: var(--blue);
   transition: transform 0.3s;
 }
 
-.journal-entry.open .journal-entry-chevron {
-  transform: rotate(180deg);
-}
+.journal-entry.open .journal-entry-chevron { transform: rotate(180deg); }
 
 .journal-entry-body {
   display: none;
   padding: 1.5rem;
-  border-top: 1px solid rgba(16, 16, 16, 0.1);
+  border-top: 1px solid var(--blue);
   gap: 1rem;
   flex-direction: column;
 }
 
-.journal-entry.open .journal-entry-body {
-  display: flex;
-}
+.journal-entry.open .journal-entry-body { display: flex; }
 
-.journal-qa {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
+.journal-qa { display: flex; flex-direction: column; gap: 0.25rem; }
 
 .journal-question {
   font-family: var(--font-whois);
   font-size: 0.8rem;
-  opacity: 0.6;
+  color: var(--blue);
+  opacity: 0.55;
 }
 
 .journal-answer {
   font-family: var(--font-meta);
   font-size: 1rem;
+  color: var(--blue);
+  line-height: 1.65;
 }
 
-/* ─── Graph / Constellation View ─── */
+.delete-entry-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-whois);
+  font-size: 0.78rem;
+  color: var(--blue);
+  opacity: 0.35;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.delete-entry-btn:hover { opacity: 1; color: #c0392b; }
+
+
+/* ─── constellation view ─── */
+
 .graph-view {
   flex: 1;
   position: relative;
   min-height: 0;
+  overflow: hidden;
 }
 
-.graph-view.hidden {
-  display: none;
-}
+.graph-view.hidden { display: none; }
 
 #p5-canvas-container {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
 }
 
 #p5-canvas-container canvas {
@@ -319,110 +402,21 @@ body {
   height: 100% !important;
 }
 
-/* Sidebar stays visible in graph mode — no takeover */
-.customize-layout.graph-mode .customize-left {
-  width: 22%;
-  opacity: 1;
-  pointer-events: all;
-}
-
-/* Side drawer no longer needed */
-.side-drawer {
-  display: none !important;
-}
-
-/* ─── Edit Name Overlay ─── */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: rgba(16, 16, 16, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
+/* constellation info panel — matches map style */
+#constellation-panel {
+  position: absolute;
+  right: 2rem;
+  top: 2rem;
+  width: 260px;
+  background-color: var(--color-bg);
+  border: 1px solid var(--blue);
+  padding: 1.5rem;
+  font-family: var(--font-whois);
+  font-size: 0.82rem;
+  color: var(--blue);
+  line-height: 1.6;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.3s ease;
-}
-
-.overlay.active {
-  opacity: 1;
-  pointer-events: all;
-}
-
-.overlay-content {
-  background-color: var(--color-bg);
-  padding: 3rem;
-  max-width: 500px;
-  width: 90%;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.overlay-content h2 {
-  font-family: var(--font-meta);
-  font-size: 1.5rem;
-}
-
-.city-name-input {
-  width: 100%;
-  padding: 1rem;
-  font-family: var(--font-meta);
-  font-size: 1.1rem;
-  border: 1px solid var(--color-black);
-  background-color: var(--color-bg);
-  color: var(--color-black);
-  text-align: center;
-}
-
-.city-name-input:focus {
-  outline: none;
-  border-width: 2px;
-}
-
-.overlay-buttons {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-
-.overlay-btn {
-  padding: 0.75rem 2rem;
-  background: none;
-  border: 1px solid var(--color-black);
-  color: var(--color-black);
-  cursor: pointer;
-  font-family: var(--font-whois);
-  transition: all 0.2s;
-}
-
-.overlay-btn:hover {
-  background-color: var(--color-black);
-  color: var(--color-bg);
-}
-
-.overlay-btn.primary {
-  background-color: var(--color-black);
-  color: var(--color-bg);
-}
-
-.delete-entry-btn {
-  background: none;
-  border: none;
-  font-size: 0.8rem;
-  opacity: 0.4;
-  cursor: pointer;
-  padding: 0;
-  transition: opacity 0.2s, color 0.2s;
-  color: var(--color-black);
-}
-
-.delete-entry-btn:hover {
-  opacity: 1;
-  color: #c0392b;
+  transition: opacity 0.2s ease;
+  z-index: 10;
 }

@@ -3,66 +3,68 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <title>the cornerstore</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/district.css">
 </head>
 <body>
+
   <!-- Entering Overlay -->
   <div class="entering-overlay" id="entering-overlay">
-    <h1 class="entering-text">Entering the Cornerstore</h1>
+    <h1 class="entering-text">Entering The Cornerstore</h1>
   </div>
 
   <!-- District Content -->
   <div class="district-content hidden" id="district-content">
+
     <!-- Intro -->
     <div class="cornerstore-screen" id="cornerstore-intro">
-      <div class="cornerstore-header">
-        <button class="back-btn mono" id="back-btn">Back to the city</button>
-        <h2 class="cornerstore-title">The Cornerstore: Routine</h2>
-      </div>
-      
+      <header class="district-header">
+        <div class="district-header-left">
+          <button class="back-btn mono" id="back-btn">← Back to the city</button>
+        </div>
+        <div class="district-header-center">
+          <span class="district-header-title">The Cornerstore: Routine</span>
+        </div>
+        <div class="district-header-right">
+          <button class="district-guide-btn mono">Guide</button>
+        </div>
+      </header>
       <div class="cornerstore-prompt-container">
         <h1 class="cornerstore-main-prompt">Think of a place where you often frequented.</h1>
         <h3 class="cornerstore-sub-prompt">A place baked into your daily routine outside of your home.</h3>
-        
         <button class="ready-btn mono hidden" id="ready-btn">Ready?</button>
       </div>
     </div>
 
     <!-- Questions -->
     <div class="cornerstore-screen hidden" id="cornerstore-questions">
-      <div class="cornerstore-header">
-        <button class="back-btn mono" id="questions-back-btn">Back to the city</button>
-        <h2 class="cornerstore-title">The Cornerstore: Routine</h2>
-      </div>
-
+      <header class="district-header">
+        <div class="district-header-left">
+          <button class="back-btn mono" id="questions-back-btn">← Back to the city</button>
+        </div>
+        <div class="district-header-center">
+          <span class="district-header-title">The Cornerstore: Routine</span>
+        </div>
+        <div class="district-header-right">
+          <button class="district-guide-btn mono">Guide</button>
+        </div>
+      </header>
       <div class="questions-container">
-        <!-- Active Question Card -->
         <div class="question-card">
           <div class="question-content">
             <h1 class="question-main" id="question-main"></h1>
             <h3 class="question-sub" id="question-sub"></h3>
-            <textarea 
-              class="question-input" 
-              id="question-input" 
-              placeholder="Add text here"
-              rows="8"
-            ></textarea>
+            <textarea class="question-input" id="question-input" placeholder="Add text here" rows="8"></textarea>
           </div>
-          
           <div class="question-nav">
             <button class="nav-btn mono" id="prev-btn">Back</button>
             <span class="question-progress mono" id="question-progress">1/6</span>
             <button class="nav-btn mono" id="next-btn">Next</button>
           </div>
         </div>
-
-        <!-- Stacked Previous Cards -->
         <div class="stacked-cards" id="stacked-cards"></div>
-
-        <!-- Progress Bar -->
         <div class="progress-bar-container">
           <div class="progress-bar" id="progress-bar"></div>
         </div>
@@ -71,30 +73,55 @@
 
     <!-- Completion Screen -->
     <div class="cornerstore-screen hidden" id="cornerstore-completion">
-      <div class="cornerstore-header">
-        <h2 class="cornerstore-title">The Cornerstore (Comfort)</h2>
-      </div>
-      
+      <header class="district-header">
+        <div class="district-header-left"></div>
+        <div class="district-header-center">
+          <span class="district-header-title">The Cornerstore: Routine</span>
+        </div>
+        <div class="district-header-right"></div>
+      </header>
       <div class="completion-container">
         <h1 class="completion-title">You've completed<br>The Cornerstore</h1>
-        
         <div class="completion-place">
           <i class="fa-solid fa-location-dot location-icon"></i>
           <p class="place-name" id="completion-place-name"></p>
         </div>
-        
         <p class="completion-tagline">is a place you frequented.</p>
-        
         <div class="completion-buttons">
           <button class="completion-btn mono" id="complete-districts-btn">Complete other districts</button>
           <button class="completion-btn mono" id="customize-btn">Customize this district</button>
         </div>
       </div>
     </div>
+
+  </div><!-- end .district-content -->
+
+  <!-- District Guide Overlay -->
+  <div class="district-guide-overlay hidden" id="district-guide-overlay">
+    <div class="district-guide-box cornerstore-guide">
+      <h2 class="district-guide-title">The Cornerstore: Routine</h2>
+      <p class="district-guide-text">Think of a place you returned to again and again. Answer each question in your own way. Your answers are private until you choose to share them.</p>
+      <button class="district-guide-close mono" id="district-guide-close">Close</button>
+    </div>
   </div>
 
   <script src="../js/achievements.js"></script>
   <script src="../js/district.js"></script>
   <script src="../js/cornerstore.js"></script>
+  <script>
+    document.querySelectorAll('.district-guide-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const ov = document.getElementById('district-guide-overlay');
+        ov.classList.remove('hidden');
+        ov.classList.add('active');
+      });
+    });
+    document.getElementById('district-guide-close').addEventListener('click', () => {
+      const ov = document.getElementById('district-guide-overlay');
+      ov.classList.remove('active');
+      ov.classList.add('hidden');
+    });
+  </script>
+
 </body>
 </html>

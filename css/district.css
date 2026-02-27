@@ -1,10 +1,19 @@
-/* Entering Overlay */
+/* district.css */
+
+/* ─── SCROLL LOCK ─── */
+html, body {
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+
+/* ─── ENTERING OVERLAY ─── */
+
 .entering-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
   background-color: var(--color-bg);
   display: flex;
   align-items: center;
@@ -26,75 +35,166 @@
 }
 
 @keyframes fadeInOut {
-  0% {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  20% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  80% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
+  0%   { opacity: 0; transform: translateY(10px); }
+  20%  { opacity: 1; transform: translateY(0); }
+  80%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-10px); }
 }
 
-/* District Content */
+
+/* ─── DISTRICT CONTENT WRAPPER ─── */
+
 .district-content {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   opacity: 1;
   transition: opacity 0.5s ease-in;
 }
+.district-content.hidden { opacity: 0; }
 
-.district-content.hidden {
-  opacity: 0;
-}
 
-/* Shrine Screens */
-.shrine-screen {
-  min-height: 100vh;
-  background-color: var(--color-shrine);
-  color: white;
+/* ─── SCREEN BASE (each district has its own color via -screen class) ─── */
+
+.shrine-screen,
+.garden-screen,
+.cornerstore-screen,
+.tower-screen,
+.plaza-screen {
+  height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-.shrine-header {
+.shrine-screen      { background-color: var(--color-shrine);      color: white; }
+.garden-screen      { background-color: var(--color-garden);      color: white; }
+.cornerstore-screen { background-color: var(--color-cornerstore); color: white; }
+.tower-screen       { background-color: var(--color-tower);       color: white; }
+.plaza-screen       { background-color: var(--color-plaza);       color: white; }
+
+
+/* ─── BINDING HEADER (white lines, 3 columns) ─── */
+/* Replaces old .shrine-header / .garden-header etc.
+   Use a single class .district-header on all district pages */
+
+.district-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: stretch;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.6);
+  height: 72px;
+  flex-shrink: 0;
+}
+
+/* Left cell — Back to the city */
+.district-header-left {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 2rem 3rem;
+  padding: 0 1.5rem 0 2.5rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
+  transition: background-color 0.2s ease;
+}
+
+.district-header-left:hover {
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 .back-btn {
   background: none;
   border: none;
   color: white;
-  font-size: 1rem;
+  font-family: var(--font-whois);
+  font-size: 0.9rem;
   cursor: pointer;
   padding: 0;
+  opacity: 0.85;
+  letter-spacing: 0.02em;
   transition: opacity 0.2s;
+  white-space: nowrap;
 }
 
-.back-btn:hover {
-  opacity: 0.7;
+.back-btn:hover { opacity: 1; }
+
+/* Center cell — District name */
+.district-header-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
+  padding: 0 1rem;
 }
 
-.shrine-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.5rem;
+.district-header-title {
+  font-family: var(--font-meta);
+  font-size: 1.4rem;
   font-weight: normal;
+  color: white;
+  letter-spacing: 0.01em;
+  text-align: center;
+  white-space: nowrap;
 }
 
-/* Shrine Prompt Container */
-.shrine-prompt-container {
+/* Right cell — Guide button */
+.district-header-right {
+  display: flex;
+  align-items: stretch;
+}
+
+.district-guide-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  color: white;
+  font-family: var(--font-whois);
+  font-size: 0.9rem;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  opacity: 0.85;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.district-guide-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  opacity: 1;
+}
+
+/* Legacy aliases — these kept so existing HTML still works,
+   but they're now all replaced by .district-header and children */
+.shrine-header,
+.garden-header,
+.cornerstore-header,
+.tower-header,
+.plaza-header {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  align-items: stretch;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.6);
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.shrine-title,
+.garden-title,
+.cornerstore-title,
+.tower-title,
+.plaza-title {
+  position: static;
+  transform: none;
+  font-family: var(--font-meta);
+  font-size: 1.4rem;
+  font-weight: normal;
+  color: white;
+  text-align: center;
+}
+
+
+/* ─── INTRO PROMPT AREA ─── */
+
+.shrine-prompt-container,
+.garden-prompt-container,
+.cornerstore-prompt-container,
+.tower-prompt-container,
+.plaza-prompt-container {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -105,80 +205,65 @@
   gap: 2rem;
 }
 
-.shrine-main-prompt {
+.shrine-main-prompt,
+.garden-main-prompt,
+.cornerstore-main-prompt,
+.tower-main-prompt,
+.plaza-main-prompt {
   font-size: 3.5rem;
   line-height: 1.3;
   max-width: 900px;
   font-weight: normal;
+  color: white;
 }
 
-.shrine-sub-prompt {
+.shrine-sub-prompt,
+.garden-sub-prompt,
+.cornerstore-sub-prompt,
+.tower-sub-prompt,
+.plaza-sub-prompt {
   font-size: 1.5rem;
   line-height: 1.6;
   font-weight: normal;
-  opacity: 0.9;
+  opacity: 0.85;
   max-width: 700px;
+  color: white;
 }
 
-.shrine-screen .ready-btn {
-  color: var(--color-shrine);
-}
-
+/* Ready button — white pill, district-colored text */
 .ready-btn {
   background-color: white;
   border: none;
   padding: 1rem 3rem;
+  font-family: var(--font-whois);
   font-size: 1.1rem;
   cursor: pointer;
   margin-top: 2rem;
-  transition: all 0.3s ease;
+  border-radius: 0;
   opacity: 0;
+  transition: all 0.3s ease;
 }
 
 .ready-btn:not(.hidden) {
   animation: fadeInBtn 0.5s ease-in forwards;
 }
 
-.ready-btn:hover {
-  transform: scale(1.05);
-}
+.ready-btn:hover { opacity: 0.85 !important; }
+
+.shrine-screen      .ready-btn { color: var(--color-shrine); }
+.garden-screen      .ready-btn { color: var(--color-garden); }
+.cornerstore-screen .ready-btn { color: var(--color-cornerstore); }
+.tower-screen       .ready-btn { color: var(--color-tower); }
+.plaza-screen       .ready-btn { color: var(--color-plaza); }
 
 @keyframes fadeInBtn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .entering-text {
-    font-size: 2rem;
-    padding: 0 2rem;
-  }
-  
-  .shrine-header {
-    padding: 1.5rem;
-  }
-  
-  .shrine-title {
-    font-size: 1.1rem;
-  }
-  
-  .shrine-main-prompt {
-    font-size: 2rem;
-  }
-  
-  .shrine-sub-prompt {
-    font-size: 1.1rem;
-  }
-}
 
-/* Questions Container */
+/* ─── QUESTIONS CONTAINER ─── */
+
 .questions-container {
   flex: 1;
   display: flex;
@@ -188,10 +273,11 @@
   position: relative;
 }
 
-/* Question Card */
+/* ─── QUESTION CARD — white, black text, NO rounded corners ─── */
+
 .question-card {
   background-color: white;
-  border-radius: 12px;
+  border-radius: 0;          /* was 12px — now sharp */
   padding: 4rem 3rem 2rem;
   max-width: 900px;
   width: 90%;
@@ -215,14 +301,12 @@
 .question-sub {
   font-size: 1.2rem;
   color: var(--color-black);
-  opacity: 0.8;
+  opacity: 0.7;
   margin-bottom: 2rem;
   font-weight: normal;
 }
 
-.question-sub:empty {
-  display: none;
-}
+.question-sub:empty { display: none; }
 
 .question-input {
   width: 100%;
@@ -230,29 +314,21 @@
   font-family: var(--font-meta);
   font-size: 1.2rem;
   border: 2px solid var(--color-black);
+  border-radius: 0;
   background-color: white;
   color: var(--color-black);
   resize: vertical;
   min-height: 200px;
 }
 
-.question-input:focus {
-  outline: none;
-  border-width: 3px;
-}
+.question-input:focus { outline: none; border-width: 3px; }
+.question-input::placeholder { color: #999; opacity: 0.6; }
 
-.question-input::placeholder {
-  color: #999;
-  opacity: 0.6;
-}
+.question-card.naming .question-input { min-height: 80px; resize: none; }
 
-/* Question 6 - shorter input for naming */
-.question-card.naming .question-input {
-  min-height: 80px;
-  resize: none;
-}
 
-/* Question Navigation */
+/* ─── QUESTION NAVIGATION ─── */
+
 .question-nav {
   display: flex;
   justify-content: space-between;
@@ -264,34 +340,28 @@
   background-color: white;
   color: var(--color-black);
   border: 2px solid var(--color-black);
+  border-radius: 0;
   padding: 0.75rem 2rem;
+  font-family: var(--font-whois);
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.nav-btn:hover {
-  background-color: var(--color-black);
-  color: white;
-}
+.nav-btn:hover                { background-color: var(--color-black); color: white; }
+.nav-btn:disabled             { opacity: 0.3; cursor: not-allowed; }
+.nav-btn:disabled:hover       { background-color: white; color: var(--color-black); }
 
-.nav-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.nav-btn:disabled:hover {
-  background-color: white;
+.question-progress {
+  font-family: var(--font-whois);
+  font-size: 1rem;
+  opacity: 0.6;
   color: var(--color-black);
 }
 
-.question-progress {
-  font-size: 1rem;
-  opacity: 0.6;
-}
 
-/* Stacked Cards */
-/* Stacked Cards */
+/* ─── STACKED CARDS ─── */
+
 .stacked-cards {
   position: absolute;
   bottom: 3rem;
@@ -311,6 +381,7 @@
   transition: all 0.3s ease;
   pointer-events: all;
   cursor: pointer;
+  border-radius: 0;
   clip-path: polygon(10% 0%, 90% 0%, 100% 100%, 0% 100%);
 }
 
@@ -320,7 +391,9 @@
   z-index: 100 !important;
 }
 
-/* Progress Bar */
+
+/* ─── PROGRESS BAR ─── */
+
 .progress-bar-container {
   position: absolute;
   right: 3rem;
@@ -330,52 +403,29 @@
   height: 400px;
   background-color: transparent;
   border: 2px solid var(--color-black);
-  border-radius: 2px;
+  border-radius: 0;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
 }
 
-/* Replace the existing .progress-bar rule */
 .progress-bar {
   width: 100%;
   height: 0%;
   transition: height 0.3s ease;
+  border-radius: 0;
 }
 
-.shrine-screen .progress-bar      { background-color: var(--color-shrine-card); }
-.garden-screen .progress-bar      { background-color: var(--color-garden-card); }
+.shrine-screen      .progress-bar { background-color: var(--color-shrine-card); }
+.garden-screen      .progress-bar { background-color: var(--color-garden-card); }
 .cornerstore-screen .progress-bar { background-color: var(--color-cornerstore-card); }
-.tower-screen .progress-bar       { background-color: var(--color-tower-card); }
-.plaza-screen .progress-bar       { background-color: var(--color-plaza-card); }
+.tower-screen       .progress-bar { background-color: var(--color-tower-card); }
+.plaza-screen       .progress-bar { background-color: var(--color-plaza-card); }
 
-/* Responsive Questions */
-@media (max-width: 768px) {
-  .question-card {
-    padding: 3rem 2rem 1.5rem;
-  }
-  
-  .question-main {
-    font-size: 2rem;
-  }
-  
-  .question-sub {
-    font-size: 1rem;
-  }
-  
-  .question-input {
-    min-height: 150px;
-    font-size: 1rem;
-  }
-  
-  .progress-bar-container {
-    right: 1.5rem;
-    height: 300px;
-  }
-}
 
-/* Completion Screen */
+/* ─── COMPLETION SCREEN ─── */
+
 .completion-container {
   flex: 1;
   display: flex;
@@ -392,6 +442,7 @@
   line-height: 1.3;
   font-weight: normal;
   margin-bottom: 2rem;
+  color: white;
 }
 
 .completion-place {
@@ -402,290 +453,136 @@
   margin-bottom: 0.5rem;
 }
 
-.location-icon {
-  font-size: 2rem;
-}
-
 .place-name {
   font-size: 1.5rem;
   font-family: var(--font-meta);
+  color: white;
   margin: 0;
 }
 
 .completion-tagline {
   font-size: 1.5rem;
   font-family: var(--font-meta);
-  opacity: 0.9;
-  margin-bottom: 2rem;
-}
-
-.completion-buttons {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
-  justify-content: center;
+  color: white;
+  opacity: 0.85;
 }
 
 .completion-btn {
   background-color: white;
   border: none;
-  padding: 1rem 2rem;
-  font-size: 1rem;
+  border-radius: 0;
+  padding: 1rem 3rem;
+  font-family: var(--font-whois);
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
-  white-space: nowrap;
+  margin-top: 1rem;
+  transition: opacity 0.2s;
 }
 
-.shrine-screen .completion-btn   { color: var(--color-shrine); }
-.garden-screen .completion-btn   { color: var(--color-garden); }
+.shrine-screen      .completion-btn { color: var(--color-shrine); }
+.garden-screen      .completion-btn { color: var(--color-garden); }
 .cornerstore-screen .completion-btn { color: var(--color-cornerstore); }
-.tower-screen .completion-btn    { color: var(--color-tower); }
-.plaza-screen .completion-btn    { color: var(--color-plaza); }
+.tower-screen       .completion-btn { color: var(--color-tower); }
+.plaza-screen       .completion-btn { color: var(--color-plaza); }
+.completion-btn:hover { opacity: 0.85; }
 
-.completion-btn:hover {
-  transform: scale(1.05);
-  background-color: rgba(255, 255, 255, 0.9);
+
+/* ─── DISTRICT GUIDE OVERLAY ─── */
+
+.district-guide-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
+
+.district-guide-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.district-guide-overlay.hidden {
+  display: none;
+}
+
+.district-guide-box {
+  border: 2px solid white;
+  padding: 2.5rem;
+  max-width: 480px;
+  width: 90%;
+}
+
+.district-guide-box.shrine-guide      { background-color: var(--color-shrine); }
+.district-guide-box.garden-guide      { background-color: var(--color-garden); }
+.district-guide-box.cornerstore-guide { background-color: var(--color-cornerstore); }
+.district-guide-box.tower-guide       { background-color: var(--color-tower); }
+.district-guide-box.plaza-guide       { background-color: var(--color-plaza); }
+
+.district-guide-title {
+  font-family: var(--font-meta);
+  font-size: 1.4rem;
+  font-weight: normal;
+  color: white;
+  margin-bottom: 1rem;
+}
+
+.district-guide-text {
+  font-family: var(--font-meta);
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: white;
+  opacity: 0.85;
+}
+
+.district-guide-close {
+  margin-top: 1.5rem;
+  background: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  font-family: var(--font-whois);
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: block;
+  transition: opacity 0.2s;
+}
+
+.district-guide-close:hover { opacity: 0.8; }
+
+.shrine-guide      .district-guide-close { color: var(--color-shrine); }
+.garden-guide      .district-guide-close { color: var(--color-garden); }
+.cornerstore-guide .district-guide-close { color: var(--color-cornerstore); }
+.tower-guide       .district-guide-close { color: var(--color-tower); }
+.plaza-guide       .district-guide-close { color: var(--color-plaza); }
+
+
+/* ─── RESPONSIVE ─── */
 
 @media (max-width: 768px) {
-  .completion-title {
-    font-size: 2.5rem;
-  }
-  
-  .place-name {
-    font-size: 1.2rem;
-  }
-  
-  .completion-tagline {
-    font-size: 1.2rem;
-  }
-  
-  .completion-buttons {
-    flex-direction: column;
-    width: 100%;
-    gap: 1rem;
-  }
-  
-  .completion-btn {
-    width: 100%;
-  }
-}
-
-/* Garden Screens */
-.garden-screen {
-  min-height: 100vh;
-  background-color: var(--color-garden);
-  color: white;
-  display: flex;
-  flex-direction: column;
-}
-
-.garden-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2rem 3rem;
-}
-
-.garden-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.5rem;
-  font-weight: normal;
-}
-
-.garden-prompt-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 4rem 2rem;
-  gap: 2rem;
-}
-
-.garden-main-prompt {
-  font-size: 3.5rem;
-  line-height: 1.3;
-  max-width: 900px;
-  font-weight: normal;
-}
-
-.garden-sub-prompt {
-  font-size: 1.5rem;
-  line-height: 1.6;
-  font-weight: normal;
-  opacity: 0.9;
-  max-width: 700px;
-}
-
-.garden-screen .ready-btn {
-  color: var(--color-garden);
-}
-
-/* Cornerstore Screens */
-.cornerstore-screen {
-  min-height: 100vh;
-  background-color: var(--color-cornerstore);
-  color: white;
-  display: flex;
-  flex-direction: column;
-}
-
-.cornerstore-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2rem 3rem;
-}
-
-.cornerstore-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.5rem;
-  font-weight: normal;
-}
-
-.cornerstore-prompt-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 4rem 2rem;
-  gap: 2rem;
-}
-
-.cornerstore-main-prompt {
-  font-size: 3.5rem;
-  line-height: 1.3;
-  max-width: 900px;
-  font-weight: normal;
-}
-
-.cornerstore-sub-prompt {
-  font-size: 1.5rem;
-  line-height: 1.6;
-  font-weight: normal;
-  opacity: 0.9;
-  max-width: 700px;
-}
-
-
-.cornerstore-screen .ready-btn {
-  color: var(--color-cornerstore);
-}
-
-/* Tower Screens */
-.tower-screen {
-  min-height: 100vh;
-  background-color: var(--color-tower);
-  color: white;
-  display: flex;
-  flex-direction: column;
-}
-
-.tower-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2rem 3rem;
-}
-
-.tower-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.5rem;
-  font-weight: normal;
-}
-
-.tower-prompt-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 4rem 2rem;
-  gap: 2rem;
-}
-
-.tower-main-prompt {
-  font-size: 3.5rem;
-  line-height: 1.3;
-  max-width: 900px;
-  font-weight: normal;
-}
-
-.tower-sub-prompt {
-  font-size: 1.5rem;
-  line-height: 1.6;
-  font-weight: normal;
-  opacity: 0.9;
-  max-width: 700px;
-}
-
-
-.tower-screen .ready-btn {
-  color: var(--color-tower);
-}
-
-/* Plaza Screens */
-.plaza-screen {
-  min-height: 100vh;
-  background-color: var(--color-plaza);
-  color: white;
-  display: flex;
-  flex-direction: column;
-}
-
-.plaza-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2rem 3rem;
-}
-
-.plaza-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 1.5rem;
-  font-weight: normal;
-}
-
-.plaza-prompt-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 4rem 2rem;
-  gap: 2rem;
-}
-
-.plaza-main-prompt {
-  font-size: 3.5rem;
-  line-height: 1.3;
-  max-width: 900px;
-  font-weight: normal;
-}
-
-.plaza-sub-prompt {
-  font-size: 1.5rem;
-  line-height: 1.6;
-  font-weight: normal;
-  opacity: 0.9;
-  max-width: 700px;
-}
-
-
-.plaza-screen .ready-btn {
-  color: var(--color-plaza);
+  .entering-text   { font-size: 2rem; padding: 0 2rem; }
+  .district-header { height: auto; min-height: 60px; }
+  .district-header-title,
+  .shrine-title, .garden-title,
+  .cornerstore-title, .tower-title, .plaza-title { font-size: 1rem; }
+  .shrine-main-prompt,
+  .garden-main-prompt,
+  .cornerstore-main-prompt,
+  .tower-main-prompt,
+  .plaza-main-prompt { font-size: 2rem; }
+  .shrine-sub-prompt,
+  .garden-sub-prompt,
+  .cornerstore-sub-prompt,
+  .tower-sub-prompt,
+  .plaza-sub-prompt { font-size: 1.1rem; }
+  .question-card { padding: 3rem 2rem 1.5rem; border-radius: 0; }
+  .question-main  { font-size: 2rem; }
+  .question-sub   { font-size: 1rem; }
+  .question-input { min-height: 150px; font-size: 1rem; }
+  .progress-bar-container { right: 1.5rem; height: 300px; }
 }

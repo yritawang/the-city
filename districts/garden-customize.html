@@ -3,22 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>the garden customize</title>      
+  <title>the garden</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/customize.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 </head>
 <body>
 
-  <!-- Main Layout -->
   <div class="customize-layout" id="customize-layout">
 
-    <!-- Left Sidebar -->
+    <!-- left sidebar -->
     <div class="customize-left garden-left" id="customize-left">
       <div class="district-preview">
+
         <div class="district-image-container">
-          <img src="../assets/districts/garden.png" alt="Garden" class="district-preview-img" id="district-preview-img">  
+          <img src="../assets/districts/garden-unlocked.png" alt="The Garden" class="district-preview-img" id="district-preview-img">
         </div>
+
+        <!-- skins — horizontal row -->
         <div class="skin-options">
           <div class="skin-thumb active" data-skin="0">
             <img src="../assets/districts/garden.png" alt="Skin 1">
@@ -30,39 +32,53 @@
             <img src="../assets/districts/garden-skin3.png" alt="Skin 3">
           </div>
         </div>
+
+        <button class="sidebar-save-btn mono" id="save-btn">Save</button>
+
         <p class="mono district-date" id="district-date"></p>
+
       </div>
     </div>
 
-    <!-- Right Panel -->
+    <!-- right panel -->
     <div class="customize-right" id="customize-right">
-      <div class="right-header">
-        <button class="right-back-btn mono" id="right-back-btn">← Back to the city</button>
-        <div class="right-header-top">
-          <h1 class="district-title" id="district-title"></h1>
-          <button class="icon-btn mono" id="edit-name-btn">&#9998;</button>
-          <button class="icon-btn mono" id="redo-btn">&#8635; Log again</button>
+
+      <!-- binding header: large title | Back to City | Log Again | Share -->
+      <header class="customize-header">
+        <div class="customize-header-title-cell" id="title-cell">
+          <h1 class="customize-header-title" id="district-title"></h1>
+          <input
+            class="customize-header-title-input hidden"
+            id="district-title-input"
+            type="text"
+            spellcheck="false"
+            autocomplete="off"
+          >
         </div>
-        <p class="mono location-line">
-          Location of the Garden:                <!-- 5. CHANGE: district name -->
-          <span class="serif location-value" id="location-value"></span>
-        </p>
+        <a href="../map.html" class="customize-header-cell customize-back-btn mono">Back to City</a>
+        <button class="customize-header-cell customize-header-btn mono" id="redo-btn">Log Again</button>
+        <button class="customize-header-cell customize-header-btn mono" id="share-btn">Share</button>
+      </header>
+
+      <!-- location sub-header -->
+      <div class="customize-subheader">
+        <span class="location-line mono">Location of the garden:
+          <span class="location-value mono" id="location-value"></span>
+        </span>
       </div>
 
-      <!-- View Toggle -->
+      <!-- view toggle — boxed buttons -->
       <div class="view-toggle">
-        <button class="toggle-btn mono active" id="journal-toggle">Journal</button>
-        <button class="toggle-btn mono" id="graph-toggle">Map</button>
-        <button class="toggle-btn mono" id="save-btn">Save</button>
+        <button class="toggle-btn mono active" id="journal-toggle">Journal View</button>
+        <button class="toggle-btn mono" id="graph-toggle">Map View</button>
       </div>
 
-      <!-- Journal View -->
+      <!-- journal view -->
       <div class="journal-view" id="journal-view">
-        <div class="journal-entries" id="journal-entries">
-        </div>
+        <div class="journal-entries" id="journal-entries"></div>
       </div>
 
-      <!-- Graph / Constellation View -->
+      <!-- constellation view -->
       <div class="graph-view hidden" id="graph-view">
         <div id="p5-canvas-container"></div>
       </div>
@@ -70,20 +86,8 @@
     </div>
   </div>
 
-  <!-- Edit Name Overlay -->
-  <div class="overlay" id="edit-name-overlay">
-    <div class="overlay-content">
-      <h2>Rename your Garden</h2>              <!-- 6. CHANGE: district name -->
-      <input type="text" class="city-name-input" id="new-name-input" placeholder="Enter a name">
-      <div class="overlay-buttons">
-        <button class="overlay-btn mono" id="cancel-rename-btn">Cancel</button>
-        <button class="overlay-btn mono primary" id="save-rename-btn">Save</button>
-      </div>
-    </div>
-  </div>
-
   <script src="../js/achievements.js"></script>
   <script src="../js/customize.js"></script>
+
 </body>
 </html>
-
