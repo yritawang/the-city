@@ -18,11 +18,8 @@
             <circle cx="12" cy="9" r="2.5"/>
           </svg>
         </span>
-        <h1 id="city-title">Somewhere I Belong</h1>
+        <h1 id="city-title">Name Your City</h1>
       </div>
-    </div>
-    <div class="header-center">
-      <p>Click on a district to start</p>
     </div>
     <div class="header-right">
       <button class="header-btn" id="guide-btn">Guide</button>
@@ -61,6 +58,7 @@
         <div class="district-label"><span class="district-emotion-tag">Community</span></div>
       </div>
     </div>
+    <p class="map-hint" id="map-hint">Click on a district to start</p>
   </div>
 
   <!-- Constellation button + overlay -->
@@ -82,7 +80,7 @@
         type="text"
         class="city-name-input"
         id="city-name-input"
-        placeholder="Somewhere I Belong"
+        placeholder="Name Your City"
         maxlength="50"
       >
       <div class="overlay-buttons">
@@ -92,74 +90,87 @@
     </div>
   </div>
 
-  <!-- ─── GUIDE OVERLAY (two tabs: Concept / The 5 Districts) ─── -->
-  <div class="overlay" id="guide-overlay">
-    <div class="overlay-content guide-overlay-content">
+  <!-- ─── ABOUT OVERLAY ─── -->
+<div class="overlay" id="about-overlay">
+  <div class="overlay-content about-overlay-content">
+    <h2 class="guide-concept-title">Somewhere I Belong</h2>
+    <p class="guide-concept-text">The places we've lived shape who we are. But so many exist only in memory, frozen in time. This is a space to reclaim them. By mapping real locations from your life onto an emotional city, you become the author of your own geography as they live in you.</p>
+    <div class="overlay-footer">
+      <button class="overlay-btn mono" id="about-close-btn">Close</button>
+    </div>
+  </div>
+</div>
 
-      <div class="guide-slides" id="guide-slides">
+  <!-- ─── GUIDE OVERLAY ─── -->
+<div class="overlay" id="guide-overlay">
+  <div class="overlay-content guide-overlay-content">
 
-        <div class="guide-slide guide-slide-concept active" data-index="0">
-          <h2 class="guide-concept-title">Somewhere I Belong</h2>
-          <p class="guide-concept-text">The places we've lived shape who we are. But so many exist only in memory, frozen in time. This is a space to reclaim them. By mapping real locations from your life onto an emotional city, you become the author of your own geography as they live in you.</p>
-        </div>
+    <div class="guide-slides" id="guide-slides">
 
-        <div class="guide-slide" data-index="1">
-          <h3 class="guide-step-title">Each district is related to an emotion.</h3>
-          <p class="guide-step-sub">Hover over them to uncover information. Click on one to begin building your city.</p>
-        </div>
-
-        <div class="guide-slide" data-index="2">
-          <h3 class="guide-step-title">Answer reflective questions about a place.</h3>
-        </div>
-
-        <div class="guide-slide" data-index="3">
-          <h3 class="guide-step-title">Unlock your other districts to complete your map.</h3>
-        </div>
-
-        <div class="guide-slide" data-index="4">
-          <h3 class="guide-step-title">Customize your responses.</h3>
-          <p class="guide-step-sub">Edit your answers, change the district's look.</p>
-        </div>
-
-        <div class="guide-slide" data-index="5">
-          <h3 class="guide-step-title">Share your map with your friends and family.</h3>
-          <p class="guide-step-sub">Let the people in your life see the city you've built.</p>
-        </div>
-
+      <div class="guide-slide active" data-index="1">
+        <h3 class="guide-step-title">Each district is related to an emotion.</h3>
+        <p class="guide-step-sub">Hover over them to uncover information. Click on one to begin building your city.</p>
       </div>
 
-      <div class="guide-nav">
-        <button class="overlay-btn mono" id="guide-prev">&#8592; Back</button>
-        <span class="guide-progress mono" id="guide-progress"></span>
-        <button class="overlay-btn mono" id="guide-next">Next &#8594;</button>
+      <div class="guide-slide" data-index="2">
+        <h3 class="guide-step-title">Answer reflective questions about a place.</h3>
+      </div>
+
+      <div class="guide-slide" data-index="3">
+        <h3 class="guide-step-title">Unlock your other districts to complete your map.</h3>
+      </div>
+
+      <div class="guide-slide" data-index="4">
+        <h3 class="guide-step-title">Customize your responses.</h3>
+        <p class="guide-step-sub">Edit your answers, change the district's look.</p>
+      </div>
+
+      <div class="guide-slide" data-index="5">
+        <h3 class="guide-step-title">Share your map with your friends and family.</h3>
+        <p class="guide-step-sub">Let the people in your life see the city you've built.</p>
       </div>
 
     </div>
-  </div>
 
-  <!-- ─── SHARE OVERLAY (two tabs: Share / Visitor's Log) ─── -->
+    <div class="guide-nav">
+      <button class="overlay-btn mono" id="guide-prev">← Back</button>
+      <span class="guide-progress mono" id="guide-progress"></span>
+      <button class="overlay-btn mono" id="guide-next">Next →</button>
+    </div>
+
+  </div>
+</div>
+
+  <!-- ─── SHARE OVERLAY (two tabs: Share / Friend Cities) ─── -->
   <div class="overlay" id="share-overlay">
     <div class="overlay-content share-overlay-content">
 
       <div class="share-tabs">
         <button class="share-tab active" id="share-tab-share">Share</button>
-        <button class="share-tab" id="share-tab-log">Visitor's Log</button>
+        <button class="share-tab" id="share-tab-log">Friend Cities</button>
       </div>
 
       <!-- Share tab -->
       <div class="share-tab-panel active" id="share-panel-share">
-        <p class="share-intro serif">Share your city with someone. They can visit your map and constellation in a read-only view.</p>
+        <p class="share-hint mono">Share your city with someone. They can visit your map and constellation in a read-only view.</p>
         <div class="share-code-display">
+          <span class="share-code-label mono">Your Username</span>
+          <div class="share-code-box">
+            <input type="text" class="share-username-input mono" id="share-username-input" placeholder="enter a username…" maxlength="20">
+            <button class="share-copy-btn mono" id="share-username-save-btn">Save</button>
+          </div>
+        </div>
+        <div class="share-code-display" style="margin-top: 0.75rem">
           <span class="share-code-label mono">Your City Code</span>
           <div class="share-code-box">
             <span class="share-code-value mono" id="share-code-value">—</span>
             <button class="share-copy-btn mono" id="share-copy-btn">Copy</button>
           </div>
-        </div>
-        <p class="share-hint mono">Send this code to a friend. They paste it into their Visitor's Log to see your city.</p>
+</div>
+        <p class="share-hint mono">Send this code to a friend. They paste it into their Friends Cities to see your city.</p>
       </div>
 
-      <!-- Visitor's Log tab -->
+      <!-- Friends Cities tab -->
       <div class="share-tab-panel hidden" id="share-panel-log">
         <div class="visitor-log-input-row">
           <input type="text" class="visitor-code-input mono" id="visitor-code-input" placeholder="Paste a city code…" maxlength="16">

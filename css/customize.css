@@ -5,6 +5,9 @@
   --blue-faint: rgba(10, 5, 155, 0.08);
 }
 
+html {
+  font-size: 110%;
+}
 html, body {
   overflow: hidden;
   height: 100vh;
@@ -419,4 +422,172 @@ html, body {
   pointer-events: none;
   transition: opacity 0.2s ease;
   z-index: 10;
+}
+
+/* ─── illustration zoom overlay ─── */
+
+.district-image-container {
+  cursor: zoom-in;
+}
+
+.illustration-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(10, 5, 155, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  cursor: zoom-out;
+}
+
+.illustration-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.illustration-overlay-box {
+  background-color: var(--color-bg);
+  border: 2px solid var(--blue);
+  padding: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.illustration-overlay-box img {
+  width: min(55vw, 55vh);
+  height: min(55vw, 55vh);
+  object-fit: contain;
+}
+
+/* ─── relog overlay ─── */
+.relog-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background-color: rgba(10, 5, 155, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.relog-overlay.active { opacity: 1; pointer-events: all; }
+
+.relog-overlay-content {
+  background-color: var(--color-bg);
+  border: 2px solid var(--blue);
+  padding: 2.5rem;
+  max-width: 440px;
+  width: 90%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.relog-overlay-title {
+  font-family: var(--font-meta);
+  font-size: 1.1rem;
+  color: var(--blue);
+  line-height: 1.6;
+}
+
+.relog-new-btn {
+  width: 100%;
+  background-color: var(--blue);
+  color: var(--color-bg);
+  border: none;
+  font-family: var(--font-whois);
+  font-size: 0.9rem;
+  padding: 0.85rem 1.5rem;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: opacity 0.2s;
+  text-align: left;
+}
+.relog-new-btn:hover { opacity: 0.8; }
+
+.relog-existing-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: stretch;
+  border-top: 1px solid var(--blue);
+  padding-top: 1.5rem;
+}
+
+.relog-existing-label {
+  font-family: var(--font-whois);
+  font-size: 0.75rem;
+  color: var(--blue);
+  opacity: 0.6;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.03em;
+}
+
+.relog-existing-select {
+  flex: 1;
+  border: 1px solid var(--blue);
+  background: none;
+  color: var(--blue);
+  font-family: var(--font-whois);
+  font-size: 0.85rem;
+  padding: 0.65rem 0.75rem;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.relog-existing-select:focus { outline: none; border-width: 2px; }
+
+.relog-go-btn {
+  background: none;
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  font-family: var(--font-whois);
+  font-size: 0.85rem;
+  padding: 0.65rem 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  white-space: nowrap;
+}
+.relog-go-btn:hover { background-color: var(--blue); color: var(--color-bg); }
+
+.relog-cancel-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-whois);
+  font-size: 0.75rem;
+  color: var(--blue);
+  opacity: 0.4;
+  cursor: pointer;
+  padding: 0;
+  text-align: center;
+  transition: opacity 0.2s;
+}
+.relog-cancel-btn:hover { opacity: 0.8; }
+
+.journal-location-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.journal-location-heading {
+  font-family: var(--font-whois);
+  font-size: 0.78rem;
+  color: var(--blue);
+  opacity: 0.5;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--blue);
+  margin-bottom: 0.25rem;
 }

@@ -18,7 +18,7 @@ html, body {
 
 .map-header {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   align-items: stretch;
   border-bottom: 2px solid var(--blue);
   height: 90px;
@@ -37,26 +37,6 @@ html, body {
 .header-left:hover { background-color: var(--blue); }
 .header-left:hover .header-title h1,
 .header-left:hover .location-icon { color: white; }
-
-.header-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-right: 1px solid var(--blue);
-  padding: 0 1.5rem;
-  transition: background-color 0.2s ease;
-}
-.header-center p {
-  font-family: var(--font-whois);
-  font-size: 0.94rem;
-  color: var(--blue);
-  opacity: 0.9;
-  letter-spacing: 0.02em;
-  transition: color 0.2s ease;
-  pointer-events: none;
-}
-.header-center:hover { background-color: var(--blue); }
-.header-center:hover p { color: white; opacity: 1; }
 
 .header-right { display: flex; align-items: stretch; }
 
@@ -562,10 +542,18 @@ body.dark-mode .toggle-thumb { background-color: #101010; }
   margin-bottom: 1rem;
 }
 .guide-concept-text {
-  font-family: var(--font-meta);
+  font-family: var(--font-whois);
   font-size: 0.9rem;
   line-height: 1.85;
-  color: var(--color-black);
+  color: var(--blue);
+  opacity: 0.8;
+}
+
+.guide-step-sub{
+  font-family: var(--font-whois);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--blue);
   opacity: 0.8;
 }
 .guide-districts-list { display: flex; flex-direction: column; gap: 1.2rem; }
@@ -627,6 +615,21 @@ body.dark-mode .toggle-thumb { background-color: #101010; }
   text-transform: uppercase;
 }
 .share-code-box { display: flex; align-items: stretch; border-top: 1px solid var(--blue); }
+
+.share-username-input {
+  flex: 1;
+  padding: 0.75rem;
+  font-family: var(--font-whois);
+  font-size: 0.9rem;
+  color: var(--blue);
+  background: none;
+  border: none;
+  outline: none;
+  letter-spacing: 0.04em;
+}
+
+.share-username-input::placeholder { opacity: 0.35; }
+
 .share-code-value {
   flex: 1;
   padding: 0.75rem;
@@ -936,6 +939,200 @@ body.visit-mode .constellation-btn { display: none; }
 }
 @media (max-width: 700px) {
   .map-header { grid-template-columns: 1fr 1fr; height: auto; }
-  .header-center { display: none; }
   .header-right { flex-wrap: wrap; }
+}
+
+/* ─── map hint ─── */
+.map-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--font-whois);
+  font-size: 0.88rem;
+  color: var(--blue);
+  opacity: 0.55;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ─── constellation legend ─── */
+.constellation-legend {
+  position: fixed;
+  bottom: calc(3rem + 36px + 0.75rem);
+  left: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10;
+}
+
+.constellation-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.constellation-legend-dot {
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+}
+
+.constellation-legend-label {
+  font-family: var(--font-whois);
+  font-size: 0.75rem;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+  opacity: 0.75;
+}
+
+/* ─── constellation filter controls ─── */
+.constellation-controls {
+  position: absolute;
+  top: 0.6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  z-index: 10;
+  background-color: var(--color-bg);
+  border: 1px solid var(--blue);
+  padding: 0.75rem 1.5rem;
+}
+
+.constellation-control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.constellation-control-label {
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.constellation-time-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 160px;
+  height: 2px;
+  background: var(--blue);
+  outline: none;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.constellation-time-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--blue);
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.constellation-time-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--blue);
+  cursor: pointer;
+  border-radius: 0;
+  border: none;
+}
+
+.constellation-time-value {
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue);
+  min-width: 60px;
+  opacity: 0.85;
+}
+
+.constellation-district-checks {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.constellation-district-check {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.constellation-district-check input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid var(--blue);
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.constellation-district-check input[type="checkbox"]:checked::after {
+  content: '×';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  line-height: 1;
+  color: var(--blue);
+}
+
+.constellation-district-check-label {
+  font-family: var(--font-whois);
+  font-size: 0.68rem;
+  color: var(--blue);
+  letter-spacing: 0.03em;
+  opacity: 0.8;
+}
+
+.constellation-divider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--blue);
+  opacity: 0.25;
+}
+
+.about-overlay-content {
+  max-width: 480px;
+  width: 92%;
+  padding: 2.5rem;
+  text-align: left;
+}
+
+.guide-slides {
+  position: relative;
+  overflow: hidden;
+  min-height: 120px;
+}
+
+.guide-slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  opacity: 0;
+  transform: translateX(30px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  pointer-events: none;
+  display: block;
+}
+
+.guide-slide.active {
+  position: relative;
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
 }

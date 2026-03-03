@@ -115,6 +115,26 @@ document.addEventListener('DOMContentLoaded', () => {
   loadData();
   renderUI();
   setupListeners();
+  // illustration zoom
+const previewImg = document.getElementById('district-preview-img');
+
+const overlayEl = document.createElement('div');
+overlayEl.className = 'illustration-overlay';
+const overlayBox = document.createElement('div');
+overlayBox.className = 'illustration-overlay-box';
+const overlayImg = document.createElement('img');
+overlayBox.appendChild(overlayImg);
+overlayEl.appendChild(overlayBox);
+document.body.appendChild(overlayEl);
+
+document.querySelector('.district-image-container').addEventListener('click', () => {
+  overlayImg.src = previewImg.src;
+  overlayEl.classList.add('active');
+});
+
+overlayEl.addEventListener('click', () => {
+  overlayEl.classList.remove('active');
+});
 });
 
 
@@ -145,6 +165,12 @@ function renderUI() {
   if (titleEl) titleEl.textContent = districtData.name;
   const dateEl = document.getElementById('district-date');
   if (dateEl) dateEl.textContent = `Edited: ${districtData.date}`;
+  // show most recent place name in the subheader
+  const locationEl = document.getElementById('location-value');
+  if (locationEl) {
+    const latest = [...sessions].sort((a, b) => b.timestamp - a.timestamp)[0];
+    locationEl.textContent = latest?.answers[0] || '—';
+  }
   updateSkinDisplay();
   renderJournalEntries();
 }
@@ -175,42 +201,63 @@ function renderJournalEntries() {
     return;
   }
 
-  container.innerHTML = '';
+  // group sessions by place name (answer to question 0)
+  const groups = new Map();
   [...sessions].sort((a, b) => b.timestamp - a.timestamp).forEach(session => {
-    const entry = document.createElement('div');
-    entry.className = 'journal-entry';
-    entry.innerHTML = `
-      <div class="journal-entry-header">
-        <span class="journal-entry-date mono">${session.date}</span>
-        <div class="journal-entry-meta">
-          <button class="delete-entry-btn mono" data-ts="${session.timestamp}">delete</button>
-          <span class="journal-entry-chevron">∨</span>
-        </div>
-      </div>
-      <div class="journal-entry-body">
-        ${Object.entries(session.answers).map(([i, a]) => `
-          <div class="journal-qa">
-            <span class="journal-question">${QUESTIONS[i] || ''}</span>
-            <span class="journal-answer">${a || '—'}</span>
+    const place = session.answers[0] || '—';
+    if (!groups.has(place)) groups.set(place, []);
+    groups.get(place).push(session);
+  });
+
+  container.innerHTML = '';
+
+  groups.forEach((groupSessions, place) => {
+    const group = document.createElement('div');
+    group.className = 'journal-location-group';
+
+    const heading = document.createElement('div');
+    heading.className = 'journal-location-heading mono';
+    heading.textContent = place;
+    group.appendChild(heading);
+
+    groupSessions.forEach(session => {
+      const entry = document.createElement('div');
+      entry.className = 'journal-entry';
+      entry.innerHTML = `
+        <div class="journal-entry-header">
+          <span class="journal-entry-date mono">${session.date}</span>
+          <div class="journal-entry-meta">
+            <button class="delete-entry-btn mono" data-ts="${session.timestamp}">delete</button>
+            <span class="journal-entry-chevron">∨</span>
           </div>
-        `).join('')}
-      </div>
-    `;
+        </div>
+        <div class="journal-entry-body">
+          ${Object.entries(session.answers).map(([i, a]) => `
+            <div class="journal-qa">
+              <span class="journal-question">${QUESTIONS[i] || ''}</span>
+              <span class="journal-answer">${a || '—'}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
 
-    entry.querySelector('.journal-entry-header').addEventListener('click', (e) => {
-      if (e.target.classList.contains('delete-entry-btn')) return;
-      entry.classList.toggle('open');
+      entry.querySelector('.journal-entry-header').addEventListener('click', (e) => {
+        if (e.target.classList.contains('delete-entry-btn')) return;
+        entry.classList.toggle('open');
+      });
+
+      entry.querySelector('.delete-entry-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const ts = parseInt(e.target.dataset.ts);
+        sessions = sessions.filter(s => s.timestamp !== ts);
+        localStorage.setItem(`${CURRENT_DISTRICT}-sessions`, JSON.stringify(sessions));
+        renderJournalEntries();
+      });
+
+      group.appendChild(entry);
     });
 
-    entry.querySelector('.delete-entry-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      const ts = parseInt(e.target.dataset.ts);
-      sessions = sessions.filter(s => s.timestamp !== ts);
-      localStorage.setItem(`${CURRENT_DISTRICT}-sessions`, JSON.stringify(sessions));
-      renderJournalEntries();
-    });
-
-    container.appendChild(entry);
+    container.appendChild(group);
   });
 }
 
@@ -263,15 +310,7 @@ function setupListeners() {
   });
 
   // log again
-  document.getElementById('redo-btn')?.addEventListener('click', () => {
-    if (confirm('Start a new log entry? Your previous entries will be kept.')) {
-      localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
-      const ds = JSON.parse(localStorage.getItem('districtStates') || '{}');
-      ds[CURRENT_DISTRICT] = 'locked';
-      localStorage.setItem('districtStates', JSON.stringify(ds));
-      window.location.href = `${CURRENT_DISTRICT}.html`;
-    }
-  });
+  document.getElementById('redo-btn')?.addEventListener('click', openRelogOverlay);
 
   // skins
   document.querySelectorAll('.skin-thumb').forEach(t => {
@@ -323,9 +362,16 @@ function initGraph() {
     document.getElementById('graph-view').appendChild(infoPanel);
   }
 
-  // gather all answers into keyword nodes
-  const allText = Object.values(districtData.answers).join(' ');
-  const keywords = extractKeywords(allText, 18);
+  const mergedAnswers = sessions.reduce((acc, s) => {
+  Object.entries(s.answers).forEach(([k, v]) => {
+    acc[k] = acc[k] ? acc[k] + ' ' + v : v;
+  });
+  return acc;
+}, {});
+const allText = Object.entries(mergedAnswers)
+  .filter(([i]) => parseInt(i) !== 5)
+  .map(([, v]) => v).join(' ');
+const keywords = extractKeywords(allText, 18);
   if (keywords.length === 0) return;
 
   const nodes = keywords.map(k => ({
@@ -448,15 +494,18 @@ function showInfoPanel(node) {
   if (!panel) return;
 
   // find which question(s) this word appears in
-  const contexts = [];
-  Object.entries(districtData.answers).forEach(([qi, answer]) => {
-    if (!answer) return;
+const contexts = [];
+sessions.forEach(session => {
+  Object.entries(session.answers).forEach(([qi, answer]) => {
+    if (!answer || parseInt(qi) === 5) return;
     if (answer.toLowerCase().includes(node.word)) {
       const q = QUESTIONS[parseInt(qi)] || '';
       const snippet = answer.length > 120 ? answer.slice(0, 120) + '…' : answer;
-      contexts.push({ question: q, snippet });
+      // include the date so overlapping entries are distinguishable
+      contexts.push({ question: `${session.date} · ${q}`, snippet });
     }
   });
+});
 
   panel.innerHTML = `
     <div style="font-family:var(--font-meta);font-size:1.05rem;color:var(--blue);
@@ -477,4 +526,70 @@ function showInfoPanel(node) {
 function hideInfoPanel() {
   const panel = document.getElementById('constellation-panel');
   if (panel) { panel.style.opacity = '0'; panel.style.pointerEvents = 'none'; }
+}
+
+// ─── RELOG OVERLAY ────────────────────────────────────────────────────────────
+
+function openRelogOverlay() {
+  // collect unique place names from all sessions (answer to question 0)
+  const locations = [...new Map(
+    sessions
+      .filter(s => s.answers[0])
+      .map(s => [s.answers[0], s.answers[0]])
+  ).values()];
+
+  // inject overlay if not present
+  if (!document.getElementById('relog-overlay')) {
+    const el = document.createElement('div');
+    el.id = 'relog-overlay';
+    el.className = 'relog-overlay';
+    el.innerHTML = `
+      <div class="relog-overlay-content">
+        <p class="relog-overlay-title">Start a new log entry? Your previous entries will be kept.</p>
+        <button class="relog-new-btn mono" id="relog-new-btn">Log a new location →</button>
+        <div class="relog-existing-row">
+          <div style="flex:1">
+            <p class="relog-existing-label">Add to existing location</p>
+            <div style="display:flex;gap:0.75rem">
+              <select class="relog-existing-select" id="relog-existing-select">
+                <option value="">Select a location…</option>
+                ${locations.map(l => `<option value="${l}">${l}</option>`).join('')}
+              </select>
+              <button class="relog-go-btn mono" id="relog-go-btn">Go →</button>
+            </div>
+          </div>
+        </div>
+        <button class="relog-cancel-btn mono" id="relog-cancel-btn">cancel</button>
+      </div>
+    `;
+    document.body.appendChild(el);
+
+    document.getElementById('relog-new-btn').addEventListener('click', () => {
+      closeRelogOverlay();
+      localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
+      localStorage.removeItem(`${CURRENT_DISTRICT}-relog-prefill`);
+      window.location.href = `${CURRENT_DISTRICT}.html`;
+    });
+
+    document.getElementById('relog-go-btn').addEventListener('click', () => {
+      const selected = document.getElementById('relog-existing-select').value;
+      if (!selected) return;
+      closeRelogOverlay();
+      localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
+      // store the pre-fill so the district page can skip question 0
+      localStorage.setItem(`${CURRENT_DISTRICT}-relog-prefill`, selected);
+      window.location.href = `${CURRENT_DISTRICT}.html`;
+    });
+
+    document.getElementById('relog-cancel-btn').addEventListener('click', closeRelogOverlay);
+    el.addEventListener('click', e => { if (e.target.id === 'relog-overlay') closeRelogOverlay(); });
+  }
+
+  requestAnimationFrame(() => {
+    document.getElementById('relog-overlay').classList.add('active');
+  });
+}
+
+function closeRelogOverlay() {
+  document.getElementById('relog-overlay')?.classList.remove('active');
 }

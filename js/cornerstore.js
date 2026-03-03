@@ -41,6 +41,15 @@ document.addEventListener('DOMContentLoaded', () => {
     answers = JSON.parse(savedAnswers);
   }
 
+  // check if returning user is adding to an existing location
+  const prefill = localStorage.getItem('cornerstore-relog-prefill');
+  if (prefill) {
+    answers[0] = prefill;
+    localStorage.removeItem('cornerstore-relog-prefill');
+    currentQuestion = 1;
+    setTimeout(() => startQuestions(), 100);
+  }
+
   setTimeout(() => {
     readyBtn.classList.remove('hidden');
   }, 8800);
@@ -75,7 +84,7 @@ function startQuestions() {
   if (intro) { intro.classList.add('hidden'); intro.style.display = 'none'; }
   if (questions) { questions.classList.remove('hidden'); questions.style.display = 'flex'; }
 
-  currentQuestion = 0;
+  if (currentQuestion !== 1) currentQuestion = 0;
   renderQuestion();
 
   const prevBtn = document.getElementById('prev-btn');
@@ -167,10 +176,9 @@ function nextQuestion() {
 function completeCornerstore() {
   unlockAchievement('completed-cornerstore');
   saveCurrentAnswer();
-  
-  const districtStates = JSON.parse(localStorage.getItem('districtStates')) || {};
-  districtStates.cornerstore = 'unlocked';
-  localStorage.setItem('districtStates', JSON.stringify(districtStates));
+const districtStates = JSON.parse(localStorage.getItem('districtStates')) || {};
+districtStates['cornerstore'] = 'unlocked';
+localStorage.setItem('districtStates', JSON.stringify(districtStates));
   
   const cornerstoreName = answers[5] || 'The Cornerstore';
   localStorage.setItem('cornerstore-name', cornerstoreName);

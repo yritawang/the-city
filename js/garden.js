@@ -165,10 +165,10 @@ function nextQuestion() {
 function completeGarden() {
   saveCurrentAnswer();
   
-  // Mark garden as unlocked
-  const districtStates = JSON.parse(localStorage.getItem('districtStates')) || {};
-  districtStates.garden = 'unlocked';
-  localStorage.setItem('districtStates', JSON.stringify(districtStates));
+// preserve unlock — never overwrite an already-unlocked district
+const districtStates = JSON.parse(localStorage.getItem('districtStates')) || {};
+districtStates[DISTRICT_NAME] = 'unlocked';
+localStorage.setItem('districtStates', JSON.stringify(districtStates));
   
   // Save the garden name
   const gardenName = answers[5] || 'The Garden';

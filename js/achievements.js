@@ -173,4 +173,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('achievements-panel-header')
     ?.addEventListener('click', closeAchievementsPanel);
   renderAchievementPanel();
+  document.addEventListener('click', (e) => {
+  const panel = document.getElementById('achievements-panel');
+  const btn = document.getElementById('achievements-toggle-btn');
+  if (!panel || !panel.classList.contains('visible')) return;
+  if (!panel.contains(e.target) && !btn?.contains(e.target)) {
+    closeAchievementsPanel();
+  }
+});
 });

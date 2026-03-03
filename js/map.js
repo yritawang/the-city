@@ -2,7 +2,7 @@
 
 const DISTRICTS = ['garden', 'cornerstore', 'shrine', 'tower', 'plaza'];
 
-// Per-district questions for constellation info panel (fix 8)
+// per-district questions for constellation info panel
 const DISTRICT_QUESTIONS = {
   shrine:      ["What place comes to mind?", "What did this place hold that was precious to you?", "How do you return to this place?", "When you think of this place, what do you remember?", "If this place were to fade from memory completely, what would be lost?"],
   garden:      ["What place comes to mind?", "What were you becoming in this place?", "How did the growth happen? What did it feel like?", "When you think of this place, what do you remember?", "If this place were to fade from memory completely, what would be lost?"],
@@ -15,7 +15,7 @@ const DISTRICT_QUESTIONS = {
 // ─── CITY NAME ───────────────────────────────────────────────────────────────
 
 function initCityName() {
-  const savedName = localStorage.getItem('cityName') || 'Somewhere I Belong';
+  const savedName = localStorage.getItem('cityName') || 'Name Your City';
   const el = document.getElementById('city-title');
   if (el) el.textContent = savedName;
 }
@@ -23,7 +23,7 @@ function initCityName() {
 function openCityNameOverlay() {
   const overlay = document.getElementById('city-name-overlay');
   const input = document.getElementById('city-name-input');
-  input.value = localStorage.getItem('cityName') || 'Somewhere I Belong';
+  input.value = localStorage.getItem('cityName') || 'Name Your City';
   overlay.classList.add('active');
   input.focus();
   input.select();
@@ -35,7 +35,7 @@ function closeCityNameOverlay() {
 
 function saveCityName() {
   const input = document.getElementById('city-name-input');
-  const newName = input.value.trim() || 'Somewhere I Belong';
+  const newName = input.value.trim() || 'Name Your City';
   localStorage.setItem('cityName', newName);
   const el = document.getElementById('city-title');
   if (el) el.textContent = newName;
@@ -51,7 +51,8 @@ function initDistricts() {
   DISTRICTS.forEach(name => {
     const el = document.getElementById(name);
     if (!el) return;
-    const isUnlocked = districtStates[name] === 'unlocked';
+    const hasSessions = JSON.parse(localStorage.getItem(`${name}-sessions`) || '[]').length > 0;
+    const isUnlocked = districtStates[name] === 'unlocked' || hasSessions;
 
     if (isUnlocked) {
       el.classList.remove('locked');
@@ -63,7 +64,6 @@ function initDistricts() {
       updateDistrictImage(el, 'locked');
     }
 
-    // FIX 4: No click popup — clicking goes straight to district page (or customize)
     el.addEventListener('click', () => handleDistrictClick(name));
     el.addEventListener('mouseenter', () => { if (!isUnlocked) updateDistrictImage(el, 'hover'); });
     el.addEventListener('mouseleave', () => { if (!isUnlocked) updateDistrictImage(el, 'locked'); });
@@ -84,19 +84,20 @@ function updateDistrictImage(district, state) {
 function handleDistrictClick(name) {
   if (document.body.classList.contains('visit-mode')) return;
   localStorage.setItem('currentDistrict', name);
+  const hasSessions = JSON.parse(localStorage.getItem(`${name}-sessions`) || '[]').length > 0;
   const states = JSON.parse(localStorage.getItem('districtStates')) || {};
-  window.location.href = states[name] === 'unlocked'
+  window.location.href = (states[name] === 'unlocked' || hasSessions)
     ? `districts/${name}-customize.html`
     : `districts/${name}.html`;
 }
 
 function displayDistrictNames() {
-  // skip in visit mode — labels are set by renderVisitDistricts() from the visited city's data
   if (document.body.classList.contains('visit-mode')) return;
   const states = JSON.parse(localStorage.getItem('districtStates')) || {};
   DISTRICTS.forEach(name => {
     const el = document.getElementById(name);
-    if (!el || states[name] !== 'unlocked') return;
+    const hasSessions = JSON.parse(localStorage.getItem(`${name}-sessions`) || '[]').length > 0;
+    if (!el || (states[name] !== 'unlocked' && !hasSessions)) return;
     const savedName = localStorage.getItem(`${name}-name`);
     if (!savedName) return;
     const label = el.querySelector('.district-label');
@@ -132,10 +133,9 @@ const GUIDE_TOTAL_STEPS = 5;
 let guideConceptTimer = null;
 
 function openGuide() {
-  guideSlide = 0;
+  guideSlide = 1;
   document.getElementById('guide-overlay').classList.add('active');
-  showGuideSlide(0);
-  guideConceptTimer = setTimeout(() => advanceGuide(), 5000);
+  showGuideSlide(1);
 }
 
 function closeGuide() {
@@ -148,15 +148,13 @@ function showGuideSlide(index) {
   const target = document.querySelector(`.guide-slide[data-index="${index}"]`);
   if (target) target.classList.add('active');
 
-  const isConcept = index === 0;
   const prev = document.getElementById('guide-prev');
   const next = document.getElementById('guide-next');
   const progress = document.getElementById('guide-progress');
 
-  if (prev) prev.style.visibility = isConcept || index === 1 ? 'hidden' : 'visible';
+  if (prev) prev.style.visibility = index === 1 ? 'hidden' : 'visible';
   if (next) next.textContent = index === GUIDE_TOTAL_STEPS ? 'Begin ↗' : 'Next →';
-  if (next) next.style.visibility = isConcept ? 'hidden' : 'visible';
-  if (progress) progress.textContent = isConcept ? '' : `${index}/${GUIDE_TOTAL_STEPS}`;
+  if (progress) progress.textContent = `${index}/${GUIDE_TOTAL_STEPS}`;
 }
 
 function advanceGuide() {
@@ -173,6 +171,8 @@ function openShare() {
   switchShareTab('share-tab-share');
   document.getElementById('share-code-value').textContent = getOrCreateCityCode();
   encodeCity();
+  const usernameInput = document.getElementById('share-username-input');
+  if (usernameInput) usernameInput.value = localStorage.getItem('cityUsername') || '';
   renderVisitorLog();
 }
 
@@ -226,7 +226,6 @@ const EXAMPLE_CITY_CODE = 'NADIA-X7';
 const EXAMPLE_CITY = {
   cityName: 'The City That Follows Me',
   code: EXAMPLE_CITY_CODE,
-  // FIX 6: garden uses skin 2, shrine uses skin 3
   districtSkins: { garden: 1, shrine: 2 },
   districtStates: { shrine: 'unlocked', garden: 'unlocked', cornerstore: 'unlocked', tower: 'unlocked', plaza: 'unlocked' },
   districtNames: {
@@ -288,7 +287,7 @@ function renderVisitorLog() {
   if (!list) return;
   const log = JSON.parse(localStorage.getItem('visitor-log') || '[]');
   if (log.length === 0) {
-    list.innerHTML = '<p class="visitor-empty">No cities yet. Paste a code to add one.</p>';
+    list.innerHTML = '<p class="visitor-empty">No cities yet. Paste a friend\'s city code to add one.</p>';
     return;
   }
   list.innerHTML = '';
@@ -349,8 +348,8 @@ function enterVisitMode(cityData) {
   const titleEl = document.getElementById('city-title');
   if (titleEl) titleEl.textContent = cityData.cityName;
 
-  const centerEl = document.querySelector('.header-center p');
-  if (centerEl) centerEl.textContent = 'Read-only view';
+  const hintEl = document.getElementById('map-hint');
+  if (hintEl) hintEl.textContent = 'Viewing mode only';
 
   const banner = document.getElementById('visit-banner');
   if (banner) { banner.textContent = `Visiting: ${cityData.cityName}`; banner.style.display = 'block'; }
@@ -373,13 +372,11 @@ function renderVisitDistricts(cityData) {
     // strip any labels stamped by displayDistrictNames()
     fresh.querySelectorAll('.district-custom-name').forEach(s => s.remove());
 
-    // FIX 5: Always use unlocked image for all districts
     if (isUnlocked) {
       fresh.classList.remove('locked');
       fresh.classList.add('unlocked');
       const img = fresh.querySelector('.district-image');
       if (img) {
-        // FIX 6: Apply visitor city's skins (garden=skin2, shrine=skin3)
         const skins = cityData.districtSkins || {};
         const skinIdx = skins[d];
         if (skinIdx === 1) img.src = `assets/districts/${d}-skin2.png`;
@@ -387,7 +384,6 @@ function renderVisitDistricts(cityData) {
         else img.src = `assets/districts/${d}-unlocked.png`;
       }
 
-      // Always show district label
       const label = fresh.querySelector('.district-label');
       if (label) {
         label.style.opacity = '1';
@@ -399,9 +395,7 @@ function renderVisitDistricts(cityData) {
         }
       }
 
-      // FIX 4 & 7: No click popup, no hover effect in visit mode
       fresh.style.cursor = 'default';
-      // No click listener added
     } else {
       fresh.classList.add('locked');
       fresh.classList.remove('unlocked');
@@ -439,7 +433,7 @@ function initVisitConstellationBtn(cityData) {
 }
 
 function openVisitConstellation(cityData) {
-  // Temporarily swap localStorage so constellation reads visitor's data
+  // temporarily swap localStorage so constellation reads visitor's data
   const backups = { districtStates: localStorage.getItem('districtStates') };
   DISTRICTS.forEach(d => {
     backups[`${d}-answers`] = localStorage.getItem(`${d}-answers`);
@@ -469,8 +463,8 @@ function exitVisitMode() {
   initCityName();
   initDistricts();
   displayDistrictNames();
-  const centerEl = document.querySelector('.header-center p');
-  if (centerEl) centerEl.textContent = 'Click on a district to start';
+  const hintEl = document.getElementById('map-hint');
+  if (hintEl) hintEl.textContent = 'Click on a district to start';
   const banner = document.getElementById('visit-banner');
   if (banner) banner.style.display = 'none';
   initConstellationBtn();
@@ -567,56 +561,107 @@ function isKeyword(w) {
   return EMOTION_WORDS.has(w) || LOCATION_WORDS.has(w) || DESCRIPTIVE_WORDS.has(w);
 }
 
-function extractAllKeywords(topN = 20) {
-  const districtStates = JSON.parse(localStorage.getItem('districtStates') || '{}');
-  const completed = DISTRICTS.filter(d => districtStates[d] === 'unlocked');
+// time range options for the constellation filter
+const TIME_OPTIONS = [
+  { value: 'week',  label: 'Past week' },
+  { value: 'month', label: 'Past month' },
+  { value: 'year',  label: 'Past year' },
+  { value: 'all',   label: 'All time' },
+];
+
+// constellation filter state
+let constellationTimeRange = 'all';
+let constellationDistricts = new Set(['garden', 'shrine', 'cornerstore', 'tower', 'plaza']);
+
+function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null) {
+  // compute cutoff timestamp
+  const now = Date.now();
+  const cutoffDays = { week: 7, month: 30, year: 365, all: Infinity };
+  const days = cutoffDays[timeRange] ?? Infinity;
+  const cutoff = days === Infinity ? 0 : now - days * 24 * 60 * 60 * 1000;
+
+  // only include districts that have sessions and pass the active filter
+  const completed = DISTRICTS.filter(d => {
+    if (activeDistricts && !activeDistricts.has(d)) return false;
+    return JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]').length > 0;
+  });
+
   const freq = {}, wordSources = {}, wordContexts = {};
 
+  // primary pass — iterate each session individually so context snippets stay clean
   completed.forEach(d => {
-    const raw = localStorage.getItem(`${d}-answers`);
-    if (!raw) return;
-    const answers = JSON.parse(raw);
+    const distSessions = JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]')
+      .filter(s => s.timestamp >= cutoff);
+    if (distSessions.length === 0) return;
+
     const questions = DISTRICT_QUESTIONS[d] || [];
 
-    Object.entries(answers).forEach(([qi, answer]) => {
-      const qIdx = parseInt(qi);
-      if (qIdx === 5) return; // skip naming question
-      const words = answer.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/);
-      words.filter(w => w.length > 3 && isKeyword(w)).forEach(w => {
-        freq[w] = (freq[w] || 0) + 1;
-        if (!wordSources[w]) wordSources[w] = new Set();
-        wordSources[w].add(d);
-        if (!wordContexts[w]) wordContexts[w] = [];
-        // Store context: which district, which question, snippet of answer
-        const existing = wordContexts[w].find(c => c.district === d && c.question === questions[qIdx]);
-        if (!existing) {
+    distSessions.forEach(session => {
+      Object.entries(session.answers).forEach(([qi, answer]) => {
+        const qIdx = parseInt(qi);
+        if (qIdx === 5 || !answer) return;
+        const words = answer.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/);
+        words.filter(w => w.length > 3 && isKeyword(w)).forEach(w => {
+          freq[w] = (freq[w] || 0) + 1;
+          if (!wordSources[w]) wordSources[w] = new Set();
+          wordSources[w].add(d);
+          if (!wordContexts[w]) wordContexts[w] = [];
+          const sessionDate = session.date || '';
           wordContexts[w].push({
             district: d,
-            question: questions[qIdx] || '',
+            question: sessionDate ? `${sessionDate} · ${questions[qIdx] || ''}` : (questions[qIdx] || ''),
             snippet: answer.length > 120 ? answer.slice(0, 120) + '…' : answer,
           });
-        }
+        });
       });
     });
   });
 
-  // Fallback: top 3 per district for any not yet found
+  // fallback pass — top 3 non-keyword words per district to fill sparse constellations
   const STOPWORDS = new Set(['that','this','with','have','from','they','their','would','could','should','about','there','which','when','what','just','been','will','your','more','also','into','some','than','then','were','very','much','each','over','think','place','feel','felt','thought','remember','know','still','even','always','never','every','back','here','thing','things','really','because','something','anything','nothing','someone','anyone','people','person','going','getting','being','having','doing','making','around','through','after','before','during','while','these','those']);
+
   completed.forEach(d => {
-    const raw = localStorage.getItem(`${d}-answers`);
-    if (!raw) return;
-    const answers = JSON.parse(raw);
-    const text = Object.entries(answers).filter(([i]) => parseInt(i) !== 5).map(([,v]) => v).join(' ');
+    const distSessions2 = JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]')
+      .filter(s => s.timestamp >= cutoff);
+    if (distSessions2.length === 0) return;
+
+    // merge for fallback frequency only — no context needed here
+    const answers = distSessions2.reduce((acc, s) => {
+      Object.entries(s.answers).forEach(([k, v]) => {
+        acc[k] = acc[k] ? acc[k] + ' ' + v : v;
+      });
+      return acc;
+    }, {});
+
+    const text = Object.entries(answers).filter(([i]) => parseInt(i) !== 5).map(([, v]) => v).join(' ');
     const df = {};
-    text.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(w => w.length > 4 && !STOPWORDS.has(w) && !freq[w]).forEach(w => { df[w] = (df[w]||0)+1; });
-    Object.entries(df).sort((a,b) => b[1]-a[1]).slice(0,3).forEach(([w,c]) => {
-      freq[w] = c;
-      if (!wordSources[w]) wordSources[w] = new Set();
-      wordSources[w].add(d);
+    text.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/)
+      .filter(w => w.length > 4 && !STOPWORDS.has(w) && !freq[w])
+      .forEach(w => { df[w] = (df[w] || 0) + 1; });
+    Object.entries(df).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([w, c]) => {
+  freq[w] = c;
+  if (!wordSources[w]) wordSources[w] = new Set();
+  wordSources[w].add(d);
+  // find context for this word across sessions
+  if (!wordContexts[w]) wordContexts[w] = [];
+  const questions = DISTRICT_QUESTIONS[d] || [];
+  distSessions2.forEach(session => {
+    Object.entries(session.answers).forEach(([qi, answer]) => {
+      if (!answer || parseInt(qi) === 5) return;
+      if (answer.toLowerCase().includes(w)) {
+        const sessionDate = session.date || '';
+        wordContexts[w].push({
+          district: d,
+          question: sessionDate ? `${sessionDate} · ${questions[parseInt(qi)] || ''}` : (questions[parseInt(qi)] || ''),
+          snippet: answer.length > 120 ? answer.slice(0, 120) + '…' : answer,
+        });
+      }
     });
   });
+  });
+  });
 
-  return Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0, topN).map(([word, count]) => ({
+  return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, topN).map(([word, count]) => ({
     word, count,
     districts: [...wordSources[word]],
     contexts: wordContexts[word] || [],
@@ -627,12 +672,23 @@ const DISTRICT_COLORS = {
   shrine: '#DD6204', garden: '#6A6405', cornerstore: '#D05038', tower: '#205A97', plaza: '#614973',
 };
 
+const DISTRICT_META = [
+  { key: 'garden',      label: 'Growth',    color: '#6A6405' },
+  { key: 'shrine',      label: 'Reverence', color: '#DD6204' },
+  { key: 'cornerstore', label: 'Routine',   color: '#D05038' },
+  { key: 'tower',       label: 'Solitude',  color: '#205A97' },
+  { key: 'plaza',       label: 'Community', color: '#614973' },
+];
+
 let constellationSketch = null;
 let constellationActive = false;
 
 function initConstellationBtn() {
   const states = JSON.parse(localStorage.getItem('districtStates') || '{}');
-  const anyComplete = DISTRICTS.some(d => states[d] === 'unlocked');
+  const anyComplete = DISTRICTS.some(d => {
+    const hasSessions = JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]').length > 0;
+    return states[d] === 'unlocked' || hasSessions;
+  });
   const btn = document.getElementById('constellation-btn');
   if (!btn) return;
   if (anyComplete) {
@@ -674,17 +730,20 @@ function closeConstellation() {
   const lbl = btn.querySelector('.constellation-btn-label');
   if (lbl) lbl.textContent = 'City as Memories';
 
-  // Hide info panel
   const panel = document.getElementById('constellation-info-panel');
   if (panel) panel.classList.remove('visible');
 
   setTimeout(() => {
     overlay.classList.add('hidden');
     if (constellationSketch) { constellationSketch.remove(); constellationSketch = null; }
+    // remove controls so they're rebuilt fresh next open
+    const controls = document.getElementById('constellation-controls');
+    if (controls) controls.remove();
   }, 600);
 }
 
-// ─── FIX 8: Constellation with side info panel ────────────────────────────────
+
+// ─── CONSTELLATION INFO PANEL ────────────────────────────────────────────────
 
 function showConstellationInfoPanel(node) {
   const panel = document.getElementById('constellation-info-panel');
@@ -712,12 +771,86 @@ function showConstellationInfoPanel(node) {
   panel.classList.add('visible');
 }
 
+
+// ─── CONSTELLATION SKETCH ─────────────────────────────────────────────────────
+
 function initConstellationSketch() {
   const container = document.getElementById('constellation-canvas-container');
   if (!container) return;
   if (constellationSketch) { constellationSketch.remove(); constellationSketch = null; }
 
-  const keywords = extractAllKeywords(20);
+  // inject legend
+  if (!document.getElementById('constellation-legend')) {
+    const legend = document.createElement('div');
+    legend.id = 'constellation-legend';
+    legend.className = 'constellation-legend';
+    DISTRICT_META.forEach(d => {
+      const item = document.createElement('div');
+      item.className = 'constellation-legend-item';
+      item.innerHTML = `
+        <div class="constellation-legend-dot" style="background-color:${d.color}"></div>
+        <span class="constellation-legend-label">${d.label}</span>
+      `;
+      legend.appendChild(item);
+    });
+    container.appendChild(legend);
+  }
+
+  // inject filter controls
+  if (!document.getElementById('constellation-controls')) {
+    const sliderMax = TIME_OPTIONS.length - 1;
+    const currentIdx = TIME_OPTIONS.findIndex(o => o.value === constellationTimeRange);
+    const resolvedIdx = currentIdx >= 0 ? currentIdx : sliderMax;
+
+    const checksHTML = DISTRICT_META.map(d => `
+      <label class="constellation-district-check">
+        <input type="checkbox" data-district="${d.key}"
+          ${constellationDistricts.has(d.key) ? 'checked' : ''}
+          style="border-color:${d.color}">
+        <span class="constellation-district-check-label" style="color:${d.color}">${d.label}</span>
+      </label>
+    `).join('');
+
+    const controls = document.createElement('div');
+    controls.id = 'constellation-controls';
+    controls.className = 'constellation-controls';
+    controls.innerHTML = `
+      <div class="constellation-control-group">
+        <span class="constellation-control-label">Time</span>
+        <input type="range" class="constellation-time-slider" id="constellation-time-slider"
+          min="0" max="${sliderMax}" value="${resolvedIdx}" step="1">
+        <span class="constellation-time-value" id="constellation-time-value">
+          ${TIME_OPTIONS[resolvedIdx].label}
+        </span>
+      </div>
+      <div class="constellation-divider"></div>
+      <div class="constellation-control-group">
+        <span class="constellation-control-label">Districts</span>
+        <div class="constellation-district-checks">${checksHTML}</div>
+      </div>
+    `;
+    container.appendChild(controls);
+
+    // time slider — live update
+    document.getElementById('constellation-time-slider').addEventListener('input', (e) => {
+      const idx = parseInt(e.target.value);
+      constellationTimeRange = TIME_OPTIONS[idx].value;
+      document.getElementById('constellation-time-value').textContent = TIME_OPTIONS[idx].label;
+      rebuildConstellation();
+    });
+
+    // district checkboxes — live update
+    controls.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener('change', () => {
+        if (cb.checked) constellationDistricts.add(cb.dataset.district);
+        else constellationDistricts.delete(cb.dataset.district);
+        rebuildConstellation();
+      });
+    });
+  }
+
+  // extract keywords with current filter state
+  const keywords = extractAllKeywords(20, constellationTimeRange, constellationDistricts);
   if (keywords.length === 0) return;
 
   const nodes = keywords.map(k => ({ ...k, x: 0, y: 0, vx: 0, vy: 0 }));
@@ -767,10 +900,10 @@ function initConstellationSketch() {
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i], b = nodes[j];
           const dx = b.x - a.x, dy = b.y - a.y;
-          const d = Math.max(Math.sqrt(dx*dx + dy*dy), 1);
+          const d = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
           const f = 5000 / (d * d);
-          a.vx -= (dx/d)*f; a.vy -= (dy/d)*f;
-          b.vx += (dx/d)*f; b.vy += (dy/d)*f;
+          a.vx -= (dx / d) * f; a.vy -= (dy / d) * f;
+          b.vx += (dx / d) * f; b.vy += (dy / d) * f;
         }
       }
 
@@ -788,14 +921,35 @@ function initConstellationSketch() {
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
         const isSelected = selectedIdx === idx;
-        const isHovered = sk.mouseX > n.x - rw/2 && sk.mouseX < n.x + rw/2 &&
-                          sk.mouseY > n.y - rh/2 && sk.mouseY < n.y + rh/2;
-        const col = n.districts.length === 1 ? DISTRICT_COLORS[n.districts[0]] : blue;
+        const isHovered = sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
+                          sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2;
+
+        let col;
+        if (n.districts.length === 1) {
+          col = DISTRICT_COLORS[n.districts[0]];
+        } else {
+          // gradient between two district colors for shared words
+          const c1 = DISTRICT_COLORS[n.districts[0]] || blue;
+          const c2 = DISTRICT_COLORS[n.districts[1]] || blue;
+          const grad = sk.drawingContext.createLinearGradient(
+            n.x - rw / 2, n.y, n.x + rw / 2, n.y
+          );
+          grad.addColorStop(0, c1);
+          grad.addColorStop(1, c2);
+          col = grad;
+        }
 
         sk.noStroke();
-        if (isSelected) { sk.fill(col + '33'); sk.rect(n.x - rw/2 - 4, n.y - rh/2 - 4, rw + 8, rh + 8); }
-        sk.fill(isSelected || isHovered ? col : col + 'CC');
-        sk.rect(n.x - rw/2, n.y - rh/2, rw, rh);
+        if (typeof col === 'string') {
+          sk.fill(isSelected || isHovered ? col : col + 'CC');
+          sk.rect(n.x - rw / 2, n.y - rh / 2, rw, rh);
+        } else {
+          // gradient requires drawingContext
+          sk.drawingContext.fillStyle = col;
+          sk.drawingContext.globalAlpha = (isSelected || isHovered) ? 1 : 0.8;
+          sk.drawingContext.fillRect(n.x - rw / 2, n.y - rh / 2, rw, rh);
+          sk.drawingContext.globalAlpha = 1;
+        }
         sk.fill(bg);
         sk.textAlign(sk.CENTER, sk.CENTER);
         sk.text(n.word, n.x, n.y);
@@ -809,8 +963,8 @@ function initConstellationSketch() {
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
-        if (sk.mouseX > n.x - rw/2 && sk.mouseX < n.x + rw/2 &&
-            sk.mouseY > n.y - rh/2 && sk.mouseY < n.y + rh/2) hit = idx;
+        if (sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
+            sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2) hit = idx;
       });
       if (hit !== null) {
         selectedIdx = hit;
@@ -829,8 +983,8 @@ function initConstellationSketch() {
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
-        if (sk.mouseX > n.x - rw/2 && sk.mouseX < n.x + rw/2 &&
-            sk.mouseY > n.y - rh/2 && sk.mouseY < n.y + rh/2) onNode = true;
+        if (sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
+            sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2) onNode = true;
       });
       container.style.cursor = onNode ? 'pointer' : 'default';
     };
@@ -848,6 +1002,15 @@ function initConstellationSketch() {
   }, container);
 }
 
+// rebuild sketch without removing the controls panel
+function rebuildConstellation() {
+  if (constellationSketch) { constellationSketch.remove(); constellationSketch = null; }
+  // remove canvas only, keep controls and legend
+  const canvas = document.querySelector('#constellation-canvas-container canvas');
+  if (canvas) canvas.remove();
+  initConstellationSketch();
+}
+
 
 // ─── DOM READY ────────────────────────────────────────────────────────────────
 
@@ -860,7 +1023,7 @@ document.addEventListener('DOMContentLoaded', () => {
   seedExampleCity();
   initConstellationBtn();
 
-  // City name overlay
+  // city name overlay
   document.getElementById('cancel-btn')?.addEventListener('click', closeCityNameOverlay);
   document.getElementById('save-name-btn')?.addEventListener('click', saveCityName);
   document.getElementById('city-name-input')?.addEventListener('keydown', e => {
@@ -872,7 +1035,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.querySelector('.header-left')?.addEventListener('click', openCityNameOverlay);
 
-  // Header center — pulse a random district
+  // header center — pulse a random district
   document.querySelector('.header-center')?.addEventListener('click', () => {
     const states = JSON.parse(localStorage.getItem('districtStates')) || {};
     const locked = DISTRICTS.filter(d => states[d] !== 'unlocked');
@@ -894,18 +1057,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'guide-overlay') closeGuide();
   });
   document.getElementById('guide-prev')?.addEventListener('click', () => {
-    if (guideSlide > 1) { guideSlide--; showGuideSlide(guideSlide); }
+  if (guideSlide > 1) { guideSlide--; showGuideSlide(guideSlide); }
   });
   document.getElementById('guide-next')?.addEventListener('click', () => {
-    if (guideSlide === 0) { advanceGuide(); return; }
     if (guideSlide < GUIDE_TOTAL_STEPS) { guideSlide++; showGuideSlide(guideSlide); }
     else closeGuide();
   });
-  document.querySelector('.guide-slide-concept')?.addEventListener('click', () => {
-    if (guideSlide === 0) advanceGuide();
-  });
 
-  // Share overlay
+  // share overlay
   document.getElementById('share-btn')?.addEventListener('click', openShare);
   document.getElementById('share-close-btn')?.addEventListener('click', closeShare);
   document.getElementById('share-tab-share')?.addEventListener('click', () => switchShareTab('share-tab-share'));
@@ -922,16 +1081,33 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
   });
 
-  // Visitor log
+  // visitor log
   document.getElementById('visitor-add-btn')?.addEventListener('click', addVisitorCity);
   document.getElementById('visitor-code-input')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') addVisitorCity();
   });
 
-  // About
-  document.getElementById('about-btn')?.addEventListener('click', () => alert('About coming soon!'));
+  document.getElementById('share-username-save-btn')?.addEventListener('click', () => {
+  const val = document.getElementById('share-username-input').value.trim();
+  if (!val) return;
+  localStorage.setItem('cityUsername', val);
+  const btn = document.getElementById('share-username-save-btn');
+  btn.textContent = 'Saved';
+  setTimeout(() => { btn.textContent = 'Save'; }, 1500);
+});
 
-  // Return to city (visit mode)
+  // about
+  document.getElementById('about-btn')?.addEventListener('click', () => {
+    document.getElementById('about-overlay').classList.add('active');
+  });
+  document.getElementById('about-close-btn')?.addEventListener('click', () => {
+    document.getElementById('about-overlay').classList.remove('active');
+  });
+  document.getElementById('about-overlay')?.addEventListener('click', e => {
+    if (e.target.id === 'about-overlay') document.getElementById('about-overlay').classList.remove('active');
+  });
+
+  // return to city (visit mode)
   document.getElementById('return-btn')?.addEventListener('click', openReturnOverlay);
   document.getElementById('return-no-btn')?.addEventListener('click', closeReturnOverlay);
   document.getElementById('return-yes-btn')?.addEventListener('click', () => {
@@ -942,16 +1118,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'return-overlay') closeReturnOverlay();
   });
 
-  // Inject customize panel
+  // inject settings panel
   const ui = document.createElement('div');
   ui.innerHTML = `
     <div class="customize-toggle-btn" id="customize-toggle-btn">
-      <span class="customize-btn-label">Customize</span>
+      <span class="customize-btn-label">Settings</span>
     </div>
     <div class="customize-panel" id="customize-panel">
       <div class="customize-panel-header" id="customize-panel-header">
-        <span class="customize-panel-label">Customize</span>
-        <span class="customize-panel-toggle">∧ close</span>
+        <span class="customize-panel-label">Settings</span>
+        <span class="customize-panel-toggle">∧</span>
       </div>
       <div class="customize-panel-body">
         <div class="customize-row">
@@ -976,5 +1152,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('randomize-toggle').addEventListener('click', toggleRandomize);
   initDarkMode();
   initRandomize();
+
+  // close settings panel when clicking outside
+  document.addEventListener('click', (e) => {
+    const panel = document.getElementById('customize-panel');
+    const btn = document.getElementById('customize-toggle-btn');
+    if (!panel || !panel.classList.contains('visible')) return;
+    if (!panel.contains(e.target) && !btn?.contains(e.target)) closeCustomizePanel();
+  });
 
 });

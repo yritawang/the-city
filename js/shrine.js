@@ -37,9 +37,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const questionsBackBtn = document.getElementById('questions-back-btn');
 
   const savedAnswers = localStorage.getItem('shrine-answers');
-  if (savedAnswers) {
-    answers = JSON.parse(savedAnswers);
-  }
+    if (savedAnswers) {
+      answers = JSON.parse(savedAnswers);
+    }
+
+    // check if returning user is adding to an existing location
+    const prefill = localStorage.getItem('shrine-relog-prefill');
+    if (prefill) {
+      answers[0] = prefill;
+      localStorage.removeItem('shrine-relog-prefill');
+      currentQuestion = 1;
+      // skip the intro entirely and go straight to questions
+      setTimeout(() => startQuestions(), 100);
+    }
 
   setTimeout(() => {
     readyBtn.classList.remove('hidden');
@@ -75,8 +85,8 @@ function startQuestions() {
   if (intro) { intro.classList.add('hidden'); intro.style.display = 'none'; }
   if (questions) { questions.classList.remove('hidden'); questions.style.display = 'flex'; }
 
-  currentQuestion = 0;
-  renderQuestion();
+  if (currentQuestion !== 1) currentQuestion = 0;
+renderQuestion();
 
   const prevBtn = document.getElementById('prev-btn');
   const nextBtn = document.getElementById('next-btn');
@@ -167,10 +177,10 @@ function nextQuestion() {
 function completeShrine() {
   unlockAchievement('completed-shrine');
   saveCurrentAnswer();
-  
+  // preserve unlock — never overwrite an already-unlocked district
   const districtStates = JSON.parse(localStorage.getItem('districtStates')) || {};
-  districtStates.shrine = 'unlocked';
-  localStorage.setItem('districtStates', JSON.stringify(districtStates));
+districtStates['shrine'] = 'unlocked';
+localStorage.setItem('districtStates', JSON.stringify(districtStates));
 
   const shrineName = answers[5] || 'The Shrine';
   localStorage.setItem('shrine-name', shrineName);
