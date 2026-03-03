@@ -68,6 +68,7 @@ function goBackToCity() {
 }
 
 function startQuestions() {
+  unlockAchievement('began-garden');
   document.getElementById('garden-intro').classList.add('hidden');
   document.getElementById('garden-questions').classList.remove('hidden');
   currentQuestion = 0;
@@ -163,12 +164,13 @@ function nextQuestion() {
 }
 
 function completeGarden() {
+  unlockAchievement('completed-garden');
   saveCurrentAnswer();
   
-// preserve unlock — never overwrite an already-unlocked district
-const districtStates = JSON.parse(localStorage.getItem('districtStates')) || {};
-districtStates[DISTRICT_NAME] = 'unlocked';
-localStorage.setItem('districtStates', JSON.stringify(districtStates));
+  // preserve unlock — never overwrite an already-unlocked district
+  const districtStates = JSON.parse(localStorage.getItem('districtStates')) || {};
+  districtStates.garden = 'unlocked';
+  localStorage.setItem('districtStates', JSON.stringify(districtStates));
   
   // Save the garden name
   const gardenName = answers[5] || 'The Garden';
