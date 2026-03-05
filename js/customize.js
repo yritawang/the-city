@@ -115,6 +115,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadData();
   renderUI();
   setupListeners();
+  loadMedia();
+  initMediaListeners();
   // illustration zoom
 const previewImg = document.getElementById('district-preview-img');
 
@@ -592,4 +594,115 @@ function openRelogOverlay() {
 
 function closeRelogOverlay() {
   document.getElementById('relog-overlay')?.classList.remove('active');
+}
+
+// ─── media (photo + music) ────────────────────────────────────────────────────
+
+function loadMedia() {
+  const savedPhoto = localStorage.getItem(`${CURRENT_DISTRICT}-photo`);
+  const photoVisible = localStorage.getItem(`${CURRENT_DISTRICT}-photo-visible`) === 'true';
+  updatePhotoPreview(savedPhoto);
+  updatePhotoToggle(photoVisible);
+  const savedMusicName = localStorage.getItem(`${CURRENT_DISTRICT}-music-name`);
+  updateMusicPreview(savedMusicName);
+}
+
+function updatePhotoPreview(dataUrl) {
+  const preview     = document.getElementById('media-photo-preview');
+  const placeholder = document.getElementById('media-photo-placeholder');
+  const removeBtn   = document.getElementById('media-photo-remove');
+  const toggleRow   = document.getElementById('media-photo-toggle-row');
+  if (!preview) return;
+  if (dataUrl) {
+    preview.src = dataUrl;
+    preview.classList.remove('hidden');
+    if (placeholder) placeholder.classList.add('hidden');
+    if (removeBtn)   removeBtn.classList.remove('hidden');
+    if (toggleRow)   toggleRow.classList.remove('hidden');
+  } else {
+    preview.src = '';
+    preview.classList.add('hidden');
+    if (placeholder) placeholder.classList.remove('hidden');
+    if (removeBtn)   removeBtn.classList.add('hidden');
+    if (toggleRow)   toggleRow.classList.add('hidden');
+  }
+}
+
+function updatePhotoToggle(isVisible) {
+  const track = document.getElementById('media-photo-track');
+  if (track) track.classList.toggle('on', isVisible);
+}
+
+function updateMusicPreview(name) {
+  const label     = document.getElementById('media-music-name');
+  const removeBtn = document.getElementById('media-music-remove');
+  if (!label) return;
+  if (name) {
+    label.textContent = name;
+    label.classList.remove('hidden');
+    if (removeBtn) removeBtn.classList.remove('hidden');
+  } else {
+    label.textContent = '';
+    label.classList.add('hidden');
+    if (removeBtn) removeBtn.classList.add('hidden');
+  }
+}
+
+function initMediaListeners() {
+  const photoInput     = document.getElementById('media-photo-input');
+  const photoUploadBtn = document.getElementById('media-photo-upload-btn');
+  if (photoUploadBtn) photoUploadBtn.addEventListener('click', () => photoInput?.click());
+
+  if (photoInput) {
+    photoInput.addEventListener('change', () => {
+      const file = photoInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        localStorage.setItem(`${CURRENT_DISTRICT}-photo`, e.target.result);
+        updatePhotoPreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+      photoInput.value = '';
+    });
+  }
+
+  document.getElementById('media-photo-remove')?.addEventListener('click', () => {
+    localStorage.removeItem(`${CURRENT_DISTRICT}-photo`);
+    localStorage.removeItem(`${CURRENT_DISTRICT}-photo-visible`);
+    updatePhotoPreview(null);
+    updatePhotoToggle(false);
+  });
+
+  document.getElementById('media-photo-toggle-cell')?.addEventListener('click', () => {
+    const current = localStorage.getItem(`${CURRENT_DISTRICT}-photo-visible`) === 'true';
+    const next = !current;
+    localStorage.setItem(`${CURRENT_DISTRICT}-photo-visible`, next);
+    updatePhotoToggle(next);
+  });
+
+  const musicInput     = document.getElementById('media-music-input');
+  const musicUploadBtn = document.getElementById('media-music-upload-btn');
+  if (musicUploadBtn) musicUploadBtn.addEventListener('click', () => musicInput?.click());
+
+  if (musicInput) {
+    musicInput.addEventListener('change', () => {
+      const file = musicInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        localStorage.setItem(`${CURRENT_DISTRICT}-music`, e.target.result);
+        localStorage.setItem(`${CURRENT_DISTRICT}-music-name`, file.name);
+        updateMusicPreview(file.name);
+      };
+      reader.readAsDataURL(file);
+      musicInput.value = '';
+    });
+  }
+
+  document.getElementById('media-music-remove')?.addEventListener('click', () => {
+    localStorage.removeItem(`${CURRENT_DISTRICT}-music`);
+    localStorage.removeItem(`${CURRENT_DISTRICT}-music-name`);
+    updateMusicPreview(null);
+  });
 }

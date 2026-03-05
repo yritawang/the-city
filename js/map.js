@@ -4,15 +4,15 @@ const DISTRICTS = ['garden', 'cornerstore', 'shrine', 'tower', 'plaza'];
 
 // per-district questions for constellation info panel
 const DISTRICT_QUESTIONS = {
-  shrine:      ["What place comes to mind?", "What did this place hold that was precious to you?", "How do you return to this place?", "When you think of this place, what do you remember?", "If this place were to fade from memory completely, what would be lost?"],
-  garden:      ["What place comes to mind?", "What were you becoming in this place?", "How did the growth happen? What did it feel like?", "When you think of this place, what do you remember?", "If this place were to fade from memory completely, what would be lost?"],
-  cornerstore: ["What place comes to mind?", "What was your routine in this place?", "What drew you to this specific place?", "When you think of this place, what do you remember?", "If this place were to fade from memory completely, what would be lost?"],
-  tower:       ["What place comes to mind?", "What was your relationship with solitude in this space?", "What perspective did being alone give you?", "When you think of this place, what do you remember?", "If this place were to fade from memory completely, what would be lost?"],
-  plaza:       ["What place comes to mind?", "Who else was in this place? How did you connect with them?", "What brought you together in this place?", "When you think of this place, what do you remember?", "If this place were to fade from memory completely, what would be lost?"],
+  shrine:      ['What place comes to mind?', 'What did this place hold that was precious to you?', 'How do you return to this place?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
+  garden:      ['What place comes to mind?', 'What were you becoming in this place?', 'How did the growth happen? What did it feel like?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
+  cornerstore: ['What place comes to mind?', 'What was your routine in this place?', 'What drew you to this specific place?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
+  tower:       ['What place comes to mind?', 'What was your relationship with solitude in this space?', 'What perspective did being alone give you?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
+  plaza:       ['What place comes to mind?', 'Who else was in this place? How did you connect with them?', 'What brought you together in this place?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
 };
 
 
-// ─── CITY NAME ───────────────────────────────────────────────────────────────
+// ─── city name ───────────────────────────────────────────────────────────────
 
 function initCityName() {
   const savedName = localStorage.getItem('cityName') || 'Name Your City';
@@ -43,7 +43,7 @@ function saveCityName() {
 }
 
 
-// ─── DISTRICTS ───────────────────────────────────────────────────────────────
+// ─── districts ───────────────────────────────────────────────────────────────
 
 function initDistricts() {
   const districtStates = JSON.parse(localStorage.getItem('districtStates')) || {};
@@ -111,7 +111,7 @@ function displayDistrictNames() {
 }
 
 
-// ─── ACHIEVEMENTS ─────────────────────────────────────────────────────────────
+// ─── achievements ─────────────────────────────────────────────────────────────
 
 function checkAchievements() {
   const states = JSON.parse(localStorage.getItem('districtStates')) || {};
@@ -126,7 +126,7 @@ function checkAchievements() {
 }
 
 
-// ─── GUIDE OVERLAY ────────────────────────────────────────────────────────────
+// ─── guide overlay ────────────────────────────────────────────────────────────
 
 let guideSlide = 0;
 const GUIDE_TOTAL_STEPS = 5;
@@ -157,14 +157,8 @@ function showGuideSlide(index) {
   if (progress) progress.textContent = `${index}/${GUIDE_TOTAL_STEPS}`;
 }
 
-function advanceGuide() {
-  if (guideConceptTimer) { clearTimeout(guideConceptTimer); guideConceptTimer = null; }
-  guideSlide = 1;
-  showGuideSlide(1);
-}
 
-
-// ─── SHARE OVERLAY ────────────────────────────────────────────────────────────
+// ─── share overlay ────────────────────────────────────────────────────────────
 
 function openShare() {
   document.getElementById('share-overlay').classList.add('active');
@@ -219,7 +213,7 @@ function encodeCity() {
 }
 
 
-// ─── VISITOR'S LOG ────────────────────────────────────────────────────────────
+// ─── visitor's log ────────────────────────────────────────────────────────────
 
 const EXAMPLE_CITY_CODE = 'NADIA-X7';
 
@@ -239,15 +233,15 @@ const EXAMPLE_CITY = {
     shrine: {
       0: 'A third-floor apartment in Paris, near a canal. I lived there for nine months when I was twenty-four.',
       1: 'It held a version of me I was still becoming. The person who cooked alone and felt okay about it.',
-      2: 'Only in memory now. I walk through it when I can\'t sleep — up the stairs, past the radiator that clicked.',
-      3: 'The smell of the neighbors\' bread in the morning. The way light came through the frosted glass at 4pm in October.',
+      2: "Only in memory now. I walk through it when I can't sleep, up the stairs, past the radiator that clicked.",
+      3: "The smell of the neighbors' bread in the morning. The way light came through the frosted glass at 4pm in October.",
       4: 'A whole chapter would close. The proof that I was brave enough to go somewhere alone.',
     },
     garden: {
       0: 'A community garden in Cincinnati, Ohio. My aunt kept a plot there. I visited every summer as a child.',
-      1: 'I grew there slowly, over years. I learned patience from tomatoes. I learned my grandmother\'s hands from watching my aunt\'s.',
+      1: "I grew there slowly, over years. I learned patience from tomatoes. I learned my grandmother's hands from watching my aunt's.",
       2: 'I drive past the street on Google Maps sometimes. The garden is still there. The plot has a different name on the board.',
-      3: 'Dirt under my fingernails. Bees that weren\'t afraid of me. My aunt saying \'look how tall.\'',
+      3: "Dirt under my fingernails. Bees that weren't afraid of me. My aunt saying 'look how tall.'",
       4: 'The feeling that growing something is enough. That slow, unglamorous labor has worth.',
     },
     cornerstore: {
@@ -255,21 +249,21 @@ const EXAMPLE_CITY = {
       1: 'Every morning for two years. Green tea, triangle kimbap, a nod. It became the ritual that made the place feel like home.',
       2: 'The building is still there. I imagine she is still there.',
       3: 'The hum of the refrigerators. The particular sound of that sliding door. Being recognized without needing to explain myself.',
-      4: 'The idea that belonging doesn\'t require language. That showing up, again and again, is a kind of conversation.',
+      4: "The idea that belonging doesn't require language. That showing up, again and again, is a kind of conversation.",
     },
     tower: {
       0: 'The fire escape outside my bedroom window in Chicago. Four floors up, facing west.',
       1: 'I sat there when things got too loud inside. I sat there when things were good too.',
       2: 'Wind. The feeling of being outside but hidden. The city going on without needing anything from me.',
       3: 'The water tower, the billboard, the sky turning pink.',
-      4: 'The most private version of myself. The one who didn\'t need to perform anything.',
+      4: "The most private version of myself. The one who didn't need to perform anything.",
     },
     plaza: {
-      0: 'Dolores Park in San Francisco, a Saturday in July. I\'d just moved there. I knew no one.',
+      0: "Dolores Park in San Francisco, a Saturday in July. I'd just moved there. I knew no one.",
       1: 'A stranger offered me a slice of watermelon. We talked for four hours.',
       2: 'Summer, heat, the feeling that the city might let me in after all.',
-      3: 'Grass stains. Someone\'s speaker playing something I didn\'t know but wanted to.',
-      4: 'The belief that it\'s possible to be found. That cities have seams and you can slip through them.',
+      3: "Grass stains. Someone's speaker playing something I didn't know but wanted to.",
+      4: "The belief that it's possible to be found. That cities have seams and you can slip through them.",
     },
   },
 };
@@ -287,7 +281,7 @@ function renderVisitorLog() {
   if (!list) return;
   const log = JSON.parse(localStorage.getItem('visitor-log') || '[]');
   if (log.length === 0) {
-    list.innerHTML = '<p class="visitor-empty">No cities yet. Paste a friend\'s city code to add one.</p>';
+    list.innerHTML = "<p class=\"visitor-empty\">No cities yet. Paste a friend's city code to add one.</p>";
     return;
   }
   list.innerHTML = '';
@@ -336,7 +330,7 @@ function addVisitorCity() {
 }
 
 
-// ─── VISIT MODE ───────────────────────────────────────────────────────────────
+// ─── visit mode ───────────────────────────────────────────────────────────────
 
 let visitModeData = null;
 let visitConstellationActive = false;
@@ -369,7 +363,6 @@ function renderVisitDistricts(cityData) {
     const fresh = el.cloneNode(true);
     el.parentNode.replaceChild(fresh, el);
 
-    // strip any labels stamped by displayDistrictNames()
     fresh.querySelectorAll('.district-custom-name').forEach(s => s.remove());
 
     if (isUnlocked) {
@@ -436,8 +429,18 @@ function openVisitConstellation(cityData) {
   // temporarily swap localStorage so constellation reads visitor's data
   const backups = { districtStates: localStorage.getItem('districtStates') };
   DISTRICTS.forEach(d => {
-    backups[`${d}-answers`] = localStorage.getItem(`${d}-answers`);
-    localStorage.setItem(`${d}-answers`, JSON.stringify(cityData.answers[d] || {}));
+    backups[`${d}-answers`]  = localStorage.getItem(`${d}-answers`);
+    backups[`${d}-sessions`] = localStorage.getItem(`${d}-sessions`);
+
+    const answers = cityData.answers[d] || {};
+    localStorage.setItem(`${d}-answers`, JSON.stringify(answers));
+
+    if (Object.keys(answers).length > 0) {
+      const fakeSessions = [{ date: '', timestamp: Date.now(), answers }];
+      localStorage.setItem(`${d}-sessions`, JSON.stringify(fakeSessions));
+    } else {
+      localStorage.removeItem(`${d}-sessions`);
+    }
   });
   localStorage.setItem('districtStates', JSON.stringify(cityData.districtStates));
 
@@ -479,7 +482,7 @@ function closeReturnOverlay() {
 }
 
 
-// ─── CUSTOMIZE PANEL ─────────────────────────────────────────────────────────
+// ─── settings panel ───────────────────────────────────────────────────────────
 
 function openCustomizePanel() {
   document.getElementById('customize-panel').classList.add('visible');
@@ -551,7 +554,52 @@ function toggleRandomize() {
 }
 
 
-// ─── KEYWORD EXTRACTION ───────────────────────────────────────────────────────
+// ─── photo display ────────────────────────────────────────────────────────────
+
+function initShowPhotos() {
+  const isOn = localStorage.getItem('showPhotos') === 'true';
+  const track = document.getElementById('show-photos-track');
+  if (track) track.classList.toggle('on', isOn);
+  if (isOn) renderDistrictPhotos();
+}
+
+function toggleShowPhotos() {
+  const next = localStorage.getItem('showPhotos') !== 'true';
+  localStorage.setItem('showPhotos', next);
+  const track = document.getElementById('show-photos-track');
+  if (track) track.classList.toggle('on', next);
+  if (next) renderDistrictPhotos();
+  else removeDistrictPhotos();
+}
+
+function renderDistrictPhotos() {
+  DISTRICTS.forEach(d => {
+    const el = document.getElementById(d);
+    if (!el) return;
+    const photo = localStorage.getItem(`${d}-photo`);
+    if (!photo) return;
+    // if img already exists just make it visible
+    const existing = el.querySelector('.district-photo-float');
+    if (existing) {
+      existing.style.display = 'block';
+      return;
+    }
+    const img = document.createElement('img');
+    img.className = 'district-photo-float';
+    img.src = photo;
+    img.style.display = 'block'; // override css default display:none
+    el.appendChild(img);
+  });
+}
+
+function removeDistrictPhotos() {
+  document.querySelectorAll('.district-photo-float').forEach(el => {
+    el.style.display = 'none';
+  });
+}
+
+
+// ─── keyword extraction ───────────────────────────────────────────────────────
 
 const EMOTION_WORDS = new Set(['happy','happiness','sad','sadness','grief','joy','joyful','love','loved','lonely','loneliness','fear','afraid','scared','anxious','anxiety','angry','anger','rage','calm','peace','peaceful','safe','unsafe','comfort','comfortable','uncomfortable','proud','pride','shame','ashamed','guilt','guilty','hopeful','hope','hopeless','lost','found','free','freedom','trapped','nostalgic','nostalgia','homesick','longing','yearning','missing','belonging','connected','disconnected','isolated','warm','warmth','cold','hurt','pain','painful','tender','gentle','alive','numb','empty','full','overwhelmed','grateful','gratitude','bitter','bittersweet','melancholy','wonder','awe','curious','confused','clarity','certain','uncertain','excited','excitement','nervous','relief','relieved','tired','exhausted','energized','inspired','inspiration','content','restless','vulnerable','strong','weak','brave','courage']);
 const LOCATION_WORDS = new Set(['home','house','room','bedroom','kitchen','garden','park','school','church','temple','mosque','street','road','alley','corner','market','store','shop','cafe','restaurant','library','hospital','office','studio','apartment','building','city','town','village','country','neighborhood','district','plaza','shrine','tower','forest','lake','river','ocean','beach','mountain','field','farm','barn','garage','basement','attic','hallway','staircase','window','door','yard','balcony','rooftop','bridge','station','airport','train','bus','court','campus','dormitory','dorm','classroom','gym','pool','stadium','theater','cinema','museum','gallery','mall','hotel','motel','cabin','cottage','palace','castle','ruins','cemetery','playground','lobby','corridor','passage','square','avenue','boulevard','lane']);
@@ -561,7 +609,6 @@ function isKeyword(w) {
   return EMOTION_WORDS.has(w) || LOCATION_WORDS.has(w) || DESCRIPTIVE_WORDS.has(w);
 }
 
-// time range options for the constellation filter
 const TIME_OPTIONS = [
   { value: 'week',  label: 'Past week' },
   { value: 'month', label: 'Past month' },
@@ -569,18 +616,15 @@ const TIME_OPTIONS = [
   { value: 'all',   label: 'All time' },
 ];
 
-// constellation filter state
 let constellationTimeRange = 'all';
 let constellationDistricts = new Set(['garden', 'shrine', 'cornerstore', 'tower', 'plaza']);
 
 function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null) {
-  // compute cutoff timestamp
   const now = Date.now();
   const cutoffDays = { week: 7, month: 30, year: 365, all: Infinity };
   const days = cutoffDays[timeRange] ?? Infinity;
   const cutoff = days === Infinity ? 0 : now - days * 24 * 60 * 60 * 1000;
 
-  // only include districts that have sessions and pass the active filter
   const completed = DISTRICTS.filter(d => {
     if (activeDistricts && !activeDistricts.has(d)) return false;
     return JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]').length > 0;
@@ -588,7 +632,6 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
 
   const freq = {}, wordSources = {}, wordContexts = {};
 
-  // primary pass — iterate each session individually so context snippets stay clean
   completed.forEach(d => {
     const distSessions = JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]')
       .filter(s => s.timestamp >= cutoff);
@@ -610,14 +653,14 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
           wordContexts[w].push({
             district: d,
             question: sessionDate ? `${sessionDate} · ${questions[qIdx] || ''}` : (questions[qIdx] || ''),
-            snippet: answer.length > 120 ? answer.slice(0, 120) + '…' : answer,
+            snippet: answer.length > 120 ? answer.slice(0, 120) + '...' : answer,
           });
         });
       });
     });
   });
 
-  // fallback pass — top 3 non-keyword words per district to fill sparse constellations
+  // fallback pass to fill sparse constellations with top non-keyword words per district
   const STOPWORDS = new Set(['that','this','with','have','from','they','their','would','could','should','about','there','which','when','what','just','been','will','your','more','also','into','some','than','then','were','very','much','each','over','think','place','feel','felt','thought','remember','know','still','even','always','never','every','back','here','thing','things','really','because','something','anything','nothing','someone','anyone','people','person','going','getting','being','having','doing','making','around','through','after','before','during','while','these','those']);
 
   completed.forEach(d => {
@@ -625,7 +668,6 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
       .filter(s => s.timestamp >= cutoff);
     if (distSessions2.length === 0) return;
 
-    // merge for fallback frequency only — no context needed here
     const answers = distSessions2.reduce((acc, s) => {
       Object.entries(s.answers).forEach(([k, v]) => {
         acc[k] = acc[k] ? acc[k] + ' ' + v : v;
@@ -638,27 +680,27 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
     text.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/)
       .filter(w => w.length > 4 && !STOPWORDS.has(w) && !freq[w])
       .forEach(w => { df[w] = (df[w] || 0) + 1; });
+
+    const questions = DISTRICT_QUESTIONS[d] || [];
     Object.entries(df).sort((a, b) => b[1] - a[1]).slice(0, 3).forEach(([w, c]) => {
-  freq[w] = c;
-  if (!wordSources[w]) wordSources[w] = new Set();
-  wordSources[w].add(d);
-  // find context for this word across sessions
-  if (!wordContexts[w]) wordContexts[w] = [];
-  const questions = DISTRICT_QUESTIONS[d] || [];
-  distSessions2.forEach(session => {
-    Object.entries(session.answers).forEach(([qi, answer]) => {
-      if (!answer || parseInt(qi) === 5) return;
-      if (answer.toLowerCase().includes(w)) {
-        const sessionDate = session.date || '';
-        wordContexts[w].push({
-          district: d,
-          question: sessionDate ? `${sessionDate} · ${questions[parseInt(qi)] || ''}` : (questions[parseInt(qi)] || ''),
-          snippet: answer.length > 120 ? answer.slice(0, 120) + '…' : answer,
+      freq[w] = c;
+      if (!wordSources[w]) wordSources[w] = new Set();
+      wordSources[w].add(d);
+      if (!wordContexts[w]) wordContexts[w] = [];
+      distSessions2.forEach(session => {
+        Object.entries(session.answers).forEach(([qi, answer]) => {
+          if (!answer || parseInt(qi) === 5) return;
+          if (answer.toLowerCase().includes(w)) {
+            const sessionDate = session.date || '';
+            wordContexts[w].push({
+              district: d,
+              question: sessionDate ? `${sessionDate} · ${questions[parseInt(qi)] || ''}` : (questions[parseInt(qi)] || ''),
+              snippet: answer.length > 120 ? answer.slice(0, 120) + '...' : answer,
+            });
+          }
         });
-      }
+      });
     });
-  });
-  });
   });
 
   return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, topN).map(([word, count]) => ({
@@ -736,14 +778,13 @@ function closeConstellation() {
   setTimeout(() => {
     overlay.classList.add('hidden');
     if (constellationSketch) { constellationSketch.remove(); constellationSketch = null; }
-    // remove controls so they're rebuilt fresh next open
     const controls = document.getElementById('constellation-controls');
     if (controls) controls.remove();
   }, 600);
 }
 
 
-// ─── CONSTELLATION INFO PANEL ────────────────────────────────────────────────
+// ─── constellation info panel ────────────────────────────────────────────────
 
 function showConstellationInfoPanel(node) {
   const panel = document.getElementById('constellation-info-panel');
@@ -772,14 +813,13 @@ function showConstellationInfoPanel(node) {
 }
 
 
-// ─── CONSTELLATION SKETCH ─────────────────────────────────────────────────────
+// ─── constellation sketch ─────────────────────────────────────────────────────
 
 function initConstellationSketch() {
   const container = document.getElementById('constellation-canvas-container');
   if (!container) return;
   if (constellationSketch) { constellationSketch.remove(); constellationSketch = null; }
 
-  // inject legend
   if (!document.getElementById('constellation-legend')) {
     const legend = document.createElement('div');
     legend.id = 'constellation-legend';
@@ -796,7 +836,6 @@ function initConstellationSketch() {
     container.appendChild(legend);
   }
 
-  // inject filter controls
   if (!document.getElementById('constellation-controls')) {
     const sliderMax = TIME_OPTIONS.length - 1;
     const currentIdx = TIME_OPTIONS.findIndex(o => o.value === constellationTimeRange);
@@ -831,7 +870,6 @@ function initConstellationSketch() {
     `;
     container.appendChild(controls);
 
-    // time slider — live update
     document.getElementById('constellation-time-slider').addEventListener('input', (e) => {
       const idx = parseInt(e.target.value);
       constellationTimeRange = TIME_OPTIONS[idx].value;
@@ -839,7 +877,6 @@ function initConstellationSketch() {
       rebuildConstellation();
     });
 
-    // district checkboxes — live update
     controls.querySelectorAll('input[type="checkbox"]').forEach(cb => {
       cb.addEventListener('change', () => {
         if (cb.checked) constellationDistricts.add(cb.dataset.district);
@@ -849,7 +886,6 @@ function initConstellationSketch() {
     });
   }
 
-  // extract keywords with current filter state
   const keywords = extractAllKeywords(20, constellationTimeRange, constellationDistricts);
   if (keywords.length === 0) return;
 
@@ -928,7 +964,6 @@ function initConstellationSketch() {
         if (n.districts.length === 1) {
           col = DISTRICT_COLORS[n.districts[0]];
         } else {
-          // gradient between two district colors for shared words
           const c1 = DISTRICT_COLORS[n.districts[0]] || blue;
           const c2 = DISTRICT_COLORS[n.districts[1]] || blue;
           const grad = sk.drawingContext.createLinearGradient(
@@ -944,7 +979,6 @@ function initConstellationSketch() {
           sk.fill(isSelected || isHovered ? col : col + 'CC');
           sk.rect(n.x - rw / 2, n.y - rh / 2, rw, rh);
         } else {
-          // gradient requires drawingContext
           sk.drawingContext.fillStyle = col;
           sk.drawingContext.globalAlpha = (isSelected || isHovered) ? 1 : 0.8;
           sk.drawingContext.fillRect(n.x - rw / 2, n.y - rh / 2, rw, rh);
@@ -1002,17 +1036,15 @@ function initConstellationSketch() {
   }, container);
 }
 
-// rebuild sketch without removing the controls panel
 function rebuildConstellation() {
   if (constellationSketch) { constellationSketch.remove(); constellationSketch = null; }
-  // remove canvas only, keep controls and legend
   const canvas = document.querySelector('#constellation-canvas-container canvas');
   if (canvas) canvas.remove();
   initConstellationSketch();
 }
 
 
-// ─── DOM READY ────────────────────────────────────────────────────────────────
+// ─── dom ready ────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -1035,29 +1067,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.querySelector('.header-left')?.addEventListener('click', openCityNameOverlay);
 
-  // header center — pulse a random district
-  document.querySelector('.header-center')?.addEventListener('click', () => {
-    const states = JSON.parse(localStorage.getItem('districtStates')) || {};
-    const locked = DISTRICTS.filter(d => states[d] !== 'unlocked');
-    const pool = locked.length > 0 ? locked : DISTRICTS;
-    const pick = pool[Math.floor(Math.random() * pool.length)];
-    const el = document.getElementById(pick);
-    if (!el) return;
-    updateDistrictImage(el, 'hover');
-    el.classList.add('district-highlight');
-    setTimeout(() => {
-      updateDistrictImage(el, 'locked');
-      el.classList.remove('district-highlight');
-    }, 1500);
-  });
-
   // guide overlay
   document.getElementById('guide-btn')?.addEventListener('click', openGuide);
   document.getElementById('guide-overlay')?.addEventListener('click', e => {
     if (e.target.id === 'guide-overlay') closeGuide();
   });
   document.getElementById('guide-prev')?.addEventListener('click', () => {
-  if (guideSlide > 1) { guideSlide--; showGuideSlide(guideSlide); }
+    if (guideSlide > 1) { guideSlide--; showGuideSlide(guideSlide); }
   });
   document.getElementById('guide-next')?.addEventListener('click', () => {
     if (guideSlide < GUIDE_TOTAL_STEPS) { guideSlide++; showGuideSlide(guideSlide); }
@@ -1088,15 +1104,15 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('share-username-save-btn')?.addEventListener('click', () => {
-  const val = document.getElementById('share-username-input').value.trim();
-  if (!val) return;
-  localStorage.setItem('cityUsername', val);
-  const btn = document.getElementById('share-username-save-btn');
-  btn.textContent = 'Saved';
-  setTimeout(() => { btn.textContent = 'Save'; }, 1500);
-});
+    const val = document.getElementById('share-username-input').value.trim();
+    if (!val) return;
+    localStorage.setItem('cityUsername', val);
+    const btn = document.getElementById('share-username-save-btn');
+    btn.textContent = 'Saved';
+    setTimeout(() => { btn.textContent = 'Save'; }, 1500);
+  });
 
-  // about
+  // about overlay
   document.getElementById('about-btn')?.addEventListener('click', () => {
     document.getElementById('about-overlay').classList.add('active');
   });
@@ -1142,18 +1158,28 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="toggle-track" id="randomize-track"><div class="toggle-thumb"></div></div>
           </div>
         </div>
+        <div class="customize-row">
+          <span class="customize-row-label">Show photos</span>
+          <div class="customize-toggle-cell" id="show-photos-toggle">
+            <div class="toggle-track" id="show-photos-track"><div class="toggle-thumb"></div></div>
+          </div>
+        </div>
       </div>
     </div>
   `;
   document.body.appendChild(ui);
+
   document.getElementById('customize-toggle-btn').addEventListener('click', openCustomizePanel);
   document.getElementById('customize-panel-header').addEventListener('click', closeCustomizePanel);
   document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
   document.getElementById('randomize-toggle').addEventListener('click', toggleRandomize);
+  document.getElementById('show-photos-toggle').addEventListener('click', toggleShowPhotos);
+
   initDarkMode();
   initRandomize();
+  initShowPhotos();
 
-  // close settings panel when clicking outside
+  // close settings when clicking outside
   document.addEventListener('click', (e) => {
     const panel = document.getElementById('customize-panel');
     const btn = document.getElementById('customize-toggle-btn');
