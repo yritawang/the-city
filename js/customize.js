@@ -1,6 +1,6 @@
 // customize.js
 
-// detect district from URL path
+// detect district from url path
 const getCurrentDistrict = () => {
   const path = window.location.pathname;
   if (path.includes('shrine'))      return 'shrine';
@@ -102,7 +102,7 @@ function extractKeywords(text, topN = 8) {
     .map(([word, count]) => ({ word, count }));
 }
 
-const config   = DISTRICT_CONFIG[CURRENT_DISTRICT];
+const config    = DISTRICT_CONFIG[CURRENT_DISTRICT];
 const QUESTIONS = config.questions;
 
 let districtData = {};
@@ -111,36 +111,42 @@ let currentSkin  = 0;
 let graphSketch  = null;
 let isGraphMode  = false;
 
+// time range state for the memory view word cloud
+const TIME_OPTIONS = [
+  { value: 'week',  label: 'Past week' },
+  { value: 'month', label: 'Past month' },
+  { value: 'year',  label: 'Past year' },
+  { value: 'all',   label: 'All time' },
+];
+let memoryTimeRange = 'all';
+
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
   renderUI();
   setupListeners();
   loadMedia();
   initMediaListeners();
+
   // illustration zoom
-const previewImg = document.getElementById('district-preview-img');
+  const previewImg = document.getElementById('district-preview-img');
+  const overlayEl  = document.createElement('div');
+  overlayEl.className = 'illustration-overlay';
+  const overlayBox = document.createElement('div');
+  overlayBox.className = 'illustration-overlay-box';
+  const overlayImg = document.createElement('img');
+  overlayBox.appendChild(overlayImg);
+  overlayEl.appendChild(overlayBox);
+  document.body.appendChild(overlayEl);
 
-const overlayEl = document.createElement('div');
-overlayEl.className = 'illustration-overlay';
-const overlayBox = document.createElement('div');
-overlayBox.className = 'illustration-overlay-box';
-const overlayImg = document.createElement('img');
-overlayBox.appendChild(overlayImg);
-overlayEl.appendChild(overlayBox);
-document.body.appendChild(overlayEl);
-
-document.querySelector('.district-image-container').addEventListener('click', () => {
-  overlayImg.src = previewImg.src;
-  overlayEl.classList.add('active');
-});
-
-overlayEl.addEventListener('click', () => {
-  overlayEl.classList.remove('active');
-});
+  document.querySelector('.district-image-container').addEventListener('click', () => {
+    overlayImg.src = previewImg.src;
+    overlayEl.classList.add('active');
+  });
+  overlayEl.addEventListener('click', () => overlayEl.classList.remove('active'));
 });
 
 
-// ─── DATA ───────────────────────────────────────────────────────────────────
+// ─── data ────────────────────────────────────────────────────────────────────
 
 function loadData() {
   const rawAnswers = JSON.parse(localStorage.getItem(`${CURRENT_DISTRICT}-answers`) || '{}');
@@ -160,7 +166,7 @@ function loadData() {
 }
 
 
-// ─── RENDER ──────────────────────────────────────────────────────────────────
+// ─── render ──────────────────────────────────────────────────────────────────
 
 function renderUI() {
   const titleEl = document.getElementById('district-title');
@@ -264,18 +270,18 @@ function renderJournalEntries() {
 }
 
 
-// ─── LISTENERS ───────────────────────────────────────────────────────────────
+// ─── listeners ───────────────────────────────────────────────────────────────
 
 function setupListeners() {
 
-  // inline name editing — click cell to edit, Enter/blur to save, Escape to cancel
+  // inline name editing
   const titleCell  = document.getElementById('title-cell');
   const titleEl    = document.getElementById('district-title');
   const titleInput = document.getElementById('district-title-input');
 
   if (titleCell && titleEl && titleInput) {
     titleCell.addEventListener('click', () => {
-      if (!titleInput.classList.contains('hidden')) return; // already editing
+      if (!titleInput.classList.contains('hidden')) return;
       titleInput.value = districtData.name;
       titleEl.classList.add('hidden');
       titleInput.classList.remove('hidden');
@@ -297,7 +303,7 @@ function setupListeners() {
       districtData.name = newName;
       localStorage.setItem(`${CURRENT_DISTRICT}-name`, newName);
     }
-    titleEl.textContent  = districtData.name;
+    titleEl.textContent = districtData.name;
     titleEl.classList.remove('hidden');
     titleInput.classList.add('hidden');
   }
@@ -328,7 +334,7 @@ function setupListeners() {
 }
 
 
-// ─── VIEW SWITCHING ───────────────────────────────────────────────────────────
+// ─── view switching ───────────────────────────────────────────────────────────
 
 function switchToJournal() {
   isGraphMode = false;
@@ -337,6 +343,9 @@ function switchToJournal() {
   document.getElementById('journal-view').classList.remove('hidden');
   document.getElementById('graph-view').classList.add('hidden');
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
+  // remove controls so they rebuild fresh next time
+  const controls = document.getElementById('memory-time-controls');
+  if (controls) controls.remove();
 }
 
 function switchToGraph() {
@@ -349,14 +358,22 @@ function switchToGraph() {
 }
 
 
-// ─── CONSTELLATION ────────────────────────────────────────────────────────────
+// ─── word cloud (memory view) ─────────────────────────────────────────────────
+
+function getSessionsForTimeRange() {
+  if (memoryTimeRange === 'all') return sessions;
+  const now  = Date.now();
+  const cutoffDays = { week: 7, month: 30, year: 365 };
+  const cutoff = now - (cutoffDays[memoryTimeRange] || 0) * 24 * 60 * 60 * 1000;
+  return sessions.filter(s => s.timestamp >= cutoff);
+}
 
 function initGraph() {
   const container = document.getElementById('p5-canvas-container');
   if (!container) return;
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
 
-  // create info panel inside the graph view
+  // create info panel inside graph view
   let infoPanel = document.getElementById('constellation-panel');
   if (!infoPanel) {
     infoPanel = document.createElement('div');
@@ -364,22 +381,50 @@ function initGraph() {
     document.getElementById('graph-view').appendChild(infoPanel);
   }
 
-  const mergedAnswers = sessions.reduce((acc, s) => {
-  Object.entries(s.answers).forEach(([k, v]) => {
-    acc[k] = acc[k] ? acc[k] + ' ' + v : v;
-  });
-  return acc;
-}, {});
-const allText = Object.entries(mergedAnswers)
-  .filter(([i]) => parseInt(i) !== 5)
-  .map(([, v]) => v).join(' ');
-const keywords = extractKeywords(allText, 18);
+  // inject time slider in the same style as the city constellation controls
+  if (!document.getElementById('memory-time-controls')) {
+    const sliderMax   = TIME_OPTIONS.length - 1;
+    const currentIdx  = TIME_OPTIONS.findIndex(o => o.value === memoryTimeRange);
+    const resolvedIdx = currentIdx >= 0 ? currentIdx : sliderMax;
+
+    const controls = document.createElement('div');
+    controls.id = 'memory-time-controls';
+    controls.className = 'memory-time-controls';
+    controls.innerHTML = `
+      <div class="constellation-control-group">
+        <span class="constellation-control-label">Time</span>
+        <input type="range" class="constellation-time-slider" id="memory-time-slider"
+          min="0" max="${sliderMax}" value="${resolvedIdx}" step="1">
+        <span class="constellation-time-value" id="memory-time-value">
+          ${TIME_OPTIONS[resolvedIdx].label}
+        </span>
+      </div>
+    `;
+    document.getElementById('graph-view').appendChild(controls);
+
+    document.getElementById('memory-time-slider').addEventListener('input', (e) => {
+      const idx = parseInt(e.target.value);
+      memoryTimeRange = TIME_OPTIONS[idx].value;
+      document.getElementById('memory-time-value').textContent = TIME_OPTIONS[idx].label;
+      rebuildGraph();
+    });
+  }
+
+  // build word cloud from time-filtered sessions
+  const filtered = getSessionsForTimeRange();
+  const mergedAnswers = filtered.reduce((acc, s) => {
+    Object.entries(s.answers).forEach(([k, v]) => {
+      acc[k] = acc[k] ? acc[k] + ' ' + v : v;
+    });
+    return acc;
+  }, {});
+  const allText  = Object.entries(mergedAnswers)
+    .filter(([i]) => parseInt(i) !== 5)
+    .map(([, v]) => v).join(' ');
+  const keywords = extractKeywords(allText, 18);
   if (keywords.length === 0) return;
 
-  const nodes = keywords.map(k => ({
-    ...k,
-    x: 0, y: 0, vx: 0, vy: 0
-  }));
+  const nodes = keywords.map(k => ({ ...k, x: 0, y: 0, vx: 0, vy: 0 }));
 
   const blue = getComputedStyle(document.body).getPropertyValue('--blue').trim() || '#0A059B';
   const bg   = getComputedStyle(document.body).getPropertyValue('--color-bg').trim() || '#F7F2F1';
@@ -411,10 +456,10 @@ const keywords = extractKeywords(allText, 18);
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i], b = nodes[j];
           const dx = b.x - a.x, dy = b.y - a.y;
-          const d = Math.max(Math.sqrt(dx*dx + dy*dy), 1);
-          const f = 4000 / (d * d);
-          a.vx -= (dx/d)*f; a.vy -= (dy/d)*f;
-          b.vx += (dx/d)*f; b.vy += (dy/d)*f;
+          const d  = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+          const f  = 4000 / (d * d);
+          a.vx -= (dx / d) * f; a.vy -= (dy / d) * f;
+          b.vx += (dx / d) * f; b.vy += (dy / d) * f;
         }
       }
 
@@ -429,22 +474,22 @@ const keywords = extractKeywords(allText, 18);
 
       // draw nodes
       nodes.forEach((n, idx) => {
-        const fontSize = 11 + Math.min(n.count * 1.5, 6);
+        const fontSize  = 11 + Math.min(n.count * 1.5, 6);
         sk.textSize(fontSize);
-        const tw  = sk.textWidth(n.word);
-        const rw  = tw + PAD_X * 2;
-        const rh  = fontSize + PAD_Y * 2;
+        const tw = sk.textWidth(n.word);
+        const rw = tw + PAD_X * 2;
+        const rh = fontSize + PAD_Y * 2;
         const isSelected = selectedIdx === idx;
-        const isHovered  = sk.mouseX > n.x - rw/2 && sk.mouseX < n.x + rw/2 &&
-                           sk.mouseY > n.y - rh/2 && sk.mouseY < n.y + rh/2;
+        const isHovered  = sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
+                           sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2;
 
         sk.noStroke();
         if (isSelected) {
           sk.fill(blue + '22');
-          sk.rect(n.x - rw/2 - 4, n.y - rh/2 - 4, rw + 8, rh + 8);
+          sk.rect(n.x - rw / 2 - 4, n.y - rh / 2 - 4, rw + 8, rh + 8);
         }
         sk.fill(isSelected || isHovered ? blue : blue + 'BB');
-        sk.rect(n.x - rw/2, n.y - rh/2, rw, rh);
+        sk.rect(n.x - rw / 2, n.y - rh / 2, rw, rh);
         sk.fill(bg);
         sk.textAlign(sk.CENTER, sk.CENTER);
         sk.text(n.word, n.x, n.y);
@@ -458,8 +503,8 @@ const keywords = extractKeywords(allText, 18);
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
-        if (sk.mouseX > n.x - rw/2 && sk.mouseX < n.x + rw/2 &&
-            sk.mouseY > n.y - rh/2 && sk.mouseY < n.y + rh/2) hit = idx;
+        if (sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
+            sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2) hit = idx;
       });
       if (hit !== null) {
         selectedIdx = hit;
@@ -477,8 +522,8 @@ const keywords = extractKeywords(allText, 18);
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
-        if (sk.mouseX > n.x - rw/2 && sk.mouseX < n.x + rw/2 &&
-            sk.mouseY > n.y - rh/2 && sk.mouseY < n.y + rh/2) onNode = true;
+        if (sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
+            sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2) onNode = true;
       });
       container.style.cursor = onNode ? 'pointer' : 'default';
     };
@@ -491,23 +536,30 @@ const keywords = extractKeywords(allText, 18);
   }, container);
 }
 
+function rebuildGraph() {
+  if (graphSketch) { graphSketch.remove(); graphSketch = null; }
+  const canvas = document.querySelector('#p5-canvas-container canvas');
+  if (canvas) canvas.remove();
+  initGraph();
+}
+
 function showInfoPanel(node) {
   const panel = document.getElementById('constellation-panel');
   if (!panel) return;
 
-  // find which question(s) this word appears in
-const contexts = [];
-sessions.forEach(session => {
-  Object.entries(session.answers).forEach(([qi, answer]) => {
-    if (!answer || parseInt(qi) === 5) return;
-    if (answer.toLowerCase().includes(node.word)) {
-      const q = QUESTIONS[parseInt(qi)] || '';
-      const snippet = answer.length > 120 ? answer.slice(0, 120) + '…' : answer;
-      // include the date so overlapping entries are distinguishable
-      contexts.push({ question: `${session.date} · ${q}`, snippet });
-    }
+  // find which questions this word appears in across filtered sessions
+  const filtered = getSessionsForTimeRange();
+  const contexts = [];
+  filtered.forEach(session => {
+    Object.entries(session.answers).forEach(([qi, answer]) => {
+      if (!answer || parseInt(qi) === 5) return;
+      if (answer.toLowerCase().includes(node.word)) {
+        const q       = QUESTIONS[parseInt(qi)] || '';
+        const snippet = answer.length > 120 ? answer.slice(0, 120) + '…' : answer;
+        contexts.push({ question: `${session.date} · ${q}`, snippet });
+      }
+    });
   });
-});
 
   panel.innerHTML = `
     <div style="font-family:var(--font-meta);font-size:1.05rem;color:var(--blue);
@@ -521,7 +573,7 @@ sessions.forEach(session => {
       </div>
     `).join('') || '<div style="opacity:0.4;font-size:0.8rem;">No context found.</div>'}
   `;
-  panel.style.opacity = '1';
+  panel.style.opacity      = '1';
   panel.style.pointerEvents = 'all';
 }
 
@@ -530,17 +582,16 @@ function hideInfoPanel() {
   if (panel) { panel.style.opacity = '0'; panel.style.pointerEvents = 'none'; }
 }
 
-// ─── RELOG OVERLAY ────────────────────────────────────────────────────────────
+
+// ─── relog overlay ────────────────────────────────────────────────────────────
 
 function openRelogOverlay() {
-  // collect unique place names from all sessions (answer to question 0)
   const locations = [...new Map(
     sessions
       .filter(s => s.answers[0])
       .map(s => [s.answers[0], s.answers[0]])
   ).values()];
 
-  // inject overlay if not present
   if (!document.getElementById('relog-overlay')) {
     const el = document.createElement('div');
     el.id = 'relog-overlay';
@@ -578,7 +629,6 @@ function openRelogOverlay() {
       if (!selected) return;
       closeRelogOverlay();
       localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
-      // store the pre-fill so the district page can skip question 0
       localStorage.setItem(`${CURRENT_DISTRICT}-relog-prefill`, selected);
       window.location.href = `${CURRENT_DISTRICT}.html`;
     });
@@ -596,10 +646,11 @@ function closeRelogOverlay() {
   document.getElementById('relog-overlay')?.classList.remove('active');
 }
 
+
 // ─── media (photo + music) ────────────────────────────────────────────────────
 
 function loadMedia() {
-  const savedPhoto = localStorage.getItem(`${CURRENT_DISTRICT}-photo`);
+  const savedPhoto   = localStorage.getItem(`${CURRENT_DISTRICT}-photo`);
   const photoVisible = localStorage.getItem(`${CURRENT_DISTRICT}-photo-visible`) === 'true';
   updatePhotoPreview(savedPhoto);
   updatePhotoToggle(photoVisible);
@@ -676,7 +727,7 @@ function initMediaListeners() {
 
   document.getElementById('media-photo-toggle-cell')?.addEventListener('click', () => {
     const current = localStorage.getItem(`${CURRENT_DISTRICT}-photo-visible`) === 'true';
-    const next = !current;
+    const next    = !current;
     localStorage.setItem(`${CURRENT_DISTRICT}-photo-visible`, next);
     updatePhotoToggle(next);
   });

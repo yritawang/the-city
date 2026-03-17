@@ -403,7 +403,7 @@ function initVisitConstellationBtn(cityData) {
   btn.style.display = 'flex';
   btn.classList.remove('locked', 'active');
   const label = btn.querySelector('.constellation-btn-label');
-  if (label) label.textContent = 'City as Memories';
+  if (label) label.textContent = 'See Memories';
 
   const fresh = btn.cloneNode(true);
   btn.parentNode.replaceChild(fresh, btn);
@@ -413,13 +413,13 @@ function initVisitConstellationBtn(cityData) {
       closeConstellation();
       visitConstellationActive = false;
       const lbl = fresh.querySelector('.constellation-btn-label');
-      if (lbl) lbl.textContent = 'City as Memories';
+      if (lbl) lbl.textContent = 'See Memories';
       fresh.classList.remove('active');
     } else {
       openVisitConstellation(cityData);
       visitConstellationActive = true;
       const lbl = fresh.querySelector('.constellation-btn-label');
-      if (lbl) lbl.textContent = 'City as Map';
+      if (lbl) lbl.textContent = 'See Map';
       fresh.classList.add('active');
     }
   });
@@ -578,7 +578,6 @@ function renderDistrictPhotos() {
     if (!el) return;
     const photo = localStorage.getItem(`${d}-photo`);
     if (!photo) return;
-    // if img already exists just make it visible
     const existing = el.querySelector('.district-photo-float');
     if (existing) {
       existing.style.display = 'block';
@@ -587,7 +586,7 @@ function renderDistrictPhotos() {
     const img = document.createElement('img');
     img.className = 'district-photo-float';
     img.src = photo;
-    img.style.display = 'block'; // override css default display:none
+    img.style.display = 'block';
     el.appendChild(img);
   });
 }
@@ -756,7 +755,7 @@ function openConstellation() {
   mapContainer.classList.add('constellation-active');
   btn.classList.add('active');
   const lbl = btn.querySelector('.constellation-btn-label');
-  if (lbl) lbl.textContent = 'City as Map';
+  if (lbl) lbl.textContent = 'See Map';
   setTimeout(() => initConstellationSketch(), 100);
 }
 
@@ -770,7 +769,7 @@ function closeConstellation() {
   mapContainer.classList.remove('constellation-active');
   btn.classList.remove('active');
   const lbl = btn.querySelector('.constellation-btn-label');
-  if (lbl) lbl.textContent = 'City as Memories';
+  if (lbl) lbl.textContent = 'See Memories';
 
   const panel = document.getElementById('constellation-info-panel');
   if (panel) panel.classList.remove('visible');
@@ -900,11 +899,15 @@ function initConstellationSketch() {
   };
 
   nodes.forEach(n => {
+    // single-district words anchor tightly to their district region
+    // multi-district words float toward center
     const anchor = n.districts.length > 1
       ? { ax: 0.5, ay: 0.5 }
       : (ANCHORS[n.districts[0]] || { ax: 0.5, ay: 0.5 });
     n.anchorX = anchor.ax;
     n.anchorY = anchor.ay;
+    // flag used in draw loop to decide pull strength
+    n.singleDistrict = n.districts.length === 1;
   });
 
   constellationSketch = new p5((sk) => {
@@ -921,8 +924,9 @@ function initConstellationSketch() {
       sk.textFont('monospace');
       sk.textSize(12);
       nodes.forEach(n => {
-        n.x = n.anchorX * W + (Math.random() - 0.5) * 80;
-        n.y = n.anchorY * H + (Math.random() - 0.5) * 80;
+        // spawn close to anchor so clustering is visible from the start
+        n.x = n.anchorX * W + (Math.random() - 0.5) * 60;
+        n.y = n.anchorY * H + (Math.random() - 0.5) * 60;
         n.vx = 0; n.vy = 0;
       });
     };
@@ -932,6 +936,7 @@ function initConstellationSketch() {
       frame++;
       const damping = Math.min(0.85 + frame * 0.001, 0.94);
 
+      // repulsion between all nodes keeps them from stacking
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i], b = nodes[j];
@@ -944,8 +949,11 @@ function initConstellationSketch() {
       }
 
       nodes.forEach(n => {
-        n.vx += (n.anchorX * W - n.x) * 0.015;
-        n.vy += (n.anchorY * H - n.y) * 0.015;
+        // single-district words pull hard toward their district corner (0.04)
+        // multi-district words drift gently toward center (0.015)
+        const pull = n.singleDistrict ? 0.04 : 0.015;
+        n.vx += (n.anchorX * W - n.x) * pull;
+        n.vy += (n.anchorY * H - n.y) * pull;
         n.vx *= damping; n.vy *= damping;
         n.x = Math.max(60, Math.min(W - 60, n.x + n.vx));
         n.y = Math.max(30, Math.min(H - 30, n.y + n.vy));

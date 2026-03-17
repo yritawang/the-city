@@ -958,3 +958,78 @@ html, body {
 .media-crop-btn:hover { background: var(--blue); color: var(--color-bg); }
 .media-crop-btn.primary { background: var(--blue); color: var(--color-bg); }
 .media-crop-btn.primary:hover { opacity: 0.8; }
+
+.memory-time-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--blue);
+  margin-bottom: 1rem;
+}
+.memory-time-label {
+  font-size: 0.72rem;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+.memory-time-value {
+  font-size: 0.72rem;
+  color: var(--blue);
+  min-width: 72px;
+  opacity: 0.85;
+}
+ 
+.memory-time-controls {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--blue);
+}
+
+.memory-time-controls .constellation-control-label {
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.memory-time-controls .constellation-time-value {
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue);
+  min-width: 60px;
+  opacity: 0.85;
+}
+
+.constellation-time-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 160px;
+  height: 2px;
+  background: var(--blue);
+  outline: none;
+  opacity: 0.7;
+  cursor: pointer;
+}
+.constellation-time-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--blue);
+  cursor: pointer;
+  border-radius: 0;
+}
+.constellation-time-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--blue);
+  cursor: pointer;
+  border-radius: 0;
+  border: none;
+}
