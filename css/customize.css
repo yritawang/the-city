@@ -62,6 +62,7 @@ html, body {
   justify-content: center;
   padding: 1rem;
   flex-shrink: 0;
+  cursor: zoom-in;
 }
 
 .district-preview-img {
@@ -163,7 +164,6 @@ html, body {
   flex-shrink: 0;
 }
 
-/* title cell — full hover fill like map header-left */
 .customize-header-title-cell {
   display: flex;
   align-items: center;
@@ -178,7 +178,6 @@ html, body {
 .customize-header-title-cell:hover .customize-header-title { color: white; border-bottom-color: transparent; }
 .customize-header-title-cell:hover .customize-header-title-input { color: white; border-bottom-color: white; caret-color: white; }
 
-/* title — normal display state */
 .customize-header-title {
   font-family: var(--font-meta);
   font-size: 2.6rem;
@@ -192,7 +191,6 @@ html, body {
   transition: color 0.2s;
 }
 
-/* input — shown when editing */
 .customize-header-title-input {
   font-family: var(--font-meta);
   font-size: 2.6rem;
@@ -211,7 +209,6 @@ html, body {
 
 .customize-header-title-input.hidden { display: none; }
 
-/* shared style for all 3 right cells */
 .customize-header-cell {
   display: flex;
   align-items: center;
@@ -221,7 +218,6 @@ html, body {
   border-top: none;
   border-right: none;
   border-bottom: none;
-  border-left: 1px solid var(--blue);
   color: var(--blue);
   font-family: var(--font-whois);
   font-size: 0.9rem;
@@ -381,22 +377,145 @@ html, body {
 
 .delete-entry-btn:hover { opacity: 1; color: #c0392b; }
 
+.journal-location-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
 
-/* ─── constellation view ─── */
+.journal-location-heading {
+  font-family: var(--font-whois);
+  font-size: 0.78rem;
+  color: var(--blue);
+  opacity: 0.5;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--blue);
+  margin-bottom: 0.25rem;
+}
 
+
+/* ─── memory view (graph) ─── */
+
+/* flex column so controls bar sits above the canvas in normal document flow */
 .graph-view {
   flex: 1;
-  position: relative;
   min-height: 0;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .graph-view.hidden { display: none; }
 
+/* memory controls bar — inline, not absolutely positioned */
+.memory-controls-bar {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 0.6rem 1.5rem;
+  border-bottom: 1px solid var(--blue);
+  background-color: var(--color-bg);
+  flex-shrink: 0;
+}
+
+/* reuse constellation control group styles from map.css */
+.constellation-control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.constellation-control-label {
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue);
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+  white-space: nowrap;
+}
+
+.constellation-divider {
+  width: 1px;
+  height: 24px;
+  background-color: var(--blue);
+  opacity: 0.25;
+}
+
+.constellation-time-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 140px;
+  height: 2px;
+  background: var(--blue);
+  outline: none;
+  opacity: 0.7;
+  cursor: pointer;
+}
+
+.constellation-time-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--blue);
+  cursor: pointer;
+  border-radius: 0;
+}
+
+.constellation-time-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  background: var(--blue);
+  cursor: pointer;
+  border-radius: 0;
+  border: none;
+}
+
+.constellation-time-value {
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue);
+  min-width: 60px;
+  opacity: 0.85;
+}
+
+/* anchor mode buttons */
+.memory-anchor-btns {
+  display: flex;
+}
+
+.memory-anchor-btn {
+  background: none;
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  font-family: var(--font-whois);
+  font-size: 0.68rem;
+  padding: 0.2rem 0.65rem;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  opacity: 0.55;
+  transition: background-color 0.15s, opacity 0.15s, color 0.15s;
+}
+
+.memory-anchor-btn:first-child { border-right: none; }
+
+.memory-anchor-btn.active {
+  background-color: var(--blue);
+  color: var(--color-bg);
+  opacity: 1;
+}
+
+.memory-anchor-btn:hover:not(.active) { opacity: 1; }
+
+/* canvas fills remaining height below controls bar */
 #p5-canvas-container {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  flex: 1;
+  position: relative;
+  width: 100%;
+  min-height: 0;
 }
 
 #p5-canvas-container canvas {
@@ -405,7 +524,7 @@ html, body {
   height: 100% !important;
 }
 
-/* constellation info panel — matches map style */
+/* constellation info panel */
 #constellation-panel {
   position: absolute;
   right: 2rem;
@@ -424,11 +543,8 @@ html, body {
   z-index: 10;
 }
 
-/* ─── illustration zoom overlay ─── */
 
-.district-image-container {
-  cursor: zoom-in;
-}
+/* ─── illustration zoom overlay ─── */
 
 .illustration-overlay {
   position: fixed;
@@ -466,7 +582,9 @@ html, body {
   object-fit: contain;
 }
 
+
 /* ─── relog overlay ─── */
+
 .relog-overlay {
   position: fixed;
   top: 0; left: 0;
@@ -480,6 +598,7 @@ html, body {
   pointer-events: none;
   transition: opacity 0.3s ease;
 }
+
 .relog-overlay.active { opacity: 1; pointer-events: all; }
 
 .relog-overlay-content {
@@ -573,129 +692,6 @@ html, body {
 }
 .relog-cancel-btn:hover { opacity: 0.8; }
 
-.journal-location-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.journal-location-heading {
-  font-family: var(--font-whois);
-  font-size: 0.78rem;
-  color: var(--blue);
-  opacity: 0.5;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding-bottom: 0.4rem;
-  border-bottom: 1px solid var(--blue);
-  margin-bottom: 0.25rem;
-}
-
-/* ─── media section (photo + music) in sidebar ─── */
-
-/* ─── media section (photo + music) in sidebar ─── */
-
-.media-section {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  padding: 0.75rem 0 0.25rem;
-  border-top: 1px solid rgba(255,255,255,0.25);
-  flex-shrink: 0;
-}
-
-.media-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.media-label {
-  font-size: 0.72rem;
-  color: white;
-  opacity: 0.7;
-  letter-spacing: 0.04em;
-}
-
-.media-upload-btn {
-  background: rgba(255,255,255,0.15);
-  border: 1px solid rgba(255,255,255,0.4);
-  color: white;
-  font-size: 0.68rem;
-  padding: 0.25rem 0.6rem;
-  cursor: pointer;
-  letter-spacing: 0.04em;
-  transition: background 0.2s;
-}
-.media-upload-btn:hover { background: rgba(255,255,255,0.3); }
-
-.media-photo-box {
-  width: 100%;
-  aspect-ratio: 4/3;
-  background: rgba(0,0,0,0.15);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.media-photo-placeholder {
-  font-size: 0.68rem;
-  color: white;
-  opacity: 0.35;
-  letter-spacing: 0.04em;
-}
-
-.media-photo-preview {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.media-toggle-cell {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  padding: 0.2rem;
-}
-
-.media-remove-btn {
-  background: none;
-  border: none;
-  color: white;
-  opacity: 0.4;
-  font-size: 0.65rem;
-  cursor: pointer;
-  padding: 0;
-  text-align: left;
-  letter-spacing: 0.03em;
-  transition: opacity 0.2s;
-}
-.media-remove-btn:hover { opacity: 0.85; }
-
-.media-music-name {
-  font-size: 0.65rem;
-  color: white;
-  opacity: 0.7;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-  display: block;
-}
-
-.media-divider {
-  width: 100%;
-  height: 1px;
-  background: rgba(255,255,255,0.2);
-  margin: 0.25rem 0;
-}
 
 /* ─── media section (photo + music) in sidebar ─── */
 
@@ -735,7 +731,6 @@ html, body {
 }
 .media-upload-btn:hover { background: rgba(255,255,255,0.3); }
 
-/* photo preview box */
 .media-photo-box {
   width: 100%;
   aspect-ratio: 4 / 3;
@@ -766,7 +761,6 @@ html, body {
   cursor: zoom-in;
 }
 
-/* crop + remove buttons shown on hover over photo box */
 .media-photo-actions {
   position: absolute;
   bottom: 0;
@@ -777,9 +771,7 @@ html, body {
   z-index: 2;
 }
 
-.media-photo-box:hover .media-photo-actions:not(.hidden) {
-  display: flex;
-}
+.media-photo-box:hover .media-photo-actions:not(.hidden) { display: flex; }
 
 .media-action-btn {
   flex: 1;
@@ -793,9 +785,8 @@ html, body {
   letter-spacing: 0.04em;
   transition: background 0.2s;
 }
-.media-action-btn + .media-action-btn {
-  border-left: 1px solid rgba(255,255,255,0.2);
-}
+
+.media-action-btn + .media-action-btn { border-left: 1px solid rgba(255,255,255,0.2); }
 .media-action-btn:hover { background: rgba(0,0,0,0.85); }
 
 .media-remove-btn {
@@ -844,10 +835,8 @@ html, body {
   transition: opacity 0.3s ease;
   pointer-events: none;
 }
-.media-lightbox.active {
-  opacity: 1;
-  pointer-events: all;
-}
+
+.media-lightbox.active { opacity: 1; pointer-events: all; }
 
 .media-lightbox-bg {
   position: absolute;
@@ -902,10 +891,8 @@ html, body {
   transition: opacity 0.3s ease;
   pointer-events: none;
 }
-.media-crop-overlay.active {
-  opacity: 1;
-  pointer-events: all;
-}
+
+.media-crop-overlay.active { opacity: 1; pointer-events: all; }
 
 .media-crop-box {
   background: var(--color-bg);
@@ -955,81 +942,7 @@ html, body {
   letter-spacing: 0.03em;
   transition: background 0.2s, color 0.2s;
 }
+
 .media-crop-btn:hover { background: var(--blue); color: var(--color-bg); }
 .media-crop-btn.primary { background: var(--blue); color: var(--color-bg); }
 .media-crop-btn.primary:hover { opacity: 0.8; }
-
-.memory-time-bar {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem 1.5rem;
-  border-bottom: 1px solid var(--blue);
-  margin-bottom: 1rem;
-}
-.memory-time-label {
-  font-size: 0.72rem;
-  color: var(--blue);
-  letter-spacing: 0.04em;
-  opacity: 0.7;
-  white-space: nowrap;
-}
-.memory-time-value {
-  font-size: 0.72rem;
-  color: var(--blue);
-  min-width: 72px;
-  opacity: 0.85;
-}
- 
-.memory-time-controls {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  padding: 0.75rem 1.5rem;
-  border-bottom: 1px solid var(--blue);
-}
-
-.memory-time-controls .constellation-control-label {
-  font-family: var(--font-whois);
-  font-size: 0.72rem;
-  color: var(--blue);
-  letter-spacing: 0.04em;
-  opacity: 0.7;
-  white-space: nowrap;
-}
-
-.memory-time-controls .constellation-time-value {
-  font-family: var(--font-whois);
-  font-size: 0.72rem;
-  color: var(--blue);
-  min-width: 60px;
-  opacity: 0.85;
-}
-
-.constellation-time-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 160px;
-  height: 2px;
-  background: var(--blue);
-  outline: none;
-  opacity: 0.7;
-  cursor: pointer;
-}
-.constellation-time-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 12px;
-  height: 12px;
-  background: var(--blue);
-  cursor: pointer;
-  border-radius: 0;
-}
-.constellation-time-slider::-moz-range-thumb {
-  width: 12px;
-  height: 12px;
-  background: var(--blue);
-  cursor: pointer;
-  border-radius: 0;
-  border: none;
-}

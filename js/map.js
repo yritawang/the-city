@@ -549,8 +549,33 @@ function toggleRandomize() {
   localStorage.setItem('randomizeDistricts', next);
   const track = document.getElementById('randomize-track');
   if (track) track.classList.toggle('on', next);
-  if (next) randomizeDistricts();
-  else location.reload();
+  if (next) {
+    randomizeDistricts();
+  } else {
+    resetDistrictPositions();
+  }
+}
+
+// restore districts to their default css positions without reloading
+function resetDistrictPositions() {
+  const defaults = {
+    garden:      { top: '80px',    bottom: '', left: '140px', right: '',      transform: 'none',                    zIndex: 1  },
+    tower:       { top: '80px',    bottom: '', left: '',      right: '140px', transform: 'none',                    zIndex: 1  },
+    cornerstore: { top: '',        bottom: '100px', left: '160px', right: '', transform: 'none',                   zIndex: 11 },
+    plaza:       { top: '',        bottom: '80px',  left: '',      right: '80px', transform: 'none',               zIndex: 11 },
+    shrine:      { top: '50%',     bottom: '', left: '50%',   right: '',      transform: 'translate(-50%, -50%)', zIndex: 10 },
+  };
+  Object.entries(defaults).forEach(([name, pos]) => {
+    const el = document.getElementById(name);
+    if (!el) return;
+    el.style.cssText = `
+      position: absolute; width: 360px; height: 360px;
+      top: ${pos.top}; bottom: ${pos.bottom};
+      left: ${pos.left}; right: ${pos.right};
+      transform: ${pos.transform};
+      cursor: pointer; transition: transform 0.3s ease; z-index: ${pos.zIndex};
+    `;
+  });
 }
 
 
@@ -618,6 +643,12 @@ const TIME_OPTIONS = [
 let constellationTimeRange = 'all';
 let constellationDistricts = new Set(['garden', 'shrine', 'cornerstore', 'tower', 'plaza']);
 
+function getWordCategory(w) {
+  if (EMOTION_WORDS.has(w) || DESCRIPTIVE_WORDS.has(w)) return 'emotional';
+  if (LOCATION_WORDS.has(w)) return 'location';
+  return 'other';
+}
+
 function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null) {
   const now = Date.now();
   const cutoffDays = { week: 7, month: 30, year: 365, all: Infinity };
@@ -629,7 +660,7 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
     return JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]').length > 0;
   });
 
-  const freq = {}, wordSources = {}, wordContexts = {};
+  const freq = {}, wordSources = {}, wordContexts = {}, wordLastSeen = {};
 
   completed.forEach(d => {
     const distSessions = JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]')
@@ -648,6 +679,7 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
           if (!wordSources[w]) wordSources[w] = new Set();
           wordSources[w].add(d);
           if (!wordContexts[w]) wordContexts[w] = [];
+          wordLastSeen[w] = Math.max(wordLastSeen[w] || 0, session.timestamp);
           const sessionDate = session.date || '';
           wordContexts[w].push({
             district: d,
@@ -690,6 +722,7 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
         Object.entries(session.answers).forEach(([qi, answer]) => {
           if (!answer || parseInt(qi) === 5) return;
           if (answer.toLowerCase().includes(w)) {
+            wordLastSeen[w] = Math.max(wordLastSeen[w] || 0, session.timestamp);
             const sessionDate = session.date || '';
             wordContexts[w].push({
               district: d,
@@ -705,7 +738,9 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
   return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, topN).map(([word, count]) => ({
     word, count,
     districts: [...wordSources[word]],
-    contexts: wordContexts[word] || [],
+    contexts:  wordContexts[word] || [],
+    lastSeen:  wordLastSeen[word] || cutoff,
+    category:  getWordCategory(word),
   }));
 }
 
@@ -836,7 +871,7 @@ function initConstellationSketch() {
   }
 
   if (!document.getElementById('constellation-controls')) {
-    const sliderMax = TIME_OPTIONS.length - 1;
+    const sliderMax  = TIME_OPTIONS.length - 1;
     const currentIdx = TIME_OPTIONS.findIndex(o => o.value === constellationTimeRange);
     const resolvedIdx = currentIdx >= 0 ? currentIdx : sliderMax;
 
@@ -885,10 +920,14 @@ function initConstellationSketch() {
     });
   }
 
-  const keywords = extractAllKeywords(20, constellationTimeRange, constellationDistricts);
+  const keywords = extractAllKeywords(24, constellationTimeRange, constellationDistricts);
   if (keywords.length === 0) return;
 
-  const nodes = keywords.map(k => ({ ...k, x: 0, y: 0, vx: 0, vy: 0 }));
+  // recency: 0 = oldest word, 1 = most recently seen word
+  const allTimestamps = keywords.map(k => k.lastSeen).filter(Boolean);
+  const oldest  = allTimestamps.length ? Math.min(...allTimestamps) : 0;
+  const newest  = allTimestamps.length ? Math.max(...allTimestamps) : 1;
+  const timespan = Math.max(newest - oldest, 1);
 
   const ANCHORS = {
     garden:      { ax: 0.22, ay: 0.25 },
@@ -898,36 +937,35 @@ function initConstellationSketch() {
     plaza:       { ax: 0.78, ay: 0.75 },
   };
 
-  nodes.forEach(n => {
-    // single-district words anchor tightly to their district region
-    // multi-district words float toward center
-    const anchor = n.districts.length > 1
+  const nodes = keywords.map(k => {
+    const anchor = k.districts.length > 1
       ? { ax: 0.5, ay: 0.5 }
-      : (ANCHORS[n.districts[0]] || { ax: 0.5, ay: 0.5 });
-    n.anchorX = anchor.ax;
-    n.anchorY = anchor.ay;
-    // flag used in draw loop to decide pull strength
-    n.singleDistrict = n.districts.length === 1;
+      : (ANCHORS[k.districts[0]] || { ax: 0.5, ay: 0.5 });
+    return {
+      ...k,
+      x: 0, y: 0, vx: 0, vy: 0,
+      anchorX: anchor.ax,
+      anchorY: anchor.ay,
+      singleDistrict: k.districts.length === 1,
+      recency: (k.lastSeen - oldest) / timespan,
+    };
   });
 
   constellationSketch = new p5((sk) => {
     let W, H, frame = 0;
     let selectedIdx = null;
-    const blue = getComputedStyle(document.body).getPropertyValue('--blue').trim() || '#0A059B';
-    const bg   = getComputedStyle(document.body).getPropertyValue('--color-bg').trim() || '#F7F2F1';
-    const PAD_X = 10, PAD_Y = 6;
+    const bg    = getComputedStyle(document.body).getPropertyValue('--color-bg').trim() || '#F7F2F1';
+    const blue  = getComputedStyle(document.body).getPropertyValue('--blue').trim() || '#0A059B';
+    const PAD_X = 8, PAD_Y = 4;
 
     sk.setup = () => {
       W = container.offsetWidth || window.innerWidth;
       H = container.offsetHeight || (window.innerHeight - 90);
       sk.createCanvas(W, H).parent('constellation-canvas-container');
       sk.textFont('monospace');
-      sk.textSize(12);
       nodes.forEach(n => {
-        // spawn close to anchor so clustering is visible from the start
-        n.x = n.anchorX * W + (Math.random() - 0.5) * 60;
-        n.y = n.anchorY * H + (Math.random() - 0.5) * 60;
-        n.vx = 0; n.vy = 0;
+        n.x = n.anchorX * W + (Math.random() - 0.5) * 80;
+        n.y = n.anchorY * H + (Math.random() - 0.5) * 80;
       });
     };
 
@@ -936,21 +974,20 @@ function initConstellationSketch() {
       frame++;
       const damping = Math.min(0.85 + frame * 0.001, 0.94);
 
-      // repulsion between all nodes keeps them from stacking
+      // repulsion keeps nodes from stacking
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i], b = nodes[j];
           const dx = b.x - a.x, dy = b.y - a.y;
           const d = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
-          const f = 5000 / (d * d);
+          const f = 4000 / (d * d);
           a.vx -= (dx / d) * f; a.vy -= (dy / d) * f;
           b.vx += (dx / d) * f; b.vy += (dy / d) * f;
         }
       }
 
       nodes.forEach(n => {
-        // single-district words pull hard toward their district corner (0.04)
-        // multi-district words drift gently toward center (0.015)
+        // single-district words anchor to district corner, multi-district drift to center
         const pull = n.singleDistrict ? 0.04 : 0.015;
         n.vx += (n.anchorX * W - n.x) * pull;
         n.vy += (n.anchorY * H - n.y) * pull;
@@ -960,48 +997,69 @@ function initConstellationSketch() {
       });
 
       nodes.forEach((n, idx) => {
-        const fontSize = 11 + Math.min(n.count * 1.5, 6);
+        // size: 10-18px range based on frequency
+        const t        = nodes.length > 1 ? idx / (nodes.length - 1) : 0.5;
+        const fontSize = 10 + (1 - t) * 8;
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
-        const isSelected = selectedIdx === idx;
-        const isHovered = sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
-                          sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2;
 
-        let col;
-        if (n.districts.length === 1) {
-          col = DISTRICT_COLORS[n.districts[0]];
-        } else {
-          const c1 = DISTRICT_COLORS[n.districts[0]] || blue;
-          const c2 = DISTRICT_COLORS[n.districts[1]] || blue;
-          const grad = sk.drawingContext.createLinearGradient(
-            n.x - rw / 2, n.y, n.x + rw / 2, n.y
-          );
-          grad.addColorStop(0, c1);
-          grad.addColorStop(1, c2);
-          col = grad;
-        }
+        // recency opacity: 0.55 (oldest) to 1.0 (newest)
+        const opacity = 0.55 + n.recency * 0.45;
+        const opHex   = Math.round(opacity * 255).toString(16).padStart(2, '0');
+
+        const isSelected = selectedIdx === idx;
+        const isHovered  = sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
+                           sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2;
+
+        // district color: single = that district's color, multi = gradient
+        const getCol = () => {
+          if (n.districts.length === 1) return DISTRICT_COLORS[n.districts[0]] || blue;
+          return null; // signal gradient
+        };
+        const singleCol = getCol();
 
         sk.noStroke();
-        if (typeof col === 'string') {
-          sk.fill(isSelected || isHovered ? col : col + 'CC');
-          sk.rect(n.x - rw / 2, n.y - rh / 2, rw, rh);
+
+        if (n.category === 'location') {
+          // location words: bare text, no box, in district color
+          if (singleCol) {
+            sk.fill(singleCol + (isSelected || isHovered ? 'ff' : opHex));
+          } else {
+            // multi-district: use first district color faded
+            sk.fill((DISTRICT_COLORS[n.districts[0]] || blue) + (isSelected || isHovered ? 'ff' : opHex));
+          }
+          sk.textAlign(sk.CENTER, sk.CENTER);
+          sk.text(n.word, n.x, n.y);
         } else {
-          sk.drawingContext.fillStyle = col;
-          sk.drawingContext.globalAlpha = (isSelected || isHovered) ? 1 : 0.8;
-          sk.drawingContext.fillRect(n.x - rw / 2, n.y - rh / 2, rw, rh);
-          sk.drawingContext.globalAlpha = 1;
+          // emotional + descriptive: filled box in district color
+          if (singleCol) {
+            sk.fill(singleCol + (isSelected || isHovered ? 'ff' : opHex));
+            sk.rect(n.x - rw / 2, n.y - rh / 2, rw, rh);
+          } else {
+            // multi-district: gradient box
+            const c1 = DISTRICT_COLORS[n.districts[0]] || blue;
+            const c2 = DISTRICT_COLORS[n.districts[1]] || blue;
+            const grad = sk.drawingContext.createLinearGradient(n.x - rw / 2, n.y, n.x + rw / 2, n.y);
+            grad.addColorStop(0, c1);
+            grad.addColorStop(1, c2);
+            sk.drawingContext.fillStyle = grad;
+            sk.drawingContext.globalAlpha = isSelected || isHovered ? 1 : opacity;
+            sk.drawingContext.fillRect(n.x - rw / 2, n.y - rh / 2, rw, rh);
+            sk.drawingContext.globalAlpha = 1;
+          }
+          sk.fill(bg);
+          sk.textAlign(sk.CENTER, sk.CENTER);
+          sk.text(n.word, n.x, n.y);
         }
-        sk.fill(bg);
-        sk.textAlign(sk.CENTER, sk.CENTER);
-        sk.text(n.word, n.x, n.y);
       });
     };
 
     sk.mousePressed = () => {
       let hit = null;
       nodes.forEach((n, idx) => {
-        const fontSize = 11 + Math.min(n.count * 1.5, 6);
+        const t        = nodes.length > 1 ? idx / (nodes.length - 1) : 0.5;
+        const fontSize = 10 + (1 - t) * 8;
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
@@ -1020,8 +1078,9 @@ function initConstellationSketch() {
 
     sk.mouseMoved = () => {
       let onNode = false;
-      nodes.forEach(n => {
-        const fontSize = 11 + Math.min(n.count * 1.5, 6);
+      nodes.forEach((n, idx) => {
+        const t        = nodes.length > 1 ? idx / (nodes.length - 1) : 0.5;
+        const fontSize = 10 + (1 - t) * 8;
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
@@ -1062,6 +1121,7 @@ document.addEventListener('DOMContentLoaded', () => {
   checkAchievements();
   seedExampleCity();
   initConstellationBtn();
+  initTrain();
 
   // city name overlay
   document.getElementById('cancel-btn')?.addEventListener('click', closeCityNameOverlay);

@@ -5,20 +5,467 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>somewhere i belong</title>
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/intro.css">
+  <style>
+
+    /* ─── base ─── */
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: #0A059B;
+      color: #F7F2F1;
+      overflow-x: hidden;
+    }
+
+    :root { --blue: #0A059B; --fg: #F7F2F1; }
+
+
+    /* ─── section 1: title ─── */
+
+    .section-title {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 10vw;
+      border-bottom: 2px solid rgba(247,242,241,0.25);
+      position: relative;
+    }
+
+    .title-eyebrow {
+      font-family: var(--font-whois);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      opacity: 0.45;
+      margin-bottom: 2.5rem;
+      text-transform: uppercase;
+    }
+
+    .title-main {
+      font-family: var(--font-meta);
+      font-size: clamp(3.5rem, 8vw, 7rem);
+      font-weight: normal;
+      line-height: 1.05;
+      color: #F7F2F1;
+      max-width: 16ch;
+      letter-spacing: -0.02em;
+    }
+
+    .title-sub {
+      font-family: var(--font-meta);
+      font-size: clamp(1rem, 2vw, 1.3rem);
+      opacity: 0.55;
+      margin-top: 2.5rem;
+      max-width: 44ch;
+      line-height: 1.75;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 10vw;
+      font-family: var(--font-whois);
+      font-size: 0.65rem;
+      letter-spacing: 0.14em;
+      opacity: 0.3;
+      text-transform: uppercase;
+      animation: hintPulse 2.5s ease-in-out infinite;
+    }
+
+    @keyframes hintPulse {
+      0%, 100% { opacity: 0.3; }
+      50%       { opacity: 0.65; }
+    }
+
+
+    /* ─── sticky three-column poem section ─── */
+
+    .sticky-poems-wrapper {
+      /* tall enough to scroll through all three columns */
+      height: 300vh;
+      position: relative;
+    }
+
+    .sticky-poems-inner {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      border-bottom: 2px solid rgba(247,242,241,0.25);
+      overflow: hidden;
+    }
+
+    .poem-col {
+      padding: 4rem 3.5rem;
+      border-right: 1px solid rgba(247,242,241,0.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .poem-col:last-child { border-right: none; }
+
+    .poem-col.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .poem-num {
+      font-family: var(--font-whois);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      opacity: 0.3;
+      margin-bottom: 3rem;
+      display: block;
+      text-transform: uppercase;
+    }
+
+    .poem-text {
+      font-family: var(--font-meta);
+      font-size: clamp(1.3rem, 2.2vw, 1.9rem);
+      font-weight: normal;
+      line-height: 1.55;
+      color: #F7F2F1;
+      margin-bottom: 2.5rem;
+    }
+
+    .poem-aside {
+      font-family: var(--font-whois);
+      font-size: 0.78rem;
+      opacity: 0.45;
+      line-height: 1.85;
+      letter-spacing: 0.01em;
+      border-left: 1px solid rgba(247,242,241,0.3);
+      padding-left: 1rem;
+    }
+
+
+    /* ─── section: districts ─── */
+
+    .section-districts {
+      border-bottom: 2px solid rgba(247,242,241,0.25);
+      padding: 8vh 10vw;
+    }
+
+    .districts-label {
+      font-family: var(--font-whois);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      opacity: 0.35;
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+      display: block;
+    }
+
+    .districts-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      border: 1px solid rgba(247,242,241,0.2);
+    }
+
+    .district-item {
+      padding: 2rem 1.75rem 2.5rem;
+      border-right: 1px solid rgba(247,242,241,0.2);
+    }
+
+    .district-item:last-child { border-right: none; }
+
+    .district-item-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+
+    .district-item-name {
+      font-family: var(--font-meta);
+      font-size: 1rem;
+      color: #F7F2F1;
+      display: block;
+      margin-bottom: 0.35rem;
+    }
+
+    .district-item-emotion {
+      font-family: var(--font-whois);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      opacity: 0.4;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 1.25rem;
+      border-bottom: 1px solid rgba(247,242,241,0.2);
+      padding-bottom: 0.75rem;
+    }
+
+    .district-item-desc {
+      font-family: var(--font-meta);
+      font-size: 0.82rem;
+      opacity: 0.6;
+      line-height: 1.7;
+    }
+
+
+    /* ─── section: CTA ─── */
+
+    .section-cta {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-bottom: 2px solid rgba(247,242,241,0.25);
+    }
+
+    .cta-left {
+      padding: 8vh 4vw 8vh 10vw;
+      border-right: 1px solid rgba(247,242,241,0.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .cta-right {
+      padding: 8vh 10vw 8vh 4vw;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+    }
+
+    .cta-label {
+      font-family: var(--font-whois);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      opacity: 0.35;
+      text-transform: uppercase;
+    }
+
+    .cta-question {
+      font-family: var(--font-meta);
+      font-size: clamp(2.5rem, 5vw, 4.5rem);
+      font-weight: normal;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: #F7F2F1;
+    }
+
+    .cta-sub {
+      font-family: var(--font-meta);
+      font-size: 0.95rem;
+      opacity: 0.5;
+      max-width: 38ch;
+      line-height: 1.75;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 1.5rem;
+      background: #F7F2F1;
+      color: #0A059B;
+      border: 2px solid #F7F2F1;
+      font-family: var(--font-whois);
+      font-size: 0.9rem;
+      letter-spacing: 0.06em;
+      padding: 1.1rem 2.5rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s ease, color 0.2s ease, gap 0.2s ease;
+      text-transform: uppercase;
+      align-self: flex-start;
+      margin-bottom: 2rem;
+    }
+
+    .cta-btn:hover {
+      background: none;
+      color: #F7F2F1;
+      gap: 2.25rem;
+    }
+
+    .cta-footnote {
+      font-family: var(--font-whois);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      opacity: 0.25;
+      text-transform: uppercase;
+    }
+
+
+    /* ─── scroll reveal ─── */
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.22s; }
+    .reveal-delay-3 { transition-delay: 0.34s; }
+    .reveal-delay-4 { transition-delay: 0.46s; }
+    .reveal-delay-5 { transition-delay: 0.58s; }
+
+  </style>
 </head>
 <body>
-  <div id="intro-screen" class="intro-screen">
-    <div class="intro-content">
-      <h1 class="intro-title">Somewhere I Belong</h1>
-      <p class="intro-subtitle">I am a museum of everything I've ever loved.</p>
+
+  <!-- ─── title ─── -->
+  <section class="section-title">
+    <span class="title-eyebrow reveal">An emotional hometown</span>
+    <h1 class="title-main reveal reveal-delay-1">Somewhere<br>I Belong</h1>
+    <p class="title-sub reveal reveal-delay-2">The places you've lived stay with you. Now, you can visualize it.</p>
+    <span class="scroll-hint">Scroll ↓</span>
+  </section>
+
+
+  <!-- ─── sticky three-column poems ─── -->
+  <div class="sticky-poems-wrapper" id="sticky-wrapper">
+    <div class="sticky-poems-inner" id="sticky-inner">
+
+      <div class="poem-col" id="poem-col-1">
+        <span class="poem-num">01</span>
+        <p class="poem-text">
+          There are places that shaped you before you had words for what was happening.
+        </p>
+        <p class="poem-aside">
+          A kitchen where you felt safe.<br>
+          A street you walked alone for the first time.<br>
+          A room you had to leave before you were ready.
+        </p>
+      </div>
+
+      <div class="poem-col" id="poem-col-2">
+        <span class="poem-num">02</span>
+        <p class="poem-text">
+          Belonging feeling you carry.
+        </p>
+        <p class="poem-aside">
+          Built from fragments. A shrine to what you revered.<br>
+          A garden where you grew. A cornerstore you returned to. A tower you climbed alone. A plaza where you found your people.
+        </p>
+      </div>
+
+      <div class="poem-col" id="poem-col-3">
+        <span class="poem-num">03</span>
+        <p class="poem-text">
+          To name a place is to refuse to let it disappear.
+        </p>
+        <p class="poem-aside">
+          This is a space to reclaim the geography of your life.<br>
+          As it lives in you.
+        </p>
+      </div>
+
     </div>
   </div>
 
-  <div id="main-page" class="main-page hidden">
-    <p>main page</p>
-  </div>
 
-  <script src="js/intro.js"></script>
+  <!-- ─── districts ─── -->
+  <section class="section-districts">
+    <span class="districts-label reveal">Five districts. Five emotions.</span>
+    <div class="districts-grid">
+      <div class="district-item reveal reveal-delay-1">
+        <span class="district-item-dot" style="background:#DD6204;"></span>
+        <span class="district-item-name">The Shrine</span>
+        <span class="district-item-emotion">Reverence</span>
+        <span class="district-item-desc">A place held sacred. Something you return to in memory.</span>
+      </div>
+      <div class="district-item reveal reveal-delay-2">
+        <span class="district-item-dot" style="background:#6A6405;"></span>
+        <span class="district-item-name">The Garden</span>
+        <span class="district-item-emotion">Growth</span>
+        <span class="district-item-desc">Where you became someone you hadn't been before.</span>
+      </div>
+      <div class="district-item reveal reveal-delay-3">
+        <span class="district-item-dot" style="background:#D05038;"></span>
+        <span class="district-item-name">The Cornerstore</span>
+        <span class="district-item-emotion">Routine</span>
+        <span class="district-item-desc">The regular place that made you feel at home.</span>
+      </div>
+      <div class="district-item reveal reveal-delay-4">
+        <span class="district-item-dot" style="background:#205A97;"></span>
+        <span class="district-item-name">The Tower</span>
+        <span class="district-item-emotion">Solitude</span>
+        <span class="district-item-desc">Where you went to be alone with yourself.</span>
+      </div>
+      <div class="district-item reveal reveal-delay-5">
+        <span class="district-item-dot" style="background:#614973;"></span>
+        <span class="district-item-name">The Plaza</span>
+        <span class="district-item-emotion">Community</span>
+        <span class="district-item-desc">The place where you felt part of something larger.</span>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ─── CTA ─── -->
+  <section class="section-cta">
+    <div class="cta-left">
+      <span class="cta-label reveal">Ready?</span>
+      <h2 class="cta-question reveal reveal-delay-1">
+        Where do<br>you belong?
+      </h2>
+      <p class="cta-sub reveal reveal-delay-2">
+        You'll answer a few questions about real places from your life and leave with a map only you could have made.
+      </p>
+    </div>
+    <div class="cta-right">
+      <a href="map.html" class="cta-btn reveal reveal-delay-1">
+        Build your city →
+      </a>
+      <span class="cta-footnote reveal reveal-delay-2">Somewhere I Belong: an emotional hometown</span>
+    </div>
+  </section>
+
+
+  <script>
+    // ─── scroll reveal ─────────────────────────────────────────────────────────
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // trigger anything already in viewport
+    document.querySelectorAll('.reveal').forEach(el => {
+      if (el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
+    });
+
+
+    // ─── sticky poem columns ───────────────────────────────────────────────────
+    // reveal columns one by one as user scrolls through the 300vh wrapper
+    const wrapper  = document.getElementById('sticky-wrapper');
+    const col1     = document.getElementById('poem-col-1');
+    const col2     = document.getElementById('poem-col-2');
+    const col3     = document.getElementById('poem-col-3');
+
+    function updatePoems() {
+      const wRect    = wrapper.getBoundingClientRect();
+      const wTop     = -wRect.top; // how far we've scrolled into the wrapper
+      const wHeight  = wrapper.offsetHeight;
+      const third    = wHeight / 3;
+
+      // col 1 activates immediately on entering the wrapper
+      if (wTop >= 0)           col1.classList.add('active');
+      else                     col1.classList.remove('active');
+
+      // col 2 activates after 1/3 of the wrapper is scrolled
+      if (wTop >= third)       col2.classList.add('active');
+      else                     col2.classList.remove('active');
+
+      // col 3 activates after 2/3 of the wrapper is scrolled
+      if (wTop >= third * 2)   col3.classList.add('active');
+      else                     col3.classList.remove('active');
+    }
+
+    window.addEventListener('scroll', updatePoems, { passive: true });
+    updatePoems(); // run on load in case already scrolled
+  </script>
+
 </body>
 </html>

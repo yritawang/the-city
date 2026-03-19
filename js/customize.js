@@ -17,6 +17,7 @@ const DISTRICT_CONFIG = {
   shrine: {
     displayName: 'The Shrine',
     emotion: 'Reverence',
+    emotionWord: 'reverence',
     questions: [
       "What place comes to mind?",
       "What did this place hold that was precious to you?",
@@ -30,6 +31,7 @@ const DISTRICT_CONFIG = {
   garden: {
     displayName: 'The Garden',
     emotion: 'Growth',
+    emotionWord: 'growth',
     questions: [
       "What place comes to mind?",
       "What were you becoming in this place?",
@@ -43,6 +45,7 @@ const DISTRICT_CONFIG = {
   cornerstore: {
     displayName: 'The Cornerstore',
     emotion: 'Comfort',
+    emotionWord: 'comfort',
     questions: [
       "What place comes to mind?",
       "What was your routine in this place?",
@@ -55,7 +58,8 @@ const DISTRICT_CONFIG = {
   },
   tower: {
     displayName: 'The Tower',
-    emotion: 'Perspective',
+    emotion: 'Solitude',
+    emotionWord: 'solitude',
     questions: [
       "What place comes to mind?",
       "What was your relationship with solitude in this space?",
@@ -69,6 +73,7 @@ const DISTRICT_CONFIG = {
   plaza: {
     displayName: 'The Plaza',
     emotion: 'Belonging',
+    emotionWord: 'belonging',
     questions: [
       "What place comes to mind?",
       "Who else was in this place? How did you connect with them?",
@@ -93,32 +98,57 @@ const STOPWORDS = new Set([
   'even','very','much','many','some','any','time','way'
 ]);
 
-function extractKeywords(text, topN = 8) {
-  const words = text.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/)
-    .filter(w => w.length > 3 && !STOPWORDS.has(w));
-  const freq = {};
-  words.forEach(w => { freq[w] = (freq[w] || 0) + 1; });
-  return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, topN)
-    .map(([word, count]) => ({ word, count }));
+const EMOTION_WORDS = new Set(['happy','happiness','sad','sadness','grief','joy','joyful','love','loved','lonely','loneliness','fear','afraid','scared','anxious','anxiety','angry','anger','rage','calm','peace','peaceful','safe','unsafe','comfort','comfortable','uncomfortable','proud','pride','shame','ashamed','guilt','guilty','hopeful','hope','hopeless','lost','found','free','freedom','trapped','nostalgic','nostalgia','homesick','longing','yearning','missing','belonging','connected','disconnected','isolated','warm','warmth','cold','hurt','pain','painful','tender','gentle','alive','numb','empty','full','overwhelmed','grateful','gratitude','bitter','bittersweet','melancholy','wonder','awe','curious','confused','clarity','certain','uncertain','excited','excitement','nervous','relief','relieved','tired','exhausted','energized','inspired','inspiration','content','restless','vulnerable','strong','weak','brave','courage']);
+const LOCATION_WORDS = new Set(['home','house','room','bedroom','kitchen','garden','park','school','church','temple','mosque','street','road','alley','corner','market','store','shop','cafe','restaurant','library','hospital','office','studio','apartment','building','city','town','village','country','neighborhood','district','plaza','shrine','tower','forest','lake','river','ocean','beach','mountain','field','farm','barn','garage','basement','attic','hallway','staircase','window','door','yard','balcony','rooftop','bridge','station','airport','train','bus','court','campus','dormitory','dorm','classroom','gym','pool','stadium','theater','cinema','museum','gallery','mall','hotel','motel','cabin','cottage','palace','castle','ruins','cemetery','playground','lobby','corridor','passage','square','avenue','boulevard','lane']);
+const DESCRIPTIVE_WORDS = new Set(['quiet','loud','bright','dark','small','large','big','tiny','huge','narrow','wide','open','closed','clean','dirty','old','ancient','modern','empty','crowded','busy','still','chaotic','familiar','unfamiliar','strange','ordinary','special','sacred','forgotten','remembered','hidden','visible','distant','close','near','far','deep','shallow','heavy','light','soft','hard','rough','smooth','broken','whole','perfect','imperfect','beautiful','ugly','simple','complex','extraordinary','invisible','tangible','fleeting','permanent','temporary','endless','brief','vast','intimate','public','private','shared','personal','collective','universal','specific','vivid','faded','fresh','alive','growing','changing','fixed','steady','grounded','real','dreamlike','concrete','meaningful','powerful','fragile','resilient','delicate','sturdy','urgent','slow','fast']);
+
+function getWordCategory(w) {
+  if (EMOTION_WORDS.has(w) || DESCRIPTIVE_WORDS.has(w)) return 'emotional';
+  if (LOCATION_WORDS.has(w)) return 'location';
+  return 'other';
 }
 
-const config    = DISTRICT_CONFIG[CURRENT_DISTRICT];
-const QUESTIONS = config.questions;
+function extractKeywords(filteredSessions, topN = 24) {
+  const freq = {}, wordSessions = {};
+  filteredSessions.forEach(session => {
+    Object.entries(session.answers).forEach(([qi, answer]) => {
+      if (parseInt(qi) === 5 || !answer) return;
+      const words = answer.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/);
+      words.filter(w => w.length > 3 && !STOPWORDS.has(w)).forEach(w => {
+        freq[w] = (freq[w] || 0) + 1;
+        if (!wordSessions[w]) wordSessions[w] = new Set();
+        wordSessions[w].add(session.timestamp);
+      });
+    });
+  });
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN)
+    .map(([word, count]) => ({
+      word, count,
+      category: getWordCategory(word),
+      lastSeen: Math.max(...wordSessions[word])
+    }));
+}
 
-let districtData = {};
-let sessions     = [];
-let currentSkin  = 0;
-let graphSketch  = null;
-let isGraphMode  = false;
+const config     = DISTRICT_CONFIG[CURRENT_DISTRICT];
+const QUESTIONS  = config.questions;
+const DIST_COLOR = config.color;
 
-// time range state for the memory view word cloud
+let districtData  = {};
+let sessions      = [];
+let currentSkin   = 0;
+let graphSketch   = null;
+let isGraphMode   = false;
+
 const TIME_OPTIONS = [
   { value: 'week',  label: 'Past week' },
   { value: 'month', label: 'Past month' },
   { value: 'year',  label: 'Past year' },
   { value: 'all',   label: 'All time' },
 ];
-let memoryTimeRange = 'all';
+let memoryTimeRange  = 'all';
+let memoryAnchorMode = 'location';
 
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
@@ -157,7 +187,6 @@ function loadData() {
     answers:  rawAnswers
   };
   sessions = JSON.parse(localStorage.getItem(`${CURRENT_DISTRICT}-sessions`) || '[]');
-  // backfill first session if missing
   if (sessions.length === 0 && Object.keys(rawAnswers).length > 0) {
     sessions.push({ date: districtData.date, timestamp: Date.now(), answers: { ...rawAnswers } });
     localStorage.setItem(`${CURRENT_DISTRICT}-sessions`, JSON.stringify(sessions));
@@ -173,7 +202,6 @@ function renderUI() {
   if (titleEl) titleEl.textContent = districtData.name;
   const dateEl = document.getElementById('district-date');
   if (dateEl) dateEl.textContent = `Edited: ${districtData.date}`;
-  // show most recent place name in the subheader
   const locationEl = document.getElementById('location-value');
   if (locationEl) {
     const latest = [...sessions].sort((a, b) => b.timestamp - a.timestamp)[0];
@@ -209,7 +237,6 @@ function renderJournalEntries() {
     return;
   }
 
-  // group sessions by place name (answer to question 0)
   const groups = new Map();
   [...sessions].sort((a, b) => b.timestamp - a.timestamp).forEach(session => {
     const place = session.answers[0] || '—';
@@ -273,8 +300,6 @@ function renderJournalEntries() {
 // ─── listeners ───────────────────────────────────────────────────────────────
 
 function setupListeners() {
-
-  // inline name editing
   const titleCell  = document.getElementById('title-cell');
   const titleEl    = document.getElementById('district-title');
   const titleInput = document.getElementById('district-title-input');
@@ -290,7 +315,6 @@ function setupListeners() {
     });
 
     titleInput.addEventListener('blur', () => commitName());
-
     titleInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter')  { e.preventDefault(); titleInput.blur(); }
       if (e.key === 'Escape') { titleInput.value = districtData.name; titleInput.blur(); }
@@ -308,19 +332,16 @@ function setupListeners() {
     titleInput.classList.add('hidden');
   }
 
-  // save button (sidebar)
   document.getElementById('save-btn')?.addEventListener('click', () => {
     localStorage.setItem(`${CURRENT_DISTRICT}-skin`, currentSkin);
-    const btn = document.getElementById('save-btn');
+    const btn  = document.getElementById('save-btn');
     const prev = btn.textContent;
     btn.textContent = 'Saved';
     setTimeout(() => { btn.textContent = prev; }, 1500);
   });
 
-  // log again
   document.getElementById('redo-btn')?.addEventListener('click', openRelogOverlay);
 
-  // skins
   document.querySelectorAll('.skin-thumb').forEach(t => {
     t.addEventListener('click', () => {
       currentSkin = parseInt(t.dataset.skin);
@@ -328,7 +349,6 @@ function setupListeners() {
     });
   });
 
-  // view toggle
   document.getElementById('journal-toggle')?.addEventListener('click', switchToJournal);
   document.getElementById('graph-toggle')?.addEventListener('click', switchToGraph);
 }
@@ -343,9 +363,9 @@ function switchToJournal() {
   document.getElementById('journal-view').classList.remove('hidden');
   document.getElementById('graph-view').classList.add('hidden');
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
-  // remove controls so they rebuild fresh next time
-  const controls = document.getElementById('memory-time-controls');
-  if (controls) controls.remove();
+  // hide controls — keeps button listeners alive for next open
+  const controls = document.getElementById('memory-controls');
+  if (controls) controls.style.display = 'none';
 }
 
 function switchToGraph() {
@@ -354,11 +374,13 @@ function switchToGraph() {
   document.getElementById('journal-toggle').classList.remove('active');
   document.getElementById('journal-view').classList.add('hidden');
   document.getElementById('graph-view').classList.remove('hidden');
+  const controls = document.getElementById('memory-controls');
+  if (controls) controls.style.display = '';
   setTimeout(initGraph, 100);
 }
 
 
-// ─── word cloud (memory view) ─────────────────────────────────────────────────
+// ─── memory view ─────────────────────────────────────────────────────────────
 
 function getSessionsForTimeRange() {
   if (memoryTimeRange === 'all') return sessions;
@@ -368,39 +390,104 @@ function getSessionsForTimeRange() {
   return sessions.filter(s => s.timestamp >= cutoff);
 }
 
+function computeAnchorPositions(n) {
+  if (n === 1) return [{ ax: 0.5,  ay: 0.5  }];
+  if (n === 2) return [{ ax: 0.28, ay: 0.5  }, { ax: 0.72, ay: 0.5  }];
+  if (n === 3) return [{ ax: 0.22, ay: 0.28 }, { ax: 0.78, ay: 0.28 }, { ax: 0.5,  ay: 0.75 }];
+  if (n === 4) return [{ ax: 0.22, ay: 0.28 }, { ax: 0.78, ay: 0.28 }, { ax: 0.22, ay: 0.72 }, { ax: 0.78, ay: 0.72 }];
+  return Array.from({ length: n }, (_, i) => {
+    const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+    return { ax: 0.5 + 0.32 * Math.cos(angle), ay: 0.5 + 0.32 * Math.sin(angle) };
+  });
+}
+
+function buildAnchors(filtered) {
+  if (memoryAnchorMode === 'location') {
+    const places    = [...new Set(filtered.map(s => s.answers[0]).filter(Boolean))];
+    const list      = places.length ? places : ['here'];
+    const positions = computeAnchorPositions(list.length);
+    return list.map((place, i) => ({
+      label: place, ax: positions[i].ax, ay: positions[i].ay, px: 0, py: 0
+    }));
+  } else {
+    const found = new Set();
+    filtered.forEach(session => {
+      Object.entries(session.answers).forEach(([qi, answer]) => {
+        if (parseInt(qi) === 5 || !answer) return;
+        answer.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).forEach(w => {
+          if (EMOTION_WORDS.has(w)) found.add(w);
+        });
+      });
+    });
+    const emotionList = found.size > 0 ? [...found].slice(0, 5) : [config.emotionWord];
+    const positions   = computeAnchorPositions(emotionList.length);
+    return emotionList.map((word, i) => ({
+      label: word, ax: positions[i].ax, ay: positions[i].ay, px: 0, py: 0
+    }));
+  }
+}
+
+function assignAnchorIdx(word, anchors, filtered) {
+  const counts = anchors.map(a => {
+    let n = 0;
+    filtered.forEach(session => {
+      const place = session.answers[0] || '';
+      Object.entries(session.answers).forEach(([qi, answer]) => {
+        if (parseInt(qi) === 5 || !answer) return;
+        const lower = answer.toLowerCase();
+        if (!lower.includes(word)) return;
+        if (memoryAnchorMode === 'location' && place === a.label) n++;
+        if (memoryAnchorMode === 'emotion'  && lower.includes(a.label)) n++;
+      });
+    });
+    return n;
+  });
+  const max = Math.max(...counts);
+  if (max === 0) return Math.floor(Math.random() * anchors.length);
+  return counts.indexOf(max);
+}
+
 function initGraph() {
   const container = document.getElementById('p5-canvas-container');
   if (!container) return;
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
 
-  // create info panel inside graph view
-  let infoPanel = document.getElementById('constellation-panel');
-  if (!infoPanel) {
-    infoPanel = document.createElement('div');
-    infoPanel.id = 'constellation-panel';
-    document.getElementById('graph-view').appendChild(infoPanel);
+  // info panel — only create once
+  if (!document.getElementById('constellation-panel')) {
+    const panel = document.createElement('div');
+    panel.id = 'constellation-panel';
+    document.getElementById('graph-view').appendChild(panel);
   }
 
-  // inject time slider in the same style as the city constellation controls
-  if (!document.getElementById('memory-time-controls')) {
+  // controls bar — only create once, kept alive across rebuilds
+  if (!document.getElementById('memory-controls')) {
     const sliderMax   = TIME_OPTIONS.length - 1;
     const currentIdx  = TIME_OPTIONS.findIndex(o => o.value === memoryTimeRange);
     const resolvedIdx = currentIdx >= 0 ? currentIdx : sliderMax;
 
     const controls = document.createElement('div');
-    controls.id = 'memory-time-controls';
-    controls.className = 'memory-time-controls';
+    controls.id = 'memory-controls';
+    controls.className = 'memory-controls-bar';
     controls.innerHTML = `
       <div class="constellation-control-group">
         <span class="constellation-control-label">Time</span>
         <input type="range" class="constellation-time-slider" id="memory-time-slider"
           min="0" max="${sliderMax}" value="${resolvedIdx}" step="1">
-        <span class="constellation-time-value" id="memory-time-value">
-          ${TIME_OPTIONS[resolvedIdx].label}
-        </span>
+        <span class="constellation-time-value" id="memory-time-value">${TIME_OPTIONS[resolvedIdx].label}</span>
+      </div>
+      <div class="constellation-divider"></div>
+      <div class="constellation-control-group">
+        <span class="constellation-control-label">Anchor by</span>
+        <div class="memory-anchor-btns">
+          <button class="memory-anchor-btn mono ${memoryAnchorMode === 'location' ? 'active' : ''}" data-mode="location">Location</button>
+          <button class="memory-anchor-btn mono ${memoryAnchorMode === 'emotion'  ? 'active' : ''}" data-mode="emotion">Emotion</button>
+        </div>
       </div>
     `;
-    document.getElementById('graph-view').appendChild(controls);
+
+    // insert before canvas so it sits above in the flex column
+    const graphView = document.getElementById('graph-view');
+    graphView.insertBefore(controls, graphView.firstChild);
 
     document.getElementById('memory-time-slider').addEventListener('input', (e) => {
       const idx = parseInt(e.target.value);
@@ -408,98 +495,194 @@ function initGraph() {
       document.getElementById('memory-time-value').textContent = TIME_OPTIONS[idx].label;
       rebuildGraph();
     });
+
+    controls.querySelectorAll('.memory-anchor-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        memoryAnchorMode = btn.dataset.mode;
+        controls.querySelectorAll('.memory-anchor-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        rebuildGraph();
+      });
+    });
   }
 
-  // build word cloud from time-filtered sessions
   const filtered = getSessionsForTimeRange();
-  const mergedAnswers = filtered.reduce((acc, s) => {
-    Object.entries(s.answers).forEach(([k, v]) => {
-      acc[k] = acc[k] ? acc[k] + ' ' + v : v;
-    });
-    return acc;
-  }, {});
-  const allText  = Object.entries(mergedAnswers)
-    .filter(([i]) => parseInt(i) !== 5)
-    .map(([, v]) => v).join(' ');
-  const keywords = extractKeywords(allText, 18);
-  if (keywords.length === 0) return;
 
-  const nodes = keywords.map(k => ({ ...k, x: 0, y: 0, vx: 0, vy: 0 }));
+  if (filtered.length === 0 || extractKeywords(filtered, 1).length === 0) {
+    renderEmptyState(container);
+    renderGraphTooltip();
+    return;
+  }
 
-  const blue = getComputedStyle(document.body).getPropertyValue('--blue').trim() || '#0A059B';
-  const bg   = getComputedStyle(document.body).getPropertyValue('--color-bg').trim() || '#F7F2F1';
-  const PAD_X = 10, PAD_Y = 6;
-  let selectedIdx = null;
+  const keywords = extractKeywords(filtered, 24);
+  const now      = Date.now();
+  const oldest   = Math.min(...filtered.map(s => s.timestamp));
+  const timespan = Math.max(now - oldest, 1);
+
+  const anchors  = buildAnchors(filtered);
+  const maxCount = Math.max(...keywords.map(k => k.count), 1);
+  const minCount = Math.min(...keywords.map(k => k.count), 1);
+
+  const nodes = keywords.map(k => {
+    const anchorIdx = assignAnchorIdx(k.word, anchors, filtered);
+    const recency   = (k.lastSeen - oldest) / timespan;
+    return { ...k, x: 0, y: 0, vx: 0, vy: 0, anchorIdx, recency };
+  });
+
+  const bg    = getComputedStyle(document.body).getPropertyValue('--color-bg').trim() || '#F7F2F1';
+  const PAD_X = 8, PAD_Y = 4;
+  // anchor label size and padding
+  const ANCHOR_FONT = 13;
+  const ANCHOR_PAD_X = 10, ANCHOR_PAD_Y = 13;
+
+  let selectedIdx   = null;
+  let dragAnchorIdx = null;
+  let dragOffX = 0, dragOffY = 0;
 
   graphSketch = new p5((sk) => {
     let W, H, frame = 0;
 
     sk.setup = () => {
-      W = container.offsetWidth || 800;
+      W = container.offsetWidth  || 800;
       H = container.offsetHeight || 500;
       sk.createCanvas(W, H).parent('p5-canvas-container');
       sk.textFont('monospace');
+
+      anchors.forEach(a => { a.px = a.ax * W; a.py = a.ay * H; });
+
+      // spawn nodes near their anchor with generous scatter
       nodes.forEach(n => {
-        n.x = W * 0.1 + Math.random() * W * 0.8;
-        n.y = H * 0.1 + Math.random() * H * 0.8;
-        n.vx = 0; n.vy = 0;
+        const a = anchors[n.anchorIdx] || anchors[0];
+        n.x  = a.px + (Math.random() - 0.5) * 120;
+        n.y  = a.py + (Math.random() - 0.5) * 120;
+        n.vx = (Math.random() - 0.5) * 2;
+        n.vy = (Math.random() - 0.5) * 2;
       });
     };
 
     sk.draw = () => {
       sk.background(bg);
       frame++;
-      const damping = Math.min(0.85 + frame * 0.001, 0.94);
+      const damping = Math.min(0.88 + frame * 0.0005, 0.97);
 
-      // repulsion
+      // repulsion between word nodes
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i], b = nodes[j];
           const dx = b.x - a.x, dy = b.y - a.y;
           const d  = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
-          const f  = 4000 / (d * d);
+          const f  = 2000 / (d * d);
           a.vx -= (dx / d) * f; a.vy -= (dy / d) * f;
           b.vx += (dx / d) * f; b.vy += (dy / d) * f;
         }
       }
 
-      // center gravity
+      // repulsion between word nodes and anchor labels
+      // keeps words from sitting on top of the anchor text
       nodes.forEach(n => {
-        n.vx += (W * 0.5 - n.x) * 0.012;
-        n.vy += (H * 0.5 - n.y) * 0.012;
-        n.vx *= damping; n.vy *= damping;
-        n.x = Math.max(60, Math.min(W - 60, n.x + n.vx));
-        n.y = Math.max(30, Math.min(H - 30, n.y + n.vy));
+        anchors.forEach(a => {
+          const dx = n.x - a.px, dy = n.y - a.py;
+          const d  = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+          if (d < 90) {
+            const f = 2500 / (d * d);
+            n.vx += (dx / d) * f;
+            n.vy += (dy / d) * f;
+          }
+        });
       });
 
-      // draw nodes
+      // soft pull toward anchor
+      nodes.forEach(n => {
+        const a = anchors[n.anchorIdx] || anchors[0];
+        n.vx += (a.px - n.x) * 0.006;
+        n.vy += (a.py - n.y) * 0.006;
+        n.vx *= damping; n.vy *= damping;
+        n.x = Math.max(40, Math.min(W - 40, n.x + n.vx));
+        n.y = Math.max(24, Math.min(H - 24, n.y + n.vy));
+      });
+
+      // draw anchor labels — bigger and more prominent
+      anchors.forEach(a => {
+        sk.textFont('monospace');
+        sk.textSize(ANCHOR_FONT);
+        const lw = sk.textWidth(a.label);
+        const rw = lw + ANCHOR_PAD_X * 2;
+        const rh = ANCHOR_FONT + ANCHOR_PAD_Y * 2;
+        sk.noStroke();
+        sk.fill(DIST_COLOR + '22');
+        sk.rect(a.px - rw / 2, a.py - rh / 2, rw, rh);
+        sk.stroke(DIST_COLOR);
+        sk.strokeWeight(1.5);
+        sk.noFill();
+        sk.rect(a.px - rw / 2, a.py - rh / 2, rw, rh);
+        sk.noStroke();
+        sk.fill(DIST_COLOR);
+        sk.textAlign(sk.CENTER, sk.CENTER);
+        sk.text(a.label, a.px, a.py);
+      });
+
+      // draw word nodes
       nodes.forEach((n, idx) => {
-        const fontSize  = 11 + Math.min(n.count * 1.5, 6);
+        const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
+        const fontSize = 10 + t * 8;
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2;
         const rh = fontSize + PAD_Y * 2;
+
+        // opacity: 0.55 floor so oldest words still read clearly
+        const opacity = 0.55 + n.recency * 0.45;
+        const opHex   = Math.round(opacity * 255).toString(16).padStart(2, '0');
+
         const isSelected = selectedIdx === idx;
         const isHovered  = sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
                            sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2;
 
         sk.noStroke();
-        if (isSelected) {
-          sk.fill(blue + '22');
-          sk.rect(n.x - rw / 2 - 4, n.y - rh / 2 - 4, rw + 8, rh + 8);
+
+        if (n.category === 'location') {
+          // no box — bare word in district color
+          sk.fill(DIST_COLOR + (isSelected || isHovered ? 'ff' : opHex));
+          sk.textAlign(sk.CENTER, sk.CENTER);
+          sk.text(n.word, n.x, n.y);
+        } else {
+          // emotional + descriptive: filled box
+          sk.fill(DIST_COLOR + (isSelected || isHovered ? 'ff' : opHex));
+          sk.rect(n.x - rw / 2, n.y - rh / 2, rw, rh);
+          sk.fill(bg);
+          sk.textAlign(sk.CENTER, sk.CENTER);
+          sk.text(n.word, n.x, n.y);
         }
-        sk.fill(isSelected || isHovered ? blue : blue + 'BB');
-        sk.rect(n.x - rw / 2, n.y - rh / 2, rw, rh);
-        sk.fill(bg);
-        sk.textAlign(sk.CENTER, sk.CENTER);
-        sk.text(n.word, n.x, n.y);
       });
     };
 
+    // ─── interaction ─────────────────────────────────────────────────────────
+
+    // helper: check if a point hits an anchor label
+    function hitAnchor(mx, my, a) {
+      sk.textSize(ANCHOR_FONT);
+      const lw = sk.textWidth(a.label);
+      const rw = lw + ANCHOR_PAD_X * 2;
+      const rh = ANCHOR_FONT + ANCHOR_PAD_Y * 2;
+      return mx > a.px - rw / 2 && mx < a.px + rw / 2 &&
+             my > a.py - rh / 2 && my < a.py + rh / 2;
+    }
+
     sk.mousePressed = () => {
+      // check anchors first
+      for (let i = 0; i < anchors.length; i++) {
+        if (hitAnchor(sk.mouseX, sk.mouseY, anchors[i])) {
+          dragAnchorIdx = i;
+          dragOffX = sk.mouseX - anchors[i].px;
+          dragOffY = sk.mouseY - anchors[i].py;
+          return;
+        }
+      }
+      // check word nodes
       let hit = null;
       nodes.forEach((n, idx) => {
-        const fontSize = 11 + Math.min(n.count * 1.5, 6);
+        const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
+        const fontSize = 10 + t * 8;
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
@@ -515,39 +698,93 @@ function initGraph() {
       }
     };
 
+    sk.mouseDragged = () => {
+      if (dragAnchorIdx !== null) {
+        anchors[dragAnchorIdx].px = Math.max(60, Math.min(W - 60, sk.mouseX - dragOffX));
+        anchors[dragAnchorIdx].py = Math.max(30, Math.min(H - 30, sk.mouseY - dragOffY));
+      }
+    };
+
+    sk.mouseReleased = () => { dragAnchorIdx = null; };
+
     sk.mouseMoved = () => {
-      let onNode = false;
+      let onAnchor = anchors.some(a => hitAnchor(sk.mouseX, sk.mouseY, a));
+      let onNode   = false;
       nodes.forEach(n => {
-        const fontSize = 11 + Math.min(n.count * 1.5, 6);
+        const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
+        const fontSize = 10 + t * 8;
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
         if (sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
             sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2) onNode = true;
       });
-      container.style.cursor = onNode ? 'pointer' : 'default';
+      container.style.cursor = (onAnchor || onNode) ? 'pointer' : 'default';
     };
 
     sk.windowResized = () => {
-      W = container.offsetWidth || 800;
+      W = container.offsetWidth  || 800;
       H = container.offsetHeight || 500;
       sk.resizeCanvas(W, H);
+      anchors.forEach(a => { a.px = a.ax * W; a.py = a.ay * H; });
     };
   }, container);
+
+  renderGraphTooltip();
+}
+
+function renderEmptyState(container) {
+  const existing = document.getElementById('memory-empty-state');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.id = 'memory-empty-state';
+  el.style.cssText = `
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center; pointer-events: none;
+  `;
+  el.innerHTML = `
+    <p style="font-family:var(--font-whois);font-size:0.8rem;color:${DIST_COLOR};opacity:0.45;line-height:1.8;max-width:280px;">
+      No entries in this time range.<br>Log again to see this grow.
+    </p>
+  `;
+  container.appendChild(el);
+}
+
+function renderGraphTooltip() {
+  const existing = document.getElementById('memory-tooltip');
+  if (existing) existing.remove();
+  const tip = document.createElement('div');
+  tip.id = 'memory-tooltip';
+  tip.style.cssText = `
+    position: absolute; bottom: 1rem; left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-whois); font-size: 0.62rem;
+    color: ${DIST_COLOR}; opacity: 0.35;
+    letter-spacing: 0.04em; pointer-events: none;
+    white-space: nowrap; text-align: center;
+  `;
+  tip.textContent = memoryAnchorMode === 'location'
+    ? 'words cluster toward where you wrote them · drag anchors · larger = more frequent · brighter = more recent'
+    : 'words cluster toward emotions you named · drag anchors · larger = more frequent · brighter = more recent';
+  document.getElementById('graph-view').appendChild(tip);
 }
 
 function rebuildGraph() {
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
   const canvas = document.querySelector('#p5-canvas-container canvas');
   if (canvas) canvas.remove();
+  const empty = document.getElementById('memory-empty-state');
+  if (empty) empty.remove();
+  const tip = document.getElementById('memory-tooltip');
+  if (tip) tip.remove();
+  // controls are kept alive — never remove them
   initGraph();
 }
 
 function showInfoPanel(node) {
   const panel = document.getElementById('constellation-panel');
   if (!panel) return;
-
-  // find which questions this word appears in across filtered sessions
   const filtered = getSessionsForTimeRange();
   const contexts = [];
   filtered.forEach(session => {
@@ -560,7 +797,6 @@ function showInfoPanel(node) {
       }
     });
   });
-
   panel.innerHTML = `
     <div style="font-family:var(--font-meta);font-size:1.05rem;color:var(--blue);
                 border-bottom:1px solid var(--blue);padding-bottom:0.5rem;margin-bottom:0.75rem;">
@@ -573,7 +809,7 @@ function showInfoPanel(node) {
       </div>
     `).join('') || '<div style="opacity:0.4;font-size:0.8rem;">No context found.</div>'}
   `;
-  panel.style.opacity      = '1';
+  panel.style.opacity       = '1';
   panel.style.pointerEvents = 'all';
 }
 
@@ -587,9 +823,7 @@ function hideInfoPanel() {
 
 function openRelogOverlay() {
   const locations = [...new Map(
-    sessions
-      .filter(s => s.answers[0])
-      .map(s => [s.answers[0], s.answers[0]])
+    sessions.filter(s => s.answers[0]).map(s => [s.answers[0], s.answers[0]])
   ).values()];
 
   if (!document.getElementById('relog-overlay')) {
@@ -637,9 +871,7 @@ function openRelogOverlay() {
     el.addEventListener('click', e => { if (e.target.id === 'relog-overlay') closeRelogOverlay(); });
   }
 
-  requestAnimationFrame(() => {
-    document.getElementById('relog-overlay').classList.add('active');
-  });
+  requestAnimationFrame(() => document.getElementById('relog-overlay').classList.add('active'));
 }
 
 function closeRelogOverlay() {
@@ -654,8 +886,7 @@ function loadMedia() {
   const photoVisible = localStorage.getItem(`${CURRENT_DISTRICT}-photo-visible`) === 'true';
   updatePhotoPreview(savedPhoto);
   updatePhotoToggle(photoVisible);
-  const savedMusicName = localStorage.getItem(`${CURRENT_DISTRICT}-music-name`);
-  updateMusicPreview(savedMusicName);
+  updateMusicPreview(localStorage.getItem(`${CURRENT_DISTRICT}-music-name`));
 }
 
 function updatePhotoPreview(dataUrl) {
@@ -726,8 +957,7 @@ function initMediaListeners() {
   });
 
   document.getElementById('media-photo-toggle-cell')?.addEventListener('click', () => {
-    const current = localStorage.getItem(`${CURRENT_DISTRICT}-photo-visible`) === 'true';
-    const next    = !current;
+    const next = localStorage.getItem(`${CURRENT_DISTRICT}-photo-visible`) !== 'true';
     localStorage.setItem(`${CURRENT_DISTRICT}-photo-visible`, next);
     updatePhotoToggle(next);
   });
