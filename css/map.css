@@ -1523,3 +1523,37 @@ body.visit-mode .constellation-btn { display: none; }
   .map-header { grid-template-columns: 1fr 1fr; height: auto; }
   .header-right { flex-wrap: wrap; }
 }
+
+/* add to css/map.css, inside the district section */
+
+/* photo layer peeks behind the illustration */
+.district-photo-layer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.3s ease;
+}
+
+.district:hover .district-photo-layer { opacity: 0.55; }
+
+/* illustration sits above the photo layer */
+.district-image {
+  position: relative;
+  z-index: 1;
+}
+
+/* add show photos row to the settings panel in map.html: */
+/*
+<div class="customize-row">
+  <span class="customize-row-label">Show Photos</span>
+  <div class="customize-toggle-cell" onclick="toggleShowPhotos()">
+    <div class="toggle-track" id="show-photos-track">
+      <div class="toggle-thumb"></div>
+    </div>
+  </div>
+</div>
+*/

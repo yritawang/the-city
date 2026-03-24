@@ -6,6 +6,7 @@
   <title>the shrine</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/customize.css">
+  <link rel="stylesheet" href="../css/notes.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 </head>
 <body>
@@ -16,11 +17,14 @@
     <div class="customize-left shrine-left" id="customize-left">
       <div class="district-preview">
 
+        <!-- back to city: reversed-color button at top of sidebar -->
+        <a href="../map.html" class="sidebar-back-btn mono">← Back to City</a>
+
         <div class="district-image-container">
-          <img src="../assets/districts/shrine-unlocked.png" alt="The Shrine" class="district-preview-img" id="district-preview-img">
+          <img src="../assets/districts/shrine-unlocked.png" alt="Shrine" class="district-preview-img" id="district-preview-img">
         </div>
 
-        <!-- skins — horizontal row -->
+        <!-- skins: auto-save on click, no save button -->
         <div class="skin-options">
           <div class="skin-thumb active" data-skin="0">
             <img src="../assets/districts/shrine.png" alt="Skin 1">
@@ -33,39 +37,6 @@
           </div>
         </div>
 
-        <!-- media: photo + music — above save/date -->
-        <div class="media-section">
-
-          <!-- photo -->
-          <div class="media-row">
-            <span class="media-label mono">Photo</span>
-            <button class="media-upload-btn mono" id="media-photo-upload-btn">Upload</button>
-          </div>
-          <input type="file" accept="image/*" id="media-photo-input" class="hidden">
-          <div class="media-photo-box" id="media-photo-box">
-            <span class="media-photo-placeholder mono" id="media-photo-placeholder">No photo</span>
-            <img class="media-photo-preview hidden" id="media-photo-preview" alt="District photo">
-            <div class="media-photo-actions hidden" id="media-photo-actions">
-              <button class="media-action-btn mono" id="media-photo-crop-btn">Crop</button>
-              <button class="media-action-btn mono" id="media-photo-remove">Remove</button>
-            </div>
-          </div>
-
-          <div class="media-divider"></div>
-
-          <!-- music -->
-          <div class="media-row">
-            <span class="media-label mono">Music</span>
-            <button class="media-upload-btn mono" id="media-music-upload-btn">Upload</button>
-          </div>
-          <input type="file" accept="audio/*" id="media-music-input" class="hidden">
-          <span class="media-music-name mono hidden" id="media-music-name"></span>
-          <button class="media-remove-btn mono hidden" id="media-music-remove">Remove music</button>
-
-        </div>
-
-        <button class="sidebar-save-btn mono" id="save-btn">Save</button>
-
         <p class="mono district-date" id="district-date"></p>
 
       </div>
@@ -74,7 +45,7 @@
     <!-- right panel -->
     <div class="customize-right" id="customize-right">
 
-      <!-- binding header: large title | Back to City | Log Again | Share -->
+      <!-- header: title (editable) + share only -->
       <header class="customize-header">
         <div class="customize-header-title-cell" id="title-cell">
           <h1 class="customize-header-title" id="district-title"></h1>
@@ -86,214 +57,49 @@
             autocomplete="off"
           >
         </div>
-        <a href="../map.html" class="customize-header-cell customize-back-btn mono">Back to City</a>
-        <button class="customize-header-cell customize-header-btn mono" id="redo-btn">Log Again</button>
         <button class="customize-header-cell customize-header-btn mono" id="share-btn">Share</button>
       </header>
 
-      <!-- location sub-header -->
+      <!-- location sub-header: all unique locations -->
       <div class="customize-subheader">
-        <span class="location-line mono">Location of the shrine:
+        <span class="location-line mono">Locations of the shrine:
           <span class="location-value mono" id="location-value"></span>
         </span>
       </div>
 
-      <!-- view toggle — boxed buttons -->
+      <!-- view toggle -->
       <div class="view-toggle">
         <button class="toggle-btn mono active" id="journal-toggle">Journal View</button>
         <button class="toggle-btn mono" id="graph-toggle">Memory View</button>
+        <button class="toggle-btn mono" id="album-toggle">Album View</button>
       </div>
 
       <!-- journal view -->
       <div class="journal-view" id="journal-view">
+        <div class="journal-add-location" id="add-location-btn">
+          <span class="journal-add-icon">+</span>
+          <span class="mono">Log New Location</span>
+        </div>
         <div class="journal-entries" id="journal-entries"></div>
       </div>
 
-      <!-- constellation view -->
+      <!-- memory/constellation view -->
       <div class="graph-view hidden" id="graph-view">
         <div id="p5-canvas-container"></div>
       </div>
 
-    </div>
-  </div>
-
-  <!-- photo lightbox -->
-  <div class="media-lightbox hidden" id="media-lightbox">
-    <div class="media-lightbox-bg" id="media-lightbox-bg"></div>
-    <div class="media-lightbox-content">
-      <img class="media-lightbox-img" id="media-lightbox-img" alt="">
-      <button class="media-lightbox-close mono" id="media-lightbox-close">Close</button>
-    </div>
-  </div>
-
-  <!-- 4:3 crop overlay -->
-  <div class="media-crop-overlay hidden" id="media-crop-overlay">
-    <div class="media-crop-box">
-      <p class="media-crop-hint mono">Drag to reposition within the 4:3 frame.</p>
-      <div class="media-crop-canvas-wrap">
-        <canvas id="media-crop-canvas"></canvas>
+      <!-- album view -->
+      <div class="album-view hidden" id="album-view">
+        <div class="album-photos" id="album-photos"></div>
+        <div class="album-songs" id="album-songs"></div>
       </div>
-      <div class="media-crop-actions">
-        <button class="media-crop-btn mono" id="media-crop-cancel">Cancel</button>
-        <button class="media-crop-btn mono primary" id="media-crop-confirm">Save crop</button>
-      </div>
+
     </div>
   </div>
 
   <script src="../js/achievements.js"></script>
+  <script src="../js/notes.js"></script>
   <script src="../js/customize.js"></script>
-
-  <script>
-    // ─── photo lightbox ───────────────────────────────────────────────────────
-
-    function openLightbox(src) {
-      const lb = document.getElementById('media-lightbox');
-      document.getElementById('media-lightbox-img').src = src;
-      lb.classList.remove('hidden');
-      requestAnimationFrame(() => lb.classList.add('active'));
-    }
-
-    function closeLightbox() {
-      const lb = document.getElementById('media-lightbox');
-      lb.classList.remove('active');
-      setTimeout(() => lb.classList.add('hidden'), 300);
-    }
-
-    document.getElementById('media-lightbox-close')
-      .addEventListener('click', closeLightbox);
-    document.getElementById('media-lightbox-bg')
-      .addEventListener('click', closeLightbox);
-    document.getElementById('media-photo-preview')
-      .addEventListener('click', () => {
-        const src = document.getElementById('media-photo-preview').src;
-        if (src) openLightbox(src);
-      });
-
-
-    // ─── 4:3 crop ─────────────────────────────────────────────────────────────
-
-    const CROP_RATIO = 4 / 3;
-    let cropImage   = null;
-    let cropOffsetX = 0;
-    let cropOffsetY = 0;
-    let cropScale   = 1;
-    let isDragging  = false;
-    let dragStartX  = 0;
-    let dragStartY  = 0;
-    let dragStartOX = 0;
-    let dragStartOY = 0;
-
-    function openCrop() {
-      const src = document.getElementById('media-photo-preview').src;
-      if (!src) return;
-
-      const overlay = document.getElementById('media-crop-overlay');
-      const canvas  = document.getElementById('media-crop-canvas');
-      const ctx     = canvas.getContext('2d');
-
-      cropImage = new Image();
-      cropImage.onload = () => {
-        const wrap = document.querySelector('.media-crop-canvas-wrap');
-        const W    = wrap.offsetWidth || 480;
-        const H    = Math.round(W / CROP_RATIO);
-        canvas.width  = W;
-        canvas.height = H;
-
-        // scale so image always covers the full canvas
-        cropScale   = Math.max(W / cropImage.width, H / cropImage.height);
-        cropOffsetX = (W - cropImage.width  * cropScale) / 2;
-        cropOffsetY = (H - cropImage.height * cropScale) / 2;
-
-        drawCrop(ctx, canvas);
-      };
-      cropImage.src = src;
-
-      overlay.classList.remove('hidden');
-      requestAnimationFrame(() => overlay.classList.add('active'));
-    }
-
-    function drawCrop(ctx, canvas) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(
-        cropImage,
-        cropOffsetX, cropOffsetY,
-        cropImage.width  * cropScale,
-        cropImage.height * cropScale
-      );
-    }
-
-    function confirmCrop() {
-      const canvas  = document.getElementById('media-crop-canvas');
-      const cropped = canvas.toDataURL('image/jpeg', 0.92);
-      localStorage.setItem(`${CURRENT_DISTRICT}-photo`, cropped);
-      const preview = document.getElementById('media-photo-preview');
-      preview.src   = cropped;
-      closeCropOverlay();
-    }
-
-    function closeCropOverlay() {
-      const overlay = document.getElementById('media-crop-overlay');
-      overlay.classList.remove('active');
-      setTimeout(() => overlay.classList.add('hidden'), 300);
-    }
-
-    // drag to pan inside the crop frame
-    const cropCanvas = document.getElementById('media-crop-canvas');
-
-    cropCanvas.addEventListener('mousedown', (e) => {
-      isDragging  = true;
-      dragStartX  = e.clientX;
-      dragStartY  = e.clientY;
-      dragStartOX = cropOffsetX;
-      dragStartOY = cropOffsetY;
-      cropCanvas.style.cursor = 'grabbing';
-    });
-
-    window.addEventListener('mousemove', (e) => {
-      if (!isDragging || !cropImage) return;
-      const canvas = document.getElementById('media-crop-canvas');
-      const ctx    = canvas.getContext('2d');
-      const minX   = canvas.width  - cropImage.width  * cropScale;
-      const minY   = canvas.height - cropImage.height * cropScale;
-      cropOffsetX  = Math.min(0, Math.max(minX, dragStartOX + e.clientX - dragStartX));
-      cropOffsetY  = Math.min(0, Math.max(minY, dragStartOY + e.clientY - dragStartY));
-      drawCrop(ctx, canvas);
-    });
-
-    window.addEventListener('mouseup', () => {
-      isDragging = false;
-      cropCanvas.style.cursor = 'grab';
-    });
-
-    // touch support
-    cropCanvas.addEventListener('touchstart', (e) => {
-      isDragging  = true;
-      dragStartX  = e.touches[0].clientX;
-      dragStartY  = e.touches[0].clientY;
-      dragStartOX = cropOffsetX;
-      dragStartOY = cropOffsetY;
-    }, { passive: true });
-
-    window.addEventListener('touchmove', (e) => {
-      if (!isDragging || !cropImage) return;
-      const canvas = document.getElementById('media-crop-canvas');
-      const ctx    = canvas.getContext('2d');
-      const minX   = canvas.width  - cropImage.width  * cropScale;
-      const minY   = canvas.height - cropImage.height * cropScale;
-      cropOffsetX  = Math.min(0, Math.max(minX, dragStartOX + e.touches[0].clientX - dragStartX));
-      cropOffsetY  = Math.min(0, Math.max(minY, dragStartOY + e.touches[0].clientY - dragStartY));
-      drawCrop(ctx, canvas);
-    }, { passive: true });
-
-    window.addEventListener('touchend', () => { isDragging = false; });
-
-    document.getElementById('media-photo-crop-btn')
-      .addEventListener('click', openCrop);
-    document.getElementById('media-crop-confirm')
-      .addEventListener('click', confirmCrop);
-    document.getElementById('media-crop-cancel')
-      .addEventListener('click', closeCropOverlay);
-  </script>
 
 </body>
 </html>

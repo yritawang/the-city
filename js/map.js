@@ -2,17 +2,16 @@
 
 const DISTRICTS = ['garden', 'cornerstore', 'shrine', 'tower', 'plaza'];
 
-// per-district questions for constellation info panel
 const DISTRICT_QUESTIONS = {
-  shrine:      ['What place comes to mind?', 'What did this place hold that was precious to you?', 'How do you return to this place?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
-  garden:      ['What place comes to mind?', 'What were you becoming in this place?', 'How did the growth happen? What did it feel like?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
-  cornerstore: ['What place comes to mind?', 'What was your routine in this place?', 'What drew you to this specific place?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
+  garden:      ['What place comes to mind?', 'What grew in you while you were there?', 'What did you tend to in that space?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
+  shrine:      ['What place comes to mind?', 'What made it feel sacred to you?', 'What did you bring to this place — or leave behind?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
+  cornerstore: ['What place comes to mind?', 'What kept bringing you back?', 'What did routine feel like in that space?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
   tower:       ['What place comes to mind?', 'What was your relationship with solitude in this space?', 'What perspective did being alone give you?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
   plaza:       ['What place comes to mind?', 'Who else was in this place? How did you connect with them?', 'What brought you together in this place?', 'When you think of this place, what do you remember?', 'If this place were to fade from memory completely, what would be lost?'],
 };
 
 
-// ─── city name ───────────────────────────────────────────────────────────────
+// city name
 
 function initCityName() {
   const savedName = localStorage.getItem('cityName') || 'Name Your City';
@@ -22,8 +21,8 @@ function initCityName() {
 
 function openCityNameOverlay() {
   const overlay = document.getElementById('city-name-overlay');
-  const input = document.getElementById('city-name-input');
-  input.value = localStorage.getItem('cityName') || 'Name Your City';
+  const input   = document.getElementById('city-name-input');
+  input.value   = localStorage.getItem('cityName') || 'Name Your City';
   overlay.classList.add('active');
   input.focus();
   input.select();
@@ -34,25 +33,26 @@ function closeCityNameOverlay() {
 }
 
 function saveCityName() {
-  const input = document.getElementById('city-name-input');
+  const input   = document.getElementById('city-name-input');
   const newName = input.value.trim() || 'Name Your City';
   localStorage.setItem('cityName', newName);
   const el = document.getElementById('city-title');
   if (el) el.textContent = newName;
   closeCityNameOverlay();
+  unlockAchievement('named-city');
 }
 
 
-// ─── districts ───────────────────────────────────────────────────────────────
+// districts
 
 function initDistricts() {
   const districtStates = JSON.parse(localStorage.getItem('districtStates')) || {};
 
   DISTRICTS.forEach(name => {
-    const el = document.getElementById(name);
+    const el         = document.getElementById(name);
     if (!el) return;
     const hasSessions = JSON.parse(localStorage.getItem(`${name}-sessions`) || '[]').length > 0;
-    const isUnlocked = districtStates[name] === 'unlocked' || hasSessions;
+    const isUnlocked  = districtStates[name] === 'unlocked' || hasSessions;
 
     if (isUnlocked) {
       el.classList.remove('locked');
@@ -64,7 +64,7 @@ function initDistricts() {
       updateDistrictImage(el, 'locked');
     }
 
-    el.addEventListener('click', () => handleDistrictClick(name));
+    el.addEventListener('click',      () => handleDistrictClick(name));
     el.addEventListener('mouseenter', () => { if (!isUnlocked) updateDistrictImage(el, 'hover'); });
     el.addEventListener('mouseleave', () => { if (!isUnlocked) updateDistrictImage(el, 'locked'); });
   });
@@ -72,7 +72,8 @@ function initDistricts() {
 
 function updateDistrictImage(district, state) {
   const name = district.dataset.district;
-  const img = district.querySelector('.district-image');
+  const img  = district.querySelector('.district-image');
+  if (!img) return;
   if (state === 'unlocked') {
     const skin = parseInt(localStorage.getItem(`${name}-skin`) || '0');
     if (skin === 1) { img.src = `assets/districts/${name}-skin2.png`; return; }
@@ -85,7 +86,7 @@ function handleDistrictClick(name) {
   if (document.body.classList.contains('visit-mode')) return;
   localStorage.setItem('currentDistrict', name);
   const hasSessions = JSON.parse(localStorage.getItem(`${name}-sessions`) || '[]').length > 0;
-  const states = JSON.parse(localStorage.getItem('districtStates')) || {};
+  const states      = JSON.parse(localStorage.getItem('districtStates')) || {};
   window.location.href = (states[name] === 'unlocked' || hasSessions)
     ? `districts/${name}-customize.html`
     : `districts/${name}.html`;
@@ -95,7 +96,7 @@ function displayDistrictNames() {
   if (document.body.classList.contains('visit-mode')) return;
   const states = JSON.parse(localStorage.getItem('districtStates')) || {};
   DISTRICTS.forEach(name => {
-    const el = document.getElementById(name);
+    const el          = document.getElementById(name);
     const hasSessions = JSON.parse(localStorage.getItem(`${name}-sessions`) || '[]').length > 0;
     if (!el || (states[name] !== 'unlocked' && !hasSessions)) return;
     const savedName = localStorage.getItem(`${name}-name`);
@@ -111,10 +112,10 @@ function displayDistrictNames() {
 }
 
 
-// ─── achievements ─────────────────────────────────────────────────────────────
+// achievements
 
 function checkAchievements() {
-  const states = JSON.parse(localStorage.getItem('districtStates')) || {};
+  const states   = JSON.parse(localStorage.getItem('districtStates')) || {};
   const cityName = localStorage.getItem('cityName');
   DISTRICTS.forEach(d => {
     const ans = localStorage.getItem(`${d}-answers`);
@@ -122,15 +123,15 @@ function checkAchievements() {
     if (states[d] === 'unlocked') unlockAchievement(`completed-${d}`);
   });
   if (DISTRICTS.every(d => states[d] === 'unlocked')) unlockAchievement('completed-all');
-  if (cityName && cityName !== 'Somewhere I Belong') unlockAchievement('named-city');
+  if (cityName && cityName !== 'Somewhere I Belong' && cityName !== 'Name Your City') unlockAchievement('named-city');
 }
 
 
-// ─── guide overlay ────────────────────────────────────────────────────────────
+// guide overlay
 
 let guideSlide = 0;
 const GUIDE_TOTAL_STEPS = 5;
-let guideConceptTimer = null;
+let guideConceptTimer   = null;
 
 function openGuide() {
   guideSlide = 1;
@@ -148,17 +149,17 @@ function showGuideSlide(index) {
   const target = document.querySelector(`.guide-slide[data-index="${index}"]`);
   if (target) target.classList.add('active');
 
-  const prev = document.getElementById('guide-prev');
-  const next = document.getElementById('guide-next');
+  const prev     = document.getElementById('guide-prev');
+  const next     = document.getElementById('guide-next');
   const progress = document.getElementById('guide-progress');
 
-  if (prev) prev.style.visibility = index === 1 ? 'hidden' : 'visible';
-  if (next) next.textContent = index === GUIDE_TOTAL_STEPS ? 'Begin ↗' : 'Next →';
-  if (progress) progress.textContent = `${index}/${GUIDE_TOTAL_STEPS}`;
+  if (prev)     prev.style.visibility = index === 1 ? 'hidden' : 'visible';
+  if (next)     next.textContent      = index === GUIDE_TOTAL_STEPS ? 'Begin ↗' : 'Next →';
+  if (progress) progress.textContent  = `${index}/${GUIDE_TOTAL_STEPS}`;
 }
 
 
-// ─── share overlay ────────────────────────────────────────────────────────────
+// share overlay
 
 function openShare() {
   document.getElementById('share-overlay').classList.add('active');
@@ -198,22 +199,24 @@ function getOrCreateCityCode() {
 
 function encodeCity() {
   const data = {
-    cityName: localStorage.getItem('cityName') || 'Somewhere I Belong',
-    code: getOrCreateCityCode(),
+    cityName:       localStorage.getItem('cityName') || 'Somewhere I Belong',
+    code:           getOrCreateCityCode(),
     districtStates: JSON.parse(localStorage.getItem('districtStates') || '{}'),
-    districtNames: {},
-    answers: {},
+    districtNames:  {},
+    districtSkins:  {},
+    answers:        {},
   };
   DISTRICTS.forEach(d => {
     data.districtNames[d] = localStorage.getItem(`${d}-name`) || '';
-    data.answers[d] = JSON.parse(localStorage.getItem(`${d}-answers`) || '{}');
+    data.districtSkins[d] = parseInt(localStorage.getItem(`${d}-skin`) || '0');
+    data.answers[d]       = JSON.parse(localStorage.getItem(`${d}-answers`) || '{}');
   });
   localStorage.setItem(`cityData-${data.code}`, JSON.stringify(data));
   return data;
 }
 
 
-// ─── visitor's log ────────────────────────────────────────────────────────────
+// visitor's log
 
 const EXAMPLE_CITY_CODE = 'NADIA-X7';
 
@@ -232,30 +235,7 @@ const EXAMPLE_CITY = {
   answers: {
     shrine: {
       0: 'A third-floor apartment in Paris, near a canal. I lived there for nine months when I was twenty-four.',
-      1: 'It held a version of me I was still becoming. The person who cooked alone and felt okay about it.',
-      2: "Only in memory now. I walk through it when I can't sleep, up the stairs, past the radiator that clicked.",
-      3: "The smell of the neighbors' bread in the morning. The way light came through the frosted glass at 4pm in October.",
-      4: 'A whole chapter would close. The proof that I was brave enough to go somewhere alone.',
-    },
-    garden: {
-      0: 'A community garden in Cincinnati, Ohio. My aunt kept a plot there. I visited every summer as a child.',
-      1: "I grew there slowly, over years. I learned patience from tomatoes. I learned my grandmother's hands from watching my aunt's.",
-      2: 'I drive past the street on Google Maps sometimes. The garden is still there. The plot has a different name on the board.',
-      3: "Dirt under my fingernails. Bees that weren't afraid of me. My aunt saying 'look how tall.'",
-      4: 'The feeling that growing something is enough. That slow, unglamorous labor has worth.',
-    },
-    cornerstore: {
-      0: 'A small convenience store in the lobby of my apartment building in Seoul. Run by a woman I never learned the name of.',
-      1: 'Every morning for two years. Green tea, triangle kimbap, a nod. It became the ritual that made the place feel like home.',
-      2: 'The building is still there. I imagine she is still there.',
-      3: 'The hum of the refrigerators. The particular sound of that sliding door. Being recognized without needing to explain myself.',
-      4: "The idea that belonging doesn't require language. That showing up, again and again, is a kind of conversation.",
-    },
-    tower: {
-      0: 'The fire escape outside my bedroom window in Chicago. Four floors up, facing west.',
-      1: 'I sat there when things got too loud inside. I sat there when things were good too.',
-      2: 'Wind. The feeling of being outside but hidden. The city going on without needing anything from me.',
-      3: 'The water tower, the billboard, the sky turning pink.',
+      1: 'It held a version of me I was still becoming.',
       4: "The most private version of myself. The one who didn't need to perform anything.",
     },
     plaza: {
@@ -281,7 +261,7 @@ function renderVisitorLog() {
   if (!list) return;
   const log = JSON.parse(localStorage.getItem('visitor-log') || '[]');
   if (log.length === 0) {
-    list.innerHTML = "<p class=\"visitor-empty\">No cities yet. Paste a friend's city code to add one.</p>";
+    list.innerHTML = '<p class="visitor-empty">No cities yet. Paste a friend\'s city code to add one.</p>';
     return;
   }
   list.innerHTML = '';
@@ -306,7 +286,7 @@ function renderVisitorLog() {
 function addVisitorCity() {
   const input = document.getElementById('visitor-code-input');
   const error = document.getElementById('visitor-error');
-  const code = input.value.trim().toUpperCase();
+  const code  = input.value.trim().toUpperCase();
   error.classList.add('hidden');
   if (!code) return;
 
@@ -330,9 +310,9 @@ function addVisitorCity() {
 }
 
 
-// ─── visit mode ───────────────────────────────────────────────────────────────
+// visit mode
 
-let visitModeData = null;
+let visitModeData           = null;
 let visitConstellationActive = false;
 
 function enterVisitMode(cityData) {
@@ -357,12 +337,11 @@ function renderVisitDistricts(cityData) {
     const el = document.getElementById(d);
     if (!el) return;
     const isUnlocked = cityData.districtStates[d] === 'unlocked';
-    const distName = cityData.districtNames[d];
+    const distName   = cityData.districtNames[d];
 
-    // clone to remove old listeners
+    // clone to clear old listeners
     const fresh = el.cloneNode(true);
     el.parentNode.replaceChild(fresh, el);
-
     fresh.querySelectorAll('.district-custom-name').forEach(s => s.remove());
 
     if (isUnlocked) {
@@ -370,24 +349,20 @@ function renderVisitDistricts(cityData) {
       fresh.classList.add('unlocked');
       const img = fresh.querySelector('.district-image');
       if (img) {
-        const skins = cityData.districtSkins || {};
+        const skins   = cityData.districtSkins || {};
         const skinIdx = skins[d];
-        if (skinIdx === 1) img.src = `assets/districts/${d}-skin2.png`;
+        if (skinIdx === 1)      img.src = `assets/districts/${d}-skin2.png`;
         else if (skinIdx === 2) img.src = `assets/districts/${d}-skin3.png`;
-        else img.src = `assets/districts/${d}-unlocked.png`;
+        else                    img.src = `assets/districts/${d}-unlocked.png`;
       }
-
       const label = fresh.querySelector('.district-label');
-      if (label) {
-        label.style.opacity = '1';
-        if (distName && !label.querySelector('.district-custom-name')) {
-          const span = document.createElement('span');
-          span.className = 'district-custom-name';
-          span.textContent = distName;
-          label.appendChild(span);
-        }
+      if (label && distName && !label.querySelector('.district-custom-name')) {
+        const span = document.createElement('span');
+        span.className   = 'district-custom-name';
+        span.textContent = distName;
+        label.appendChild(span);
       }
-
+      if (label) label.style.opacity = '1';
       fresh.style.cursor = 'default';
     } else {
       fresh.classList.add('locked');
@@ -426,7 +401,7 @@ function initVisitConstellationBtn(cityData) {
 }
 
 function openVisitConstellation(cityData) {
-  // temporarily swap localStorage so constellation reads visitor's data
+  // swap localStorage so the sketch reads the visitor's data
   const backups = { districtStates: localStorage.getItem('districtStates') };
   DISTRICTS.forEach(d => {
     backups[`${d}-answers`]  = localStorage.getItem(`${d}-answers`);
@@ -444,13 +419,15 @@ function openVisitConstellation(cityData) {
   });
   localStorage.setItem('districtStates', JSON.stringify(cityData.districtStates));
 
+  // read-only: no word clicks or anchor drags
+  constellationReadOnly = true;
   openConstellation();
 
   const restoreInterval = setInterval(() => {
     if (!constellationActive) {
       Object.entries(backups).forEach(([k, v]) => {
         if (v === null) localStorage.removeItem(k);
-        else localStorage.setItem(k, v);
+        else            localStorage.setItem(k, v);
       });
       visitConstellationActive = false;
       clearInterval(restoreInterval);
@@ -459,7 +436,7 @@ function openVisitConstellation(cityData) {
 }
 
 function exitVisitMode() {
-  visitModeData = null;
+  visitModeData            = null;
   visitConstellationActive = false;
   document.body.classList.remove('visit-mode');
   if (constellationActive) closeConstellation();
@@ -482,7 +459,7 @@ function closeReturnOverlay() {
 }
 
 
-// ─── settings panel ───────────────────────────────────────────────────────────
+// settings panel
 
 function openCustomizePanel() {
   document.getElementById('customize-panel').classList.add('visible');
@@ -510,8 +487,8 @@ function toggleDarkMode() {
 }
 
 const DISTRICT_POSITIONS = [
-  { top: '80px',     left: '140px',  zIndex: 1 },
-  { top: '80px',     right: '140px', zIndex: 1 },
+  { top: '80px',     left: '140px',  zIndex: 1  },
+  { top: '80px',     right: '140px', zIndex: 1  },
   { bottom: '100px', left: '160px',  zIndex: 12 },
   { bottom: '80px',  right: '80px',  zIndex: 12 },
   { top: '50%', left: '50%', transform: 'translate(-50%, -50%)', zIndex: 6 },
@@ -545,85 +522,58 @@ function initRandomize() {
 }
 
 function toggleRandomize() {
-  const next = !(localStorage.getItem('randomizeDistricts') === 'true');
+  const next  = !(localStorage.getItem('randomizeDistricts') === 'true');
   localStorage.setItem('randomizeDistricts', next);
   const track = document.getElementById('randomize-track');
   if (track) track.classList.toggle('on', next);
-  if (next) {
-    randomizeDistricts();
-  } else {
-    resetDistrictPositions();
-  }
-}
-
-// restore districts to their default css positions without reloading
-function resetDistrictPositions() {
-  const defaults = {
-    garden:      { top: '80px',    bottom: '', left: '140px', right: '',      transform: 'none',                    zIndex: 1  },
-    tower:       { top: '80px',    bottom: '', left: '',      right: '140px', transform: 'none',                    zIndex: 1  },
-    cornerstore: { top: '',        bottom: '100px', left: '160px', right: '', transform: 'none',                   zIndex: 11 },
-    plaza:       { top: '',        bottom: '80px',  left: '',      right: '80px', transform: 'none',               zIndex: 11 },
-    shrine:      { top: '50%',     bottom: '', left: '50%',   right: '',      transform: 'translate(-50%, -50%)', zIndex: 10 },
-  };
-  Object.entries(defaults).forEach(([name, pos]) => {
-    const el = document.getElementById(name);
-    if (!el) return;
-    el.style.cssText = `
-      position: absolute; width: 360px; height: 360px;
-      top: ${pos.top}; bottom: ${pos.bottom};
-      left: ${pos.left}; right: ${pos.right};
-      transform: ${pos.transform};
-      cursor: pointer; transition: transform 0.3s ease; z-index: ${pos.zIndex};
-    `;
-  });
+  if (next) randomizeDistricts();
+  else location.reload();
 }
 
 
-// ─── photo display ────────────────────────────────────────────────────────────
+// district photo overlay (show photos setting)
+
+function getRandomDistrictPhoto(district) {
+  const sessions = JSON.parse(localStorage.getItem(`${district}-sessions`) || '[]');
+  const photos   = sessions
+    .map(s => localStorage.getItem(`${district}-photo-${s.timestamp}`))
+    .filter(Boolean);
+  if (photos.length === 0) return null;
+  return photos[Math.floor(Math.random() * photos.length)];
+}
 
 function initShowPhotos() {
   const isOn = localStorage.getItem('showPhotos') === 'true';
   const track = document.getElementById('show-photos-track');
   if (track) track.classList.toggle('on', isOn);
-  if (isOn) renderDistrictPhotos();
+  if (isOn) applyDistrictPhotos(true);
 }
 
 function toggleShowPhotos() {
-  const next = localStorage.getItem('showPhotos') !== 'true';
+  const next  = !(localStorage.getItem('showPhotos') === 'true');
   localStorage.setItem('showPhotos', next);
   const track = document.getElementById('show-photos-track');
   if (track) track.classList.toggle('on', next);
-  if (next) renderDistrictPhotos();
-  else removeDistrictPhotos();
+  applyDistrictPhotos(next);
 }
 
-function renderDistrictPhotos() {
+function applyDistrictPhotos(on) {
   DISTRICTS.forEach(d => {
     const el = document.getElementById(d);
     if (!el) return;
-    const photo = localStorage.getItem(`${d}-photo`);
+    el.querySelectorAll('.district-photo-layer').forEach(l => l.remove());
+    if (!on) return;
+    const photo = getRandomDistrictPhoto(d);
     if (!photo) return;
-    const existing = el.querySelector('.district-photo-float');
-    if (existing) {
-      existing.style.display = 'block';
-      return;
-    }
-    const img = document.createElement('img');
-    img.className = 'district-photo-float';
-    img.src = photo;
-    img.style.display = 'block';
-    el.appendChild(img);
-  });
-}
-
-function removeDistrictPhotos() {
-  document.querySelectorAll('.district-photo-float').forEach(el => {
-    el.style.display = 'none';
+    const layer = document.createElement('div');
+    layer.className = 'district-photo-layer';
+    layer.style.backgroundImage = `url(${photo})`;
+    el.insertBefore(layer, el.firstChild);
   });
 }
 
 
-// ─── keyword extraction ───────────────────────────────────────────────────────
+// keyword extraction
 
 const EMOTION_WORDS = new Set(['happy','happiness','sad','sadness','grief','joy','joyful','love','loved','lonely','loneliness','fear','afraid','scared','anxious','anxiety','angry','anger','rage','calm','peace','peaceful','safe','unsafe','comfort','comfortable','uncomfortable','proud','pride','shame','ashamed','guilt','guilty','hopeful','hope','hopeless','lost','found','free','freedom','trapped','nostalgic','nostalgia','homesick','longing','yearning','missing','belonging','connected','disconnected','isolated','warm','warmth','cold','hurt','pain','painful','tender','gentle','alive','numb','empty','full','overwhelmed','grateful','gratitude','bitter','bittersweet','melancholy','wonder','awe','curious','confused','clarity','certain','uncertain','excited','excitement','nervous','relief','relieved','tired','exhausted','energized','inspired','inspiration','content','restless','vulnerable','strong','weak','brave','courage']);
 const LOCATION_WORDS = new Set(['home','house','room','bedroom','kitchen','garden','park','school','church','temple','mosque','street','road','alley','corner','market','store','shop','cafe','restaurant','library','hospital','office','studio','apartment','building','city','town','village','country','neighborhood','district','plaza','shrine','tower','forest','lake','river','ocean','beach','mountain','field','farm','barn','garage','basement','attic','hallway','staircase','window','door','yard','balcony','rooftop','bridge','station','airport','train','bus','court','campus','dormitory','dorm','classroom','gym','pool','stadium','theater','cinema','museum','gallery','mall','hotel','motel','cabin','cottage','palace','castle','ruins','cemetery','playground','lobby','corridor','passage','square','avenue','boulevard','lane']);
@@ -634,33 +584,27 @@ function isKeyword(w) {
 }
 
 const TIME_OPTIONS = [
-  { value: 'week',  label: 'Past week' },
+  { value: 'week',  label: 'Past week'  },
   { value: 'month', label: 'Past month' },
-  { value: 'year',  label: 'Past year' },
-  { value: 'all',   label: 'All time' },
+  { value: 'year',  label: 'Past year'  },
+  { value: 'all',   label: 'All time'   },
 ];
 
-let constellationTimeRange = 'all';
-let constellationDistricts = new Set(['garden', 'shrine', 'cornerstore', 'tower', 'plaza']);
-
-function getWordCategory(w) {
-  if (EMOTION_WORDS.has(w) || DESCRIPTIVE_WORDS.has(w)) return 'emotional';
-  if (LOCATION_WORDS.has(w)) return 'location';
-  return 'other';
-}
+let constellationTimeRange  = 'all';
+let constellationDistricts  = new Set(['garden', 'shrine', 'cornerstore', 'tower', 'plaza']);
 
 function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null) {
-  const now = Date.now();
-  const cutoffDays = { week: 7, month: 30, year: 365, all: Infinity };
-  const days = cutoffDays[timeRange] ?? Infinity;
-  const cutoff = days === Infinity ? 0 : now - days * 24 * 60 * 60 * 1000;
+  const now         = Date.now();
+  const cutoffDays  = { week: 7, month: 30, year: 365, all: Infinity };
+  const days        = cutoffDays[timeRange] ?? Infinity;
+  const cutoff      = days === Infinity ? 0 : now - days * 24 * 60 * 60 * 1000;
 
   const completed = DISTRICTS.filter(d => {
     if (activeDistricts && !activeDistricts.has(d)) return false;
     return JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]').length > 0;
   });
 
-  const freq = {}, wordSources = {}, wordContexts = {}, wordLastSeen = {};
+  const freq = {}, wordSources = {}, wordContexts = {};
 
   completed.forEach(d => {
     const distSessions = JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]')
@@ -679,11 +623,12 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
           if (!wordSources[w]) wordSources[w] = new Set();
           wordSources[w].add(d);
           if (!wordContexts[w]) wordContexts[w] = [];
-          wordLastSeen[w] = Math.max(wordLastSeen[w] || 0, session.timestamp);
           const sessionDate = session.date || '';
           wordContexts[w].push({
             district: d,
-            question: sessionDate ? `${sessionDate} · ${questions[qIdx] || ''}` : (questions[qIdx] || ''),
+            question: sessionDate
+              ? `${sessionDate} · ${questions[qIdx] || ''}`
+              : (questions[qIdx] || ''),
             snippet: answer.length > 120 ? answer.slice(0, 120) + '...' : answer,
           });
         });
@@ -691,7 +636,7 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
     });
   });
 
-  // fallback pass to fill sparse constellations with top non-keyword words per district
+  // fallback: fill sparse constellations with top non-keyword words
   const STOPWORDS = new Set(['that','this','with','have','from','they','their','would','could','should','about','there','which','when','what','just','been','will','your','more','also','into','some','than','then','were','very','much','each','over','think','place','feel','felt','thought','remember','know','still','even','always','never','every','back','here','thing','things','really','because','something','anything','nothing','someone','anyone','people','person','going','getting','being','having','doing','making','around','through','after','before','during','while','these','those']);
 
   completed.forEach(d => {
@@ -700,14 +645,12 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
     if (distSessions2.length === 0) return;
 
     const answers = distSessions2.reduce((acc, s) => {
-      Object.entries(s.answers).forEach(([k, v]) => {
-        acc[k] = acc[k] ? acc[k] + ' ' + v : v;
-      });
+      Object.entries(s.answers).forEach(([k, v]) => { acc[k] = acc[k] ? acc[k] + ' ' + v : v; });
       return acc;
     }, {});
 
-    const text = Object.entries(answers).filter(([i]) => parseInt(i) !== 5).map(([, v]) => v).join(' ');
-    const df = {};
+    const text  = Object.entries(answers).filter(([i]) => parseInt(i) !== 5).map(([, v]) => v).join(' ');
+    const df    = {};
     text.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/)
       .filter(w => w.length > 4 && !STOPWORDS.has(w) && !freq[w])
       .forEach(w => { df[w] = (df[w] || 0) + 1; });
@@ -722,11 +665,12 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
         Object.entries(session.answers).forEach(([qi, answer]) => {
           if (!answer || parseInt(qi) === 5) return;
           if (answer.toLowerCase().includes(w)) {
-            wordLastSeen[w] = Math.max(wordLastSeen[w] || 0, session.timestamp);
             const sessionDate = session.date || '';
             wordContexts[w].push({
               district: d,
-              question: sessionDate ? `${sessionDate} · ${questions[parseInt(qi)] || ''}` : (questions[parseInt(qi)] || ''),
+              question: sessionDate
+                ? `${sessionDate} · ${questions[parseInt(qi)] || ''}`
+                : (questions[parseInt(qi)] || ''),
               snippet: answer.length > 120 ? answer.slice(0, 120) + '...' : answer,
             });
           }
@@ -739,8 +683,6 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
     word, count,
     districts: [...wordSources[word]],
     contexts:  wordContexts[word] || [],
-    lastSeen:  wordLastSeen[word] || cutoff,
-    category:  getWordCategory(word),
   }));
 }
 
@@ -756,11 +698,12 @@ const DISTRICT_META = [
   { key: 'plaza',       label: 'Community', color: '#614973' },
 ];
 
-let constellationSketch = null;
-let constellationActive = false;
+let constellationSketch  = null;
+let constellationActive  = false;
+let constellationReadOnly = false;
 
 function initConstellationBtn() {
-  const states = JSON.parse(localStorage.getItem('districtStates') || '{}');
+  const states      = JSON.parse(localStorage.getItem('districtStates') || '{}');
   const anyComplete = DISTRICTS.some(d => {
     const hasSessions = JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]').length > 0;
     return states[d] === 'unlocked' || hasSessions;
@@ -781,8 +724,8 @@ function toggleConstellation() {
 
 function openConstellation() {
   constellationActive = true;
-  const overlay = document.getElementById('constellation-overlay');
-  const btn = document.getElementById('constellation-btn');
+  const overlay      = document.getElementById('constellation-overlay');
+  const btn          = document.getElementById('constellation-btn');
   const mapContainer = document.querySelector('.map-container');
 
   overlay.classList.remove('hidden');
@@ -795,10 +738,11 @@ function openConstellation() {
 }
 
 function closeConstellation() {
-  constellationActive = false;
-  const overlay = document.getElementById('constellation-overlay');
-  const btn = document.getElementById('constellation-btn');
-  const mapContainer = document.querySelector('.map-container');
+  constellationActive  = false;
+  constellationReadOnly = false;
+  const overlay        = document.getElementById('constellation-overlay');
+  const btn            = document.getElementById('constellation-btn');
+  const mapContainer   = document.querySelector('.map-container');
 
   overlay.classList.remove('visible');
   mapContainer.classList.remove('constellation-active');
@@ -814,11 +758,13 @@ function closeConstellation() {
     if (constellationSketch) { constellationSketch.remove(); constellationSketch = null; }
     const controls = document.getElementById('constellation-controls');
     if (controls) controls.remove();
+    const legend = document.getElementById('constellation-legend');
+    if (legend) legend.remove();
   }, 600);
 }
 
 
-// ─── constellation info panel ────────────────────────────────────────────────
+// constellation info panel
 
 function showConstellationInfoPanel(node) {
   const panel = document.getElementById('constellation-info-panel');
@@ -847,16 +793,17 @@ function showConstellationInfoPanel(node) {
 }
 
 
-// ─── constellation sketch ─────────────────────────────────────────────────────
+// constellation sketch
 
 function initConstellationSketch() {
   const container = document.getElementById('constellation-canvas-container');
   if (!container) return;
   if (constellationSketch) { constellationSketch.remove(); constellationSketch = null; }
 
+  // legend
   if (!document.getElementById('constellation-legend')) {
     const legend = document.createElement('div');
-    legend.id = 'constellation-legend';
+    legend.id        = 'constellation-legend';
     legend.className = 'constellation-legend';
     DISTRICT_META.forEach(d => {
       const item = document.createElement('div');
@@ -870,6 +817,7 @@ function initConstellationSketch() {
     container.appendChild(legend);
   }
 
+  // controls (time slider + district checkboxes)
   if (!document.getElementById('constellation-controls')) {
     const sliderMax  = TIME_OPTIONS.length - 1;
     const currentIdx = TIME_OPTIONS.findIndex(o => o.value === constellationTimeRange);
@@ -885,7 +833,7 @@ function initConstellationSketch() {
     `).join('');
 
     const controls = document.createElement('div');
-    controls.id = 'constellation-controls';
+    controls.id        = 'constellation-controls';
     controls.className = 'constellation-controls';
     controls.innerHTML = `
       <div class="constellation-control-group">
@@ -914,20 +862,16 @@ function initConstellationSketch() {
     controls.querySelectorAll('input[type="checkbox"]').forEach(cb => {
       cb.addEventListener('change', () => {
         if (cb.checked) constellationDistricts.add(cb.dataset.district);
-        else constellationDistricts.delete(cb.dataset.district);
+        else            constellationDistricts.delete(cb.dataset.district);
         rebuildConstellation();
       });
     });
   }
 
-  const keywords = extractAllKeywords(24, constellationTimeRange, constellationDistricts);
+  const keywords = extractAllKeywords(20, constellationTimeRange, constellationDistricts);
   if (keywords.length === 0) return;
 
-  // recency: 0 = oldest word, 1 = most recently seen word
-  const allTimestamps = keywords.map(k => k.lastSeen).filter(Boolean);
-  const oldest  = allTimestamps.length ? Math.min(...allTimestamps) : 0;
-  const newest  = allTimestamps.length ? Math.max(...allTimestamps) : 1;
-  const timespan = Math.max(newest - oldest, 1);
+  const nodes = keywords.map(k => ({ ...k, x: 0, y: 0, vx: 0, vy: 0 }));
 
   const ANCHORS = {
     garden:      { ax: 0.22, ay: 0.25 },
@@ -937,35 +881,55 @@ function initConstellationSketch() {
     plaza:       { ax: 0.78, ay: 0.75 },
   };
 
-  const nodes = keywords.map(k => {
-    const anchor = k.districts.length > 1
+  nodes.forEach(n => {
+    const anchor  = n.districts.length > 1
       ? { ax: 0.5, ay: 0.5 }
-      : (ANCHORS[k.districts[0]] || { ax: 0.5, ay: 0.5 });
-    return {
-      ...k,
-      x: 0, y: 0, vx: 0, vy: 0,
-      anchorX: anchor.ax,
-      anchorY: anchor.ay,
-      singleDistrict: k.districts.length === 1,
-      recency: (k.lastSeen - oldest) / timespan,
-    };
+      : (ANCHORS[n.districts[0]] || { ax: 0.5, ay: 0.5 });
+    n.anchorX       = anchor.ax;
+    n.anchorY       = anchor.ay;
+    n.singleDistrict = n.districts.length === 1;
   });
 
   constellationSketch = new p5((sk) => {
     let W, H, frame = 0;
-    let selectedIdx = null;
+    let selectedIdx  = null;
+    let dragNodeIdx  = null;
+    let dragOffX = 0, dragOffY = 0;
+
+    const blue  = getComputedStyle(document.body).getPropertyValue('--blue').trim()     || '#0A059B';
     const bg    = getComputedStyle(document.body).getPropertyValue('--color-bg').trim() || '#F7F2F1';
-    const blue  = getComputedStyle(document.body).getPropertyValue('--blue').trim() || '#0A059B';
-    const PAD_X = 8, PAD_Y = 4;
+    const PAD_X = 10, PAD_Y = 6;
+
+    // draggable anchor label positions — one per active district
+    const anchorLabels = Object.entries(ANCHORS).map(([key, pos]) => ({
+      key,
+      px:    pos.ax * (container.offsetWidth  || window.innerWidth),
+      py:    pos.ay * (container.offsetHeight || (window.innerHeight - 90)),
+      label: DISTRICT_META.find(d => d.key === key)?.label || key,
+      color: DISTRICT_COLORS[key] || blue,
+    }));
+
+    nodes.forEach(n => {
+      n.anchorLabelIdx = anchorLabels.findIndex(a => a.key === (n.districts[0] || ''));
+      if (n.anchorLabelIdx < 0) n.anchorLabelIdx = 0;
+    });
 
     sk.setup = () => {
-      W = container.offsetWidth || window.innerWidth;
+      W = container.offsetWidth  || window.innerWidth;
       H = container.offsetHeight || (window.innerHeight - 90);
       sk.createCanvas(W, H).parent('constellation-canvas-container');
       sk.textFont('monospace');
+      sk.textSize(12);
+      // sync anchor label positions to canvas size
+      anchorLabels.forEach(a => {
+        const src = ANCHORS[a.key];
+        a.px = src.ax * W;
+        a.py = src.ay * H;
+      });
       nodes.forEach(n => {
-        n.x = n.anchorX * W + (Math.random() - 0.5) * 80;
-        n.y = n.anchorY * H + (Math.random() - 0.5) * 80;
+        n.x  = n.anchorX * W + (Math.random() - 0.5) * 60;
+        n.y  = n.anchorY * H + (Math.random() - 0.5) * 60;
+        n.vx = 0; n.vy = 0;
       });
     };
 
@@ -974,20 +938,19 @@ function initConstellationSketch() {
       frame++;
       const damping = Math.min(0.85 + frame * 0.001, 0.94);
 
-      // repulsion keeps nodes from stacking
+      // repulsion between all nodes
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i], b = nodes[j];
           const dx = b.x - a.x, dy = b.y - a.y;
-          const d = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
-          const f = 4000 / (d * d);
+          const d  = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+          const f  = 5000 / (d * d);
           a.vx -= (dx / d) * f; a.vy -= (dy / d) * f;
           b.vx += (dx / d) * f; b.vy += (dy / d) * f;
         }
       }
 
       nodes.forEach(n => {
-        // single-district words anchor to district corner, multi-district drift to center
         const pull = n.singleDistrict ? 0.04 : 0.015;
         n.vx += (n.anchorX * W - n.x) * pull;
         n.vy += (n.anchorY * H - n.y) * pull;
@@ -996,70 +959,82 @@ function initConstellationSketch() {
         n.y = Math.max(30, Math.min(H - 30, n.y + n.vy));
       });
 
+      // draw anchor labels
+      anchorLabels.forEach(a => {
+        sk.textSize(11);
+        const tw = sk.textWidth(a.label);
+        const rw = tw + 20, rh = 22;
+        sk.noStroke();
+        sk.fill(a.color + '22');
+        sk.rect(a.px - rw / 2, a.py - rh / 2, rw, rh);
+        sk.fill(a.color);
+        sk.textAlign(sk.CENTER, sk.CENTER);
+        sk.text(a.label, a.px, a.py);
+      });
+
+      // draw word nodes
       nodes.forEach((n, idx) => {
-        // size: 10-18px range based on frequency
-        const t        = nodes.length > 1 ? idx / (nodes.length - 1) : 0.5;
-        const fontSize = 10 + (1 - t) * 8;
+        const fontSize  = 11 + Math.min(n.count * 1.5, 6);
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
-
-        // recency opacity: 0.55 (oldest) to 1.0 (newest)
-        const opacity = 0.55 + n.recency * 0.45;
-        const opHex   = Math.round(opacity * 255).toString(16).padStart(2, '0');
-
         const isSelected = selectedIdx === idx;
         const isHovered  = sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
                            sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2;
 
-        // district color: single = that district's color, multi = gradient
-        const getCol = () => {
-          if (n.districts.length === 1) return DISTRICT_COLORS[n.districts[0]] || blue;
-          return null; // signal gradient
-        };
-        const singleCol = getCol();
+        let col;
+        if (n.districts.length === 1) {
+          col = DISTRICT_COLORS[n.districts[0]];
+        } else {
+          const c1   = DISTRICT_COLORS[n.districts[0]] || blue;
+          const c2   = DISTRICT_COLORS[n.districts[1]] || blue;
+          const grad = sk.drawingContext.createLinearGradient(n.x - rw / 2, n.y, n.x + rw / 2, n.y);
+          grad.addColorStop(0, c1);
+          grad.addColorStop(1, c2);
+          col = grad;
+        }
 
         sk.noStroke();
-
-        if (n.category === 'location') {
-          // location words: bare text, no box, in district color
-          if (singleCol) {
-            sk.fill(singleCol + (isSelected || isHovered ? 'ff' : opHex));
-          } else {
-            // multi-district: use first district color faded
-            sk.fill((DISTRICT_COLORS[n.districts[0]] || blue) + (isSelected || isHovered ? 'ff' : opHex));
-          }
-          sk.textAlign(sk.CENTER, sk.CENTER);
-          sk.text(n.word, n.x, n.y);
+        if (typeof col === 'string') {
+          sk.fill(isSelected || isHovered ? col : col + 'CC');
+          sk.rect(n.x - rw / 2, n.y - rh / 2, rw, rh);
         } else {
-          // emotional + descriptive: filled box in district color
-          if (singleCol) {
-            sk.fill(singleCol + (isSelected || isHovered ? 'ff' : opHex));
-            sk.rect(n.x - rw / 2, n.y - rh / 2, rw, rh);
-          } else {
-            // multi-district: gradient box
-            const c1 = DISTRICT_COLORS[n.districts[0]] || blue;
-            const c2 = DISTRICT_COLORS[n.districts[1]] || blue;
-            const grad = sk.drawingContext.createLinearGradient(n.x - rw / 2, n.y, n.x + rw / 2, n.y);
-            grad.addColorStop(0, c1);
-            grad.addColorStop(1, c2);
-            sk.drawingContext.fillStyle = grad;
-            sk.drawingContext.globalAlpha = isSelected || isHovered ? 1 : opacity;
-            sk.drawingContext.fillRect(n.x - rw / 2, n.y - rh / 2, rw, rh);
-            sk.drawingContext.globalAlpha = 1;
-          }
-          sk.fill(bg);
-          sk.textAlign(sk.CENTER, sk.CENTER);
-          sk.text(n.word, n.x, n.y);
+          sk.drawingContext.fillStyle  = col;
+          sk.drawingContext.globalAlpha = (isSelected || isHovered) ? 1 : 0.8;
+          sk.drawingContext.fillRect(n.x - rw / 2, n.y - rh / 2, rw, rh);
+          sk.drawingContext.globalAlpha = 1;
         }
+        sk.fill(bg);
+        sk.textAlign(sk.CENTER, sk.CENTER);
+        sk.text(n.word, n.x, n.y);
       });
     };
 
+    function hitAnchorLabel(mx, my, a) {
+      sk.textSize(11);
+      const tw = sk.textWidth(a.label);
+      const rw = tw + 20, rh = 22;
+      return mx > a.px - rw / 2 && mx < a.px + rw / 2 &&
+             my > a.py - rh / 2 && my < a.py + rh / 2;
+    }
+
     sk.mousePressed = () => {
+      if (constellationReadOnly) return;
+
+      // check anchor drag first
+      for (let i = 0; i < anchorLabels.length; i++) {
+        if (hitAnchorLabel(sk.mouseX, sk.mouseY, anchorLabels[i])) {
+          dragNodeIdx = i;
+          dragOffX    = sk.mouseX - anchorLabels[i].px;
+          dragOffY    = sk.mouseY - anchorLabels[i].py;
+          return;
+        }
+      }
+
+      // word node click
       let hit = null;
       nodes.forEach((n, idx) => {
-        const t        = nodes.length > 1 ? idx / (nodes.length - 1) : 0.5;
-        const fontSize = 10 + (1 - t) * 8;
+        const fontSize = 11 + Math.min(n.count * 1.5, 6);
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
@@ -1076,30 +1051,52 @@ function initConstellationSketch() {
       }
     };
 
+    sk.mouseDragged = () => {
+      if (constellationReadOnly || dragNodeIdx === null) return;
+      anchorLabels[dragNodeIdx].px = Math.max(60, Math.min(W - 60, sk.mouseX - dragOffX));
+      anchorLabels[dragNodeIdx].py = Math.max(30, Math.min(H - 30, sk.mouseY - dragOffY));
+      // update anchorX/Y so nodes follow the dragged label
+      nodes.forEach(n => {
+        if (n.anchorLabelIdx === dragNodeIdx) {
+          n.anchorX = anchorLabels[dragNodeIdx].px / W;
+          n.anchorY = anchorLabels[dragNodeIdx].py / H;
+        }
+      });
+    };
+
+    sk.mouseReleased = () => { dragNodeIdx = null; };
+
     sk.mouseMoved = () => {
+      if (constellationReadOnly) { container.style.cursor = 'default'; return; }
+      const onAnchor = anchorLabels.some(a => hitAnchorLabel(sk.mouseX, sk.mouseY, a));
       let onNode = false;
-      nodes.forEach((n, idx) => {
-        const t        = nodes.length > 1 ? idx / (nodes.length - 1) : 0.5;
-        const fontSize = 10 + (1 - t) * 8;
+      nodes.forEach(n => {
+        const fontSize = 11 + Math.min(n.count * 1.5, 6);
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
         if (sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
             sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2) onNode = true;
       });
-      container.style.cursor = onNode ? 'pointer' : 'default';
+      container.style.cursor = (onAnchor || onNode) ? 'pointer' : 'default';
     };
 
     sk.windowResized = () => {
-      W = container.offsetWidth || window.innerWidth;
+      W = container.offsetWidth  || window.innerWidth;
       H = container.offsetHeight || (window.innerHeight - 90);
       sk.resizeCanvas(W, H);
+      anchorLabels.forEach(a => {
+        const src = ANCHORS[a.key];
+        a.px = src.ax * W;
+        a.py = src.ay * H;
+      });
       nodes.forEach(n => {
-        n.x = n.anchorX * W + (Math.random() - 0.5) * 40;
-        n.y = n.anchorY * H + (Math.random() - 0.5) * 40;
+        n.x  = n.anchorX * W + (Math.random() - 0.5) * 40;
+        n.y  = n.anchorY * H + (Math.random() - 0.5) * 40;
         n.vx = 0; n.vy = 0;
       });
     };
+
   }, container);
 }
 
@@ -1111,7 +1108,7 @@ function rebuildConstellation() {
 }
 
 
-// ─── dom ready ────────────────────────────────────────────────────────────────
+// dom ready
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -1121,7 +1118,51 @@ document.addEventListener('DOMContentLoaded', () => {
   checkAchievements();
   seedExampleCity();
   initConstellationBtn();
-  initTrain();
+
+  // inject settings panel + button into the page
+  const settingsUI = document.createElement('div');
+  settingsUI.innerHTML = `
+    <div class="customize-toggle-btn" id="customize-toggle-btn">
+      <span class="customize-btn-label">Settings</span>
+    </div>
+    <div class="customize-panel" id="customize-panel">
+      <div class="customize-panel-header" id="customize-panel-header">
+        <span class="customize-panel-label">Settings</span>
+        <span class="customize-panel-toggle">∧</span>
+      </div>
+      <div class="customize-panel-body">
+        <div class="customize-row">
+          <span class="customize-row-label">Dark mode</span>
+          <div class="customize-toggle-cell" id="dark-mode-toggle">
+            <div class="toggle-track" id="dark-mode-track"><div class="toggle-thumb"></div></div>
+          </div>
+        </div>
+        <div class="customize-row">
+          <span class="customize-row-label">Randomize districts</span>
+          <div class="customize-toggle-cell" id="randomize-toggle">
+            <div class="toggle-track" id="randomize-track"><div class="toggle-thumb"></div></div>
+          </div>
+        </div>
+        <div class="customize-row">
+          <span class="customize-row-label">Show photos</span>
+          <div class="customize-toggle-cell" id="show-photos-toggle">
+            <div class="toggle-track" id="show-photos-track"><div class="toggle-thumb"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(settingsUI);
+
+  document.getElementById('customize-toggle-btn').addEventListener('click', openCustomizePanel);
+  document.getElementById('customize-panel-header').addEventListener('click', closeCustomizePanel);
+  document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
+  document.getElementById('randomize-toggle').addEventListener('click', toggleRandomize);
+  document.getElementById('show-photos-toggle').addEventListener('click', toggleShowPhotos);
+
+  initDarkMode();
+  initRandomize();
+  initShowPhotos();
 
   // city name overlay
   document.getElementById('cancel-btn')?.addEventListener('click', closeCityNameOverlay);
@@ -1152,7 +1193,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('share-btn')?.addEventListener('click', openShare);
   document.getElementById('share-close-btn')?.addEventListener('click', closeShare);
   document.getElementById('share-tab-share')?.addEventListener('click', () => switchShareTab('share-tab-share'));
-  document.getElementById('share-tab-log')?.addEventListener('click', () => switchShareTab('share-tab-log'));
+  document.getElementById('share-tab-log')?.addEventListener('click',   () => switchShareTab('share-tab-log'));
   document.getElementById('share-overlay')?.addEventListener('click', e => {
     if (e.target.id === 'share-overlay') closeShare();
   });
@@ -1191,7 +1232,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'about-overlay') document.getElementById('about-overlay').classList.remove('active');
   });
 
-  // return to city (visit mode)
+  // visit mode: return to city
   document.getElementById('return-btn')?.addEventListener('click', openReturnOverlay);
   document.getElementById('return-no-btn')?.addEventListener('click', closeReturnOverlay);
   document.getElementById('return-yes-btn')?.addEventListener('click', () => {
@@ -1202,55 +1243,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'return-overlay') closeReturnOverlay();
   });
 
-  // inject settings panel
-  const ui = document.createElement('div');
-  ui.innerHTML = `
-    <div class="customize-toggle-btn" id="customize-toggle-btn">
-      <span class="customize-btn-label">Settings</span>
-    </div>
-    <div class="customize-panel" id="customize-panel">
-      <div class="customize-panel-header" id="customize-panel-header">
-        <span class="customize-panel-label">Settings</span>
-        <span class="customize-panel-toggle">∧</span>
-      </div>
-      <div class="customize-panel-body">
-        <div class="customize-row">
-          <span class="customize-row-label">Dark mode</span>
-          <div class="customize-toggle-cell" id="dark-mode-toggle">
-            <div class="toggle-track" id="dark-mode-track"><div class="toggle-thumb"></div></div>
-          </div>
-        </div>
-        <div class="customize-row">
-          <span class="customize-row-label">Randomize districts</span>
-          <div class="customize-toggle-cell" id="randomize-toggle">
-            <div class="toggle-track" id="randomize-track"><div class="toggle-thumb"></div></div>
-          </div>
-        </div>
-        <div class="customize-row">
-          <span class="customize-row-label">Show photos</span>
-          <div class="customize-toggle-cell" id="show-photos-toggle">
-            <div class="toggle-track" id="show-photos-track"><div class="toggle-thumb"></div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(ui);
-
-  document.getElementById('customize-toggle-btn').addEventListener('click', openCustomizePanel);
-  document.getElementById('customize-panel-header').addEventListener('click', closeCustomizePanel);
-  document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
-  document.getElementById('randomize-toggle').addEventListener('click', toggleRandomize);
-  document.getElementById('show-photos-toggle').addEventListener('click', toggleShowPhotos);
-
-  initDarkMode();
-  initRandomize();
-  initShowPhotos();
-
   // close settings when clicking outside
-  document.addEventListener('click', (e) => {
+  document.addEventListener('click', e => {
     const panel = document.getElementById('customize-panel');
-    const btn = document.getElementById('customize-toggle-btn');
+    const btn   = document.getElementById('customize-toggle-btn');
     if (!panel || !panel.classList.contains('visible')) return;
     if (!panel.contains(e.target) && !btn?.contains(e.target)) closeCustomizePanel();
   });

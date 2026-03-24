@@ -1,0 +1,326 @@
+/* notes.css */
+/* persistent researcher notes panel — include on every page alongside notes.js */
+
+
+/* toggle button: fixed bottom right */
+
+.rita-notes-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: calc(2rem + 120px + 0.75rem); /* sits left of the settings button */
+  z-index: 900;
+  background-color: var(--color-bg, #F7F2F1);
+  border: 2px solid var(--blue, #0A059B);
+  color: var(--blue, #0A059B);
+  font-family: var(--font-whois, monospace);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  padding: 0.55rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.rita-notes-btn:hover {
+  background-color: var(--blue, #0A059B);
+  color: white;
+}
+
+
+/* overlay: full screen, horizontally wide panel centered */
+
+.rita-notes-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background-color: rgba(10, 5, 155, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.rita-notes-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+
+/* panel content */
+
+.rita-notes-content {
+  background-color: var(--color-bg, #F7F2F1);
+  border: 2px solid var(--blue, #0A059B);
+  width: min(1000px, 94vw);
+  max-height: 88vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+
+/* header row */
+
+.rita-notes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.75rem;
+  border-bottom: 1px solid var(--blue, #0A059B);
+  flex-shrink: 0;
+}
+
+.rita-notes-title {
+  font-family: var(--font-whois, monospace);
+  font-size: 0.82rem;
+  color: var(--blue, #0A059B);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.rita-notes-close {
+  background: none;
+  border: none;
+  font-family: var(--font-whois, monospace);
+  font-size: 0.9rem;
+  color: var(--blue, #0A059B);
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+  padding: 0;
+}
+
+.rita-notes-close:hover { opacity: 1; }
+
+
+/* body: two columns */
+
+.rita-notes-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+
+/* left column: form */
+
+.rita-notes-form-col {
+  padding: 1.75rem;
+  border-right: 1px solid var(--blue, #0A059B);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+}
+
+.rita-notes-sent-msg {
+  font-family: var(--font-whois, monospace);
+  font-size: 0.78rem;
+  color: var(--blue, #0A059B);
+  background: rgba(10, 5, 155, 0.07);
+  border: 1px solid var(--blue, #0A059B);
+  padding: 0.5rem 1rem;
+  text-align: center;
+  letter-spacing: 0.03em;
+}
+
+.rita-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rita-label {
+  font-family: var(--font-whois, monospace);
+  font-size: 0.72rem;
+  color: var(--blue, #0A059B);
+  opacity: 0.6;
+  letter-spacing: 0.04em;
+}
+
+.rita-input {
+  background: none;
+  border: 1px solid var(--blue, #0A059B);
+  color: var(--blue, #0A059B);
+  font-family: var(--font-whois, monospace);
+  font-size: 0.85rem;
+  padding: 0.55rem 0.75rem;
+  outline: none;
+  width: 100%;
+  transition: border-width 0.1s;
+}
+
+.rita-input:focus { border-width: 2px; }
+.rita-input:disabled { opacity: 0.5; cursor: default; }
+
+.rita-textarea {
+  resize: vertical;
+  min-height: 70px;
+}
+
+.rita-form-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+}
+
+.rita-save-btn {
+  background-color: var(--blue, #0A059B);
+  color: white;
+  border: none;
+  font-family: var(--font-whois, monospace);
+  font-size: 0.82rem;
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: opacity 0.2s;
+}
+
+.rita-save-btn:hover { opacity: 0.8; }
+
+.rita-note-send-now {
+  background: none;
+  border: none;
+  font-family: var(--font-whois, monospace);
+  font-size: 0.68rem;
+  color: var(--blue, #0A059B);
+  opacity: 0.5;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s;
+}
+
+.rita-note-send-now:hover { opacity: 1; }
+
+.rita-notes-list-footer {
+  padding: 0.85rem 1.75rem;
+  border-top: 1px solid rgba(10, 5, 155, 0.15);
+  flex-shrink: 0;
+}
+
+.rita-send-btn {
+  background: none;
+  border: 1px solid var(--blue, #0A059B);
+  color: var(--blue, #0A059B);
+  font-family: var(--font-whois, monospace);
+  font-size: 0.82rem;
+  padding: 0.6rem 1.5rem;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.rita-send-btn:hover {
+  background-color: var(--blue, #0A059B);
+  color: white;
+}
+
+
+/* right column: saved notes list */
+
+.rita-notes-list-col {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.rita-notes-list-header {
+  font-family: var(--font-whois, monospace);
+  font-size: 0.72rem;
+  color: var(--blue, #0A059B);
+  opacity: 0.5;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 1rem 1.75rem 0.75rem;
+  border-bottom: 1px solid rgba(10, 5, 155, 0.15);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.rita-notes-list-subtitle {
+  font-size: 0.68rem;
+  opacity: 0.6;
+  text-transform: none;
+  letter-spacing: 0.02em;
+}
+
+.rita-notes-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.rita-note-item {
+  border: 1px solid rgba(10, 5, 155, 0.2);
+  padding: 0.9rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* sent notes: faded text */
+.rita-note-item.rita-note-sent .rita-note-activity,
+.rita-note-item.rita-note-sent .rita-note-comments {
+  opacity: 0.3;
+}
+
+.rita-note-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.rita-note-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.rita-note-sent-badge {
+  font-family: var(--font-whois, monospace);
+  font-size: 0.68rem;
+  color: var(--blue, #0A059B);
+  opacity: 0.4;
+  letter-spacing: 0.03em;
+}
+
+.rita-note-delete {
+  background: none;
+  border: none;
+  font-family: var(--font-whois, monospace);
+  font-size: 0.68rem;
+  color: var(--blue, #0A059B);
+  opacity: 0.3;
+  cursor: pointer;
+  padding: 0;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.rita-note-delete:hover { opacity: 1; color: #c0392b; }
+
+.rita-note-meta {
+  font-family: var(--font-whois, monospace);
+  font-size: 0.7rem;
+  color: var(--blue, #0A059B);
+  opacity: 0.45;
+}
+
+.rita-note-activity,
+.rita-note-comments {
+  font-family: var(--font-whois, monospace);
+  font-size: 0.8rem;
+  color: var(--blue, #0A059B);
+  line-height: 1.5;
+}

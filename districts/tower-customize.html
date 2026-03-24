@@ -6,21 +6,25 @@
   <title>the tower</title>
   <link rel="stylesheet" href="../css/style.css">
   <link rel="stylesheet" href="../css/customize.css">
+  <link rel="stylesheet" href="../css/notes.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 </head>
 <body>
 
   <div class="customize-layout" id="customize-layout">
 
-    <!-- left sidebar — district color strip with image, skins, save -->
+    <!-- left sidebar -->
     <div class="customize-left tower-left" id="customize-left">
       <div class="district-preview">
+
+        <!-- back to city: reversed-color button at top of sidebar -->
+        <a href="../map.html" class="sidebar-back-btn mono">← Back to City</a>
 
         <div class="district-image-container">
           <img src="../assets/districts/tower-unlocked.png" alt="Tower" class="district-preview-img" id="district-preview-img">
         </div>
 
-        <!-- skins — horizontal row -->
+        <!-- skins: auto-save on click, no save button -->
         <div class="skin-options">
           <div class="skin-thumb active" data-skin="0">
             <img src="../assets/districts/tower.png" alt="Skin 1">
@@ -33,8 +37,6 @@
           </div>
         </div>
 
-        <button class="sidebar-save-btn mono" id="save-btn">Save</button>
-
         <p class="mono district-date" id="district-date"></p>
 
       </div>
@@ -43,7 +45,7 @@
     <!-- right panel -->
     <div class="customize-right" id="customize-right">
 
-      <!-- binding header: large title | Back to City | Log Again | Share -->
+      <!-- header: title (editable) + share only -->
       <header class="customize-header">
         <div class="customize-header-title-cell" id="title-cell">
           <h1 class="customize-header-title" id="district-title"></h1>
@@ -55,38 +57,49 @@
             autocomplete="off"
           >
         </div>
-        <a href="../map.html" class="customize-header-cell customize-back-btn mono">Back to City</a>
-        <button class="customize-header-cell customize-header-btn mono" id="redo-btn">Log Again</button>
         <button class="customize-header-cell customize-header-btn mono" id="share-btn">Share</button>
       </header>
 
-      <!-- location sub-header -->
+      <!-- location sub-header: all unique locations -->
       <div class="customize-subheader">
-        <span class="location-line mono">Location of the tower:
+        <span class="location-line mono">Locations of the tower:
           <span class="location-value mono" id="location-value"></span>
         </span>
       </div>
 
-      <!-- view toggle — boxed buttons -->
+      <!-- view toggle -->
       <div class="view-toggle">
         <button class="toggle-btn mono active" id="journal-toggle">Journal View</button>
         <button class="toggle-btn mono" id="graph-toggle">Memory View</button>
+        <button class="toggle-btn mono" id="album-toggle">Album View</button>
       </div>
 
       <!-- journal view -->
       <div class="journal-view" id="journal-view">
+        <!-- add a new location at top -->
+        <div class="journal-add-location" id="add-location-btn">
+          <span class="journal-add-icon">+</span>
+          <span class="mono">Log New Location</span>
+        </div>
         <div class="journal-entries" id="journal-entries"></div>
       </div>
 
-      <!-- constellation view -->
-      <div class="graph-view hidden" id="graph-view">
+      <!-- memory/constellation view -->
+      <div class="graph-view" id="graph-view" style="display:none">
         <div id="p5-canvas-container"></div>
+      </div>
+
+      <!-- album view -->
+      <div class="album-view" id="album-view" style="display:none">
+        <div class="album-photos" id="album-photos"></div>
+        <div class="album-songs" id="album-songs"></div>
       </div>
 
     </div>
   </div>
 
   <script src="../js/achievements.js"></script>
+  <script src="../js/notes.js"></script>
   <script src="../js/customize.js"></script>
 
 </body>

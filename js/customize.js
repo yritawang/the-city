@@ -1,6 +1,8 @@
 // customize.js
 
-// detect district from url path
+
+// detect current district from the url
+
 const getCurrentDistrict = () => {
   const path = window.location.pathname;
   if (path.includes('shrine'))      return 'shrine';
@@ -12,6 +14,9 @@ const getCurrentDistrict = () => {
 };
 
 const CURRENT_DISTRICT = getCurrentDistrict();
+
+
+// district config
 
 const DISTRICT_CONFIG = {
   shrine: {
@@ -98,8 +103,8 @@ const STOPWORDS = new Set([
   'even','very','much','many','some','any','time','way'
 ]);
 
-const EMOTION_WORDS = new Set(['happy','happiness','sad','sadness','grief','joy','joyful','love','loved','lonely','loneliness','fear','afraid','scared','anxious','anxiety','angry','anger','rage','calm','peace','peaceful','safe','unsafe','comfort','comfortable','uncomfortable','proud','pride','shame','ashamed','guilt','guilty','hopeful','hope','hopeless','lost','found','free','freedom','trapped','nostalgic','nostalgia','homesick','longing','yearning','missing','belonging','connected','disconnected','isolated','warm','warmth','cold','hurt','pain','painful','tender','gentle','alive','numb','empty','full','overwhelmed','grateful','gratitude','bitter','bittersweet','melancholy','wonder','awe','curious','confused','clarity','certain','uncertain','excited','excitement','nervous','relief','relieved','tired','exhausted','energized','inspired','inspiration','content','restless','vulnerable','strong','weak','brave','courage']);
-const LOCATION_WORDS = new Set(['home','house','room','bedroom','kitchen','garden','park','school','church','temple','mosque','street','road','alley','corner','market','store','shop','cafe','restaurant','library','hospital','office','studio','apartment','building','city','town','village','country','neighborhood','district','plaza','shrine','tower','forest','lake','river','ocean','beach','mountain','field','farm','barn','garage','basement','attic','hallway','staircase','window','door','yard','balcony','rooftop','bridge','station','airport','train','bus','court','campus','dormitory','dorm','classroom','gym','pool','stadium','theater','cinema','museum','gallery','mall','hotel','motel','cabin','cottage','palace','castle','ruins','cemetery','playground','lobby','corridor','passage','square','avenue','boulevard','lane']);
+const EMOTION_WORDS     = new Set(['happy','happiness','sad','sadness','grief','joy','joyful','love','loved','lonely','loneliness','fear','afraid','scared','anxious','anxiety','angry','anger','rage','calm','peace','peaceful','safe','unsafe','comfort','comfortable','uncomfortable','proud','pride','shame','ashamed','guilt','guilty','hopeful','hope','hopeless','lost','found','free','freedom','trapped','nostalgic','nostalgia','homesick','longing','yearning','missing','belonging','connected','disconnected','isolated','warm','warmth','cold','hurt','pain','painful','tender','gentle','alive','numb','empty','full','overwhelmed','grateful','gratitude','bitter','bittersweet','melancholy','wonder','awe','curious','confused','clarity','certain','uncertain','excited','excitement','nervous','relief','relieved','tired','exhausted','energized','inspired','inspiration','content','restless','vulnerable','strong','weak','brave','courage']);
+const LOCATION_WORDS    = new Set(['home','house','room','bedroom','kitchen','garden','park','school','church','temple','mosque','street','road','alley','corner','market','store','shop','cafe','restaurant','library','hospital','office','studio','apartment','building','city','town','village','country','neighborhood','district','plaza','shrine','tower','forest','lake','river','ocean','beach','mountain','field','farm','barn','garage','basement','attic','hallway','staircase','window','door','yard','balcony','rooftop','bridge','station','airport','train','bus','court','campus','dormitory','dorm','classroom','gym','pool','stadium','theater','cinema','museum','gallery','mall','hotel','motel','cabin','cottage','palace','castle','ruins','cemetery','playground','lobby','corridor','passage','square','avenue','boulevard','lane']);
 const DESCRIPTIVE_WORDS = new Set(['quiet','loud','bright','dark','small','large','big','tiny','huge','narrow','wide','open','closed','clean','dirty','old','ancient','modern','empty','crowded','busy','still','chaotic','familiar','unfamiliar','strange','ordinary','special','sacred','forgotten','remembered','hidden','visible','distant','close','near','far','deep','shallow','heavy','light','soft','hard','rough','smooth','broken','whole','perfect','imperfect','beautiful','ugly','simple','complex','extraordinary','invisible','tangible','fleeting','permanent','temporary','endless','brief','vast','intimate','public','private','shared','personal','collective','universal','specific','vivid','faded','fresh','alive','growing','changing','fixed','steady','grounded','real','dreamlike','concrete','meaningful','powerful','fragile','resilient','delicate','sturdy','urgent','slow','fast']);
 
 function getWordCategory(w) {
@@ -150,6 +155,9 @@ const TIME_OPTIONS = [
 let memoryTimeRange  = 'all';
 let memoryAnchorMode = 'location';
 
+
+// init
+
 document.addEventListener('DOMContentLoaded', () => {
   loadData();
   renderUI();
@@ -157,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadMedia();
   initMediaListeners();
 
-  // illustration zoom
+  // illustration zoom overlay
   const previewImg = document.getElementById('district-preview-img');
   const overlayEl  = document.createElement('div');
   overlayEl.className = 'illustration-overlay';
@@ -168,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
   overlayEl.appendChild(overlayBox);
   document.body.appendChild(overlayEl);
 
-  document.querySelector('.district-image-container').addEventListener('click', () => {
+  document.querySelector('.district-image-container')?.addEventListener('click', () => {
     overlayImg.src = previewImg.src;
     overlayEl.classList.add('active');
   });
@@ -176,37 +184,43 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
-// ─── data ────────────────────────────────────────────────────────────────────
+// data
 
 function loadData() {
   const rawAnswers = JSON.parse(localStorage.getItem(`${CURRENT_DISTRICT}-answers`) || '{}');
   districtData = {
-    name:     localStorage.getItem(`${CURRENT_DISTRICT}-name`) || config.displayName,
-    location: rawAnswers[0] || '—',
-    date:     localStorage.getItem(`${CURRENT_DISTRICT}-date`) || new Date().toLocaleDateString('en-US'),
-    answers:  rawAnswers
+    name:    localStorage.getItem(`${CURRENT_DISTRICT}-name`) || config.displayName,
+    date:    localStorage.getItem(`${CURRENT_DISTRICT}-date`) || new Date().toLocaleDateString('en-US'),
+    answers: rawAnswers
   };
   sessions = JSON.parse(localStorage.getItem(`${CURRENT_DISTRICT}-sessions`) || '[]');
+
+  // backfill first session if answers exist but no sessions saved yet
   if (sessions.length === 0 && Object.keys(rawAnswers).length > 0) {
     sessions.push({ date: districtData.date, timestamp: Date.now(), answers: { ...rawAnswers } });
     localStorage.setItem(`${CURRENT_DISTRICT}-sessions`, JSON.stringify(sessions));
   }
+
   currentSkin = parseInt(localStorage.getItem(`${CURRENT_DISTRICT}-skin`) || '0');
 }
 
 
-// ─── render ──────────────────────────────────────────────────────────────────
+// render
 
 function renderUI() {
   const titleEl = document.getElementById('district-title');
   if (titleEl) titleEl.textContent = districtData.name;
+
   const dateEl = document.getElementById('district-date');
   if (dateEl) dateEl.textContent = `Edited: ${districtData.date}`;
+
+  // show all unique locations in the subheader
   const locationEl = document.getElementById('location-value');
   if (locationEl) {
-    const latest = [...sessions].sort((a, b) => b.timestamp - a.timestamp)[0];
-    locationEl.textContent = latest?.answers[0] || '—';
+    const unique = [...new Set(sessions.map(s => s.answers[0]).filter(Boolean))];
+    locationEl.textContent = unique.length ? unique.join(', ') : '—';
   }
+
   updateSkinDisplay();
   renderJournalEntries();
 }
@@ -217,16 +231,21 @@ function updateSkinDisplay() {
     `${CURRENT_DISTRICT}-skin2`,
     `${CURRENT_DISTRICT}-skin3`
   ];
-  const src     = `../assets/districts/${skins[currentSkin]}.png`;
   const preview = document.getElementById('district-preview-img');
-  if (preview) preview.src = src;
+  if (preview) preview.src = `../assets/districts/${skins[currentSkin]}.png`;
 
   document.querySelectorAll('.skin-thumb').forEach((thumb, i) => {
     thumb.classList.toggle('active', i === currentSkin);
     const img = thumb.querySelector('img');
     if (img) img.src = `../assets/districts/${skins[i]}.png`;
   });
+
+  // auto-save on every skin change — no save button needed
+  localStorage.setItem(`${CURRENT_DISTRICT}-skin`, currentSkin);
 }
+
+
+// journal entries
 
 function renderJournalEntries() {
   const container = document.getElementById('journal-entries');
@@ -237,6 +256,7 @@ function renderJournalEntries() {
     return;
   }
 
+  // group by location (answer[0]), newest first
   const groups = new Map();
   [...sessions].sort((a, b) => b.timestamp - a.timestamp).forEach(session => {
     const place = session.answers[0] || '—';
@@ -248,20 +268,46 @@ function renderJournalEntries() {
 
   groups.forEach((groupSessions, place) => {
     const group = document.createElement('div');
-    group.className = 'journal-location-group';
+    group.className = 'journal-location-group open';
 
+    // collapsible heading
     const heading = document.createElement('div');
     heading.className = 'journal-location-heading mono';
-    heading.textContent = place;
+    heading.innerHTML = `<span>${place}</span><span class="journal-location-chevron">∨</span>`;
+    heading.addEventListener('click', () => group.classList.toggle('open'));
     group.appendChild(heading);
 
+    const body = document.createElement('div');
+    body.className = 'journal-location-body';
+
+    // per-location relog button
+    const relogBtn = document.createElement('button');
+    relogBtn.className = 'journal-relog-location-btn mono';
+    relogBtn.textContent = '+ Log this location again';
+    relogBtn.addEventListener('click', () => relogExistingLocation(place));
+    body.appendChild(relogBtn);
+
+    // entries
     groupSessions.forEach(session => {
       const entry = document.createElement('div');
       entry.className = 'journal-entry';
+
+      const musicName = localStorage.getItem(`${CURRENT_DISTRICT}-music-name-${session.timestamp}`);
+      const photoData = localStorage.getItem(`${CURRENT_DISTRICT}-photo-${session.timestamp}`);
+
+      const musicHtml = musicName
+        ? `<div class="journal-entry-song mono">&#9654; ${musicName}</div>`
+        : '';
+
+      const photoIndicator = photoData
+        ? `<img src="${photoData}" class="journal-entry-thumb" alt="photo">`
+        : '';
+
       entry.innerHTML = `
         <div class="journal-entry-header">
           <span class="journal-entry-date mono">${session.date}</span>
           <div class="journal-entry-meta">
+            ${photoIndicator}
             <button class="delete-entry-btn mono" data-ts="${session.timestamp}">delete</button>
             <span class="journal-entry-chevron">∨</span>
           </div>
@@ -273,6 +319,7 @@ function renderJournalEntries() {
               <span class="journal-answer">${a || '—'}</span>
             </div>
           `).join('')}
+          ${musicHtml}
         </div>
       `;
 
@@ -289,17 +336,204 @@ function renderJournalEntries() {
         renderJournalEntries();
       });
 
-      group.appendChild(entry);
+      body.appendChild(entry);
     });
 
+    group.appendChild(body);
     container.appendChild(group);
   });
 }
 
 
-// ─── listeners ───────────────────────────────────────────────────────────────
+// album view
+
+function renderAlbumView() {
+  const photosContainer = document.getElementById('album-photos');
+  const songsContainer  = document.getElementById('album-songs');
+  if (!photosContainer || !songsContainer) return;
+
+  // photos section — one row per session that either has a photo or can get one
+  if (sessions.length === 0) {
+    photosContainer.innerHTML = `
+      <div class="album-section-label mono">Photos</div>
+      <p class="album-empty mono">No entries yet.</p>
+    `;
+  } else {
+    const rows = sessions.map(s => {
+      const photoData = localStorage.getItem(`${CURRENT_DISTRICT}-photo-${s.timestamp}`);
+      const label     = s.answers[0] ? s.answers[0] : s.date;
+      return `
+        <div class="album-photo-row" data-ts="${s.timestamp}">
+          <div class="album-photo-slot">
+            ${photoData
+              ? `<img src="${photoData}" class="album-photo-thumb" alt="session photo" data-ts="${s.timestamp}">`
+              : `<div class="album-photo-empty mono">no photo</div>`
+            }
+          </div>
+          <div class="album-photo-row-info">
+            <span class="album-photo-label mono">${label}</span>
+            <span class="album-photo-date mono">${s.date}</span>
+          </div>
+          <label class="album-photo-add-btn mono" title="Upload photo for this entry">
+            ${photoData ? '↺' : '+'}
+            <input type="file" accept="image/*" class="album-photo-input hidden" data-ts="${s.timestamp}">
+          </label>
+          ${photoData
+            ? `<button class="album-photo-remove mono" data-ts="${s.timestamp}" title="Remove photo">✕</button>`
+            : ''
+          }
+        </div>
+      `;
+    }).join('');
+
+    photosContainer.innerHTML = `
+      <div class="album-section-label mono">Photos</div>
+      ${rows}
+    `;
+
+    // wire upload inputs
+    photosContainer.querySelectorAll('.album-photo-input').forEach(input => {
+      input.addEventListener('change', () => {
+        const file = input.files[0];
+        const ts   = input.dataset.ts;
+        if (!file || !ts) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          localStorage.setItem(`${CURRENT_DISTRICT}-photo-${ts}`, e.target.result);
+          renderAlbumView();
+        };
+        reader.readAsDataURL(file);
+        input.value = '';
+      });
+    });
+
+    // wire remove buttons
+    photosContainer.querySelectorAll('.album-photo-remove').forEach(btn => {
+      btn.addEventListener('click', () => {
+        localStorage.removeItem(`${CURRENT_DISTRICT}-photo-${btn.dataset.ts}`);
+        renderAlbumView();
+      });
+    });
+
+    // wire lightbox on thumbnails
+    photosContainer.querySelectorAll('.album-photo-thumb').forEach(img => {
+      img.addEventListener('click', () => openAlbumLightbox(img.src));
+    });
+  }
+
+  // songs section
+  const songs = sessions
+    .map(s => localStorage.getItem(`${CURRENT_DISTRICT}-music-name-${s.timestamp}`))
+    .filter(Boolean);
+
+  songsContainer.innerHTML = songs.length
+    ? `<div class="album-section-label mono">Songs</div>
+       ${songs.map(name => `
+         <div class="album-song-row">
+           <span class="album-song-icon">&#9654;</span>
+           <span class="mono">${name}</span>
+         </div>`).join('')}`
+    : `<div class="album-section-label mono">Songs</div>
+       <p class="album-empty mono">No songs attached yet.</p>`;
+}
+
+function openAlbumLightbox(src) {
+  let lb = document.getElementById('album-lightbox');
+  if (!lb) {
+    lb = document.createElement('div');
+    lb.id = 'album-lightbox';
+    lb.className = 'album-lightbox';
+    lb.innerHTML = `
+      <div class="album-lightbox-bg"></div>
+      <div class="album-lightbox-content">
+        <img class="album-lightbox-img" id="album-lightbox-img" src="" alt="">
+        <button class="album-lightbox-close mono">Close</button>
+      </div>
+    `;
+    document.body.appendChild(lb);
+    lb.querySelector('.album-lightbox-bg').addEventListener('click', closeAlbumLightbox);
+    lb.querySelector('.album-lightbox-close').addEventListener('click', closeAlbumLightbox);
+  }
+  lb.querySelector('#album-lightbox-img').src = src;
+  lb.classList.add('active');
+}
+
+function closeAlbumLightbox() {
+  document.getElementById('album-lightbox')?.classList.remove('active');
+}
+
+
+// navigation
+
+function relogExistingLocation(locationName) {
+  localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
+  localStorage.setItem(`${CURRENT_DISTRICT}-relog-prefill`, locationName);
+  window.location.href = `${CURRENT_DISTRICT}.html`;
+}
+
+function openRelogOverlay() {
+  const locations = [...new Map(
+    sessions.filter(s => s.answers[0]).map(s => [s.answers[0], s.answers[0]])
+  ).values()];
+
+  if (!document.getElementById('relog-overlay')) {
+    const el = document.createElement('div');
+    el.id = 'relog-overlay';
+    el.className = 'relog-overlay';
+    el.innerHTML = `
+      <div class="relog-overlay-content">
+        <p class="relog-overlay-title">Start a new log entry. Your previous entries will be kept.</p>
+        <button class="relog-new-btn mono" id="relog-new-btn">Log a new location →</button>
+        <div class="relog-existing-row">
+          <div style="flex:1">
+            <p class="relog-existing-label">Add to existing location</p>
+            <div style="display:flex;gap:0.75rem">
+              <select class="relog-existing-select" id="relog-existing-select">
+                <option value="">Select a location...</option>
+                ${locations.map(l => `<option value="${l}">${l}</option>`).join('')}
+              </select>
+              <button class="relog-go-btn mono" id="relog-go-btn">Go →</button>
+            </div>
+          </div>
+        </div>
+        <button class="relog-cancel-btn mono" id="relog-cancel-btn">cancel</button>
+      </div>
+    `;
+    document.body.appendChild(el);
+
+    document.getElementById('relog-new-btn').addEventListener('click', () => {
+      closeRelogOverlay();
+      localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
+      localStorage.removeItem(`${CURRENT_DISTRICT}-relog-prefill`);
+      window.location.href = `${CURRENT_DISTRICT}.html`;
+    });
+
+    document.getElementById('relog-go-btn').addEventListener('click', () => {
+      const selected = document.getElementById('relog-existing-select').value;
+      if (!selected) return;
+      closeRelogOverlay();
+      localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
+      localStorage.setItem(`${CURRENT_DISTRICT}-relog-prefill`, selected);
+      window.location.href = `${CURRENT_DISTRICT}.html`;
+    });
+
+    document.getElementById('relog-cancel-btn').addEventListener('click', closeRelogOverlay);
+    el.addEventListener('click', e => { if (e.target.id === 'relog-overlay') closeRelogOverlay(); });
+  }
+
+  requestAnimationFrame(() => document.getElementById('relog-overlay').classList.add('active'));
+}
+
+function closeRelogOverlay() {
+  document.getElementById('relog-overlay')?.classList.remove('active');
+}
+
+
+// listeners
 
 function setupListeners() {
+
+  // inline title editing
   const titleCell  = document.getElementById('title-cell');
   const titleEl    = document.getElementById('district-title');
   const titleInput = document.getElementById('district-title-input');
@@ -314,7 +548,7 @@ function setupListeners() {
       titleInput.select();
     });
 
-    titleInput.addEventListener('blur', () => commitName());
+    titleInput.addEventListener('blur', commitName);
     titleInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter')  { e.preventDefault(); titleInput.blur(); }
       if (e.key === 'Escape') { titleInput.value = districtData.name; titleInput.blur(); }
@@ -332,16 +566,7 @@ function setupListeners() {
     titleInput.classList.add('hidden');
   }
 
-  document.getElementById('save-btn')?.addEventListener('click', () => {
-    localStorage.setItem(`${CURRENT_DISTRICT}-skin`, currentSkin);
-    const btn  = document.getElementById('save-btn');
-    const prev = btn.textContent;
-    btn.textContent = 'Saved';
-    setTimeout(() => { btn.textContent = prev; }, 1500);
-  });
-
-  document.getElementById('redo-btn')?.addEventListener('click', openRelogOverlay);
-
+  // skin thumbs: auto-save on click
   document.querySelectorAll('.skin-thumb').forEach(t => {
     t.addEventListener('click', () => {
       currentSkin = parseInt(t.dataset.skin);
@@ -349,44 +574,68 @@ function setupListeners() {
     });
   });
 
+  // log again button: opens the overlay with new/existing location choice
+  document.getElementById('add-location-btn')?.addEventListener('click', openRelogOverlay);
+
+  // view toggles
   document.getElementById('journal-toggle')?.addEventListener('click', switchToJournal);
   document.getElementById('graph-toggle')?.addEventListener('click', switchToGraph);
+  document.getElementById('album-toggle')?.addEventListener('click', switchToAlbum);
 }
 
 
-// ─── view switching ───────────────────────────────────────────────────────────
+// view switching
 
 function switchToJournal() {
+  setActiveToggle('journal-toggle');
   isGraphMode = false;
-  document.getElementById('journal-toggle').classList.add('active');
-  document.getElementById('graph-toggle').classList.remove('active');
-  document.getElementById('journal-view').classList.remove('hidden');
-  document.getElementById('graph-view').classList.add('hidden');
+  document.getElementById('journal-view').style.display = 'block';
+  document.getElementById('graph-view').style.display   = 'none';
+  const albumView = document.getElementById('album-view');
+  if (albumView) albumView.style.display = 'none';
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
-  // hide controls — keeps button listeners alive for next open
   const controls = document.getElementById('memory-controls');
   if (controls) controls.style.display = 'none';
 }
 
 function switchToGraph() {
+  setActiveToggle('graph-toggle');
   isGraphMode = true;
-  document.getElementById('graph-toggle').classList.add('active');
-  document.getElementById('journal-toggle').classList.remove('active');
-  document.getElementById('journal-view').classList.add('hidden');
-  document.getElementById('graph-view').classList.remove('hidden');
+  document.getElementById('journal-view').style.display = 'none';
+  document.getElementById('graph-view').style.display   = 'flex';
+  const albumView = document.getElementById('album-view');
+  if (albumView) albumView.style.display = 'none';
   const controls = document.getElementById('memory-controls');
-  if (controls) controls.style.display = '';
+  if (controls) controls.style.display = 'flex';
   setTimeout(initGraph, 100);
 }
 
+function switchToAlbum() {
+  setActiveToggle('album-toggle');
+  isGraphMode = false;
+  document.getElementById('journal-view').style.display = 'none';
+  document.getElementById('graph-view').style.display   = 'none';
+  const albumView = document.getElementById('album-view');
+  if (albumView) albumView.style.display = 'flex';
+  if (graphSketch) { graphSketch.remove(); graphSketch = null; }
+  const controls = document.getElementById('memory-controls');
+  if (controls) controls.style.display = 'none';
+  renderAlbumView();
+}
 
-// ─── memory view ─────────────────────────────────────────────────────────────
+function setActiveToggle(activeId) {
+  ['journal-toggle', 'graph-toggle', 'album-toggle'].forEach(id => {
+    document.getElementById(id)?.classList.toggle('active', id === activeId);
+  });
+}
+
+
+// memory view
 
 function getSessionsForTimeRange() {
   if (memoryTimeRange === 'all') return sessions;
-  const now  = Date.now();
   const cutoffDays = { week: 7, month: 30, year: 365 };
-  const cutoff = now - (cutoffDays[memoryTimeRange] || 0) * 24 * 60 * 60 * 1000;
+  const cutoff = Date.now() - (cutoffDays[memoryTimeRange] || 0) * 24 * 60 * 60 * 1000;
   return sessions.filter(s => s.timestamp >= cutoff);
 }
 
@@ -452,14 +701,14 @@ function initGraph() {
   if (!container) return;
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
 
-  // info panel — only create once
+  // info panel: only create once
   if (!document.getElementById('constellation-panel')) {
     const panel = document.createElement('div');
     panel.id = 'constellation-panel';
     document.getElementById('graph-view').appendChild(panel);
   }
 
-  // controls bar — only create once, kept alive across rebuilds
+  // controls bar: only create once, kept alive across rebuilds
   if (!document.getElementById('memory-controls')) {
     const sliderMax   = TIME_OPTIONS.length - 1;
     const currentIdx  = TIME_OPTIONS.findIndex(o => o.value === memoryTimeRange);
@@ -485,7 +734,6 @@ function initGraph() {
       </div>
     `;
 
-    // insert before canvas so it sits above in the flex column
     const graphView = document.getElementById('graph-view');
     graphView.insertBefore(controls, graphView.firstChild);
 
@@ -531,8 +779,7 @@ function initGraph() {
 
   const bg    = getComputedStyle(document.body).getPropertyValue('--color-bg').trim() || '#F7F2F1';
   const PAD_X = 8, PAD_Y = 4;
-  // anchor label size and padding
-  const ANCHOR_FONT = 13;
+  const ANCHOR_FONT  = 13;
   const ANCHOR_PAD_X = 10, ANCHOR_PAD_Y = 13;
 
   let selectedIdx   = null;
@@ -543,14 +790,17 @@ function initGraph() {
     let W, H, frame = 0;
 
     sk.setup = () => {
-      W = container.offsetWidth  || 800;
-      H = container.offsetHeight || 500;
+      const graphView  = document.getElementById('graph-view');
+      const controlsEl = document.getElementById('memory-controls');
+      const controlsH  = controlsEl ? controlsEl.offsetHeight : 0;
+      W = graphView ? graphView.offsetWidth  : 800;
+      H = graphView ? graphView.offsetHeight - controlsH : 500;
+      if (H < 100) H = 500; // fallback if layout hasn't settled
       sk.createCanvas(W, H).parent('p5-canvas-container');
       sk.textFont('monospace');
 
       anchors.forEach(a => { a.px = a.ax * W; a.py = a.ay * H; });
 
-      // spawn nodes near their anchor with generous scatter
       nodes.forEach(n => {
         const a = anchors[n.anchorIdx] || anchors[0];
         n.x  = a.px + (Math.random() - 0.5) * 120;
@@ -577,8 +827,7 @@ function initGraph() {
         }
       }
 
-      // repulsion between word nodes and anchor labels
-      // keeps words from sitting on top of the anchor text
+      // repulsion from anchor labels so words don't stack on them
       nodes.forEach(n => {
         anchors.forEach(a => {
           const dx = n.x - a.px, dy = n.y - a.py;
@@ -591,7 +840,7 @@ function initGraph() {
         });
       });
 
-      // soft pull toward anchor
+      // soft pull toward each node's anchor
       nodes.forEach(n => {
         const a = anchors[n.anchorIdx] || anchors[0];
         n.vx += (a.px - n.x) * 0.006;
@@ -601,7 +850,7 @@ function initGraph() {
         n.y = Math.max(24, Math.min(H - 24, n.y + n.vy));
       });
 
-      // draw anchor labels — bigger and more prominent
+      // draw anchor labels
       anchors.forEach(a => {
         sk.textFont('monospace');
         sk.textSize(ANCHOR_FONT);
@@ -630,7 +879,6 @@ function initGraph() {
         const rw = tw + PAD_X * 2;
         const rh = fontSize + PAD_Y * 2;
 
-        // opacity: 0.55 floor so oldest words still read clearly
         const opacity = 0.55 + n.recency * 0.45;
         const opHex   = Math.round(opacity * 255).toString(16).padStart(2, '0');
 
@@ -641,12 +889,12 @@ function initGraph() {
         sk.noStroke();
 
         if (n.category === 'location') {
-          // no box — bare word in district color
+          // bare word, no box
           sk.fill(DIST_COLOR + (isSelected || isHovered ? 'ff' : opHex));
           sk.textAlign(sk.CENTER, sk.CENTER);
           sk.text(n.word, n.x, n.y);
         } else {
-          // emotional + descriptive: filled box
+          // filled box
           sk.fill(DIST_COLOR + (isSelected || isHovered ? 'ff' : opHex));
           sk.rect(n.x - rw / 2, n.y - rh / 2, rw, rh);
           sk.fill(bg);
@@ -656,9 +904,8 @@ function initGraph() {
       });
     };
 
-    // ─── interaction ─────────────────────────────────────────────────────────
+    // helpers
 
-    // helper: check if a point hits an anchor label
     function hitAnchor(mx, my, a) {
       sk.textSize(ANCHOR_FONT);
       const lw = sk.textWidth(a.label);
@@ -669,7 +916,7 @@ function initGraph() {
     }
 
     sk.mousePressed = () => {
-      // check anchors first
+      // anchors are draggable — check first
       for (let i = 0; i < anchors.length; i++) {
         if (hitAnchor(sk.mouseX, sk.mouseY, anchors[i])) {
           dragAnchorIdx = i;
@@ -678,7 +925,7 @@ function initGraph() {
           return;
         }
       }
-      // check word nodes
+      // word node click
       let hit = null;
       nodes.forEach((n, idx) => {
         const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
@@ -708,8 +955,8 @@ function initGraph() {
     sk.mouseReleased = () => { dragAnchorIdx = null; };
 
     sk.mouseMoved = () => {
-      let onAnchor = anchors.some(a => hitAnchor(sk.mouseX, sk.mouseY, a));
-      let onNode   = false;
+      const onAnchor = anchors.some(a => hitAnchor(sk.mouseX, sk.mouseY, a));
+      let onNode = false;
       nodes.forEach(n => {
         const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
         const fontSize = 10 + t * 8;
@@ -723,8 +970,9 @@ function initGraph() {
     };
 
     sk.windowResized = () => {
-      W = container.offsetWidth  || 800;
-      H = container.offsetHeight || 500;
+      const graphView = document.getElementById('graph-view');
+      W = graphView ? graphView.offsetWidth  : (container.offsetWidth  || 800);
+      H = graphView ? graphView.offsetHeight : (container.offsetHeight || 500);
       sk.resizeCanvas(W, H);
       anchors.forEach(a => { a.px = a.ax * W; a.py = a.ay * H; });
     };
@@ -734,8 +982,7 @@ function initGraph() {
 }
 
 function renderEmptyState(container) {
-  const existing = document.getElementById('memory-empty-state');
-  if (existing) existing.remove();
+  document.getElementById('memory-empty-state')?.remove();
   const el = document.createElement('div');
   el.id = 'memory-empty-state';
   el.style.cssText = `
@@ -752,8 +999,7 @@ function renderEmptyState(container) {
 }
 
 function renderGraphTooltip() {
-  const existing = document.getElementById('memory-tooltip');
-  if (existing) existing.remove();
+  document.getElementById('memory-tooltip')?.remove();
   const tip = document.createElement('div');
   tip.id = 'memory-tooltip';
   tip.style.cssText = `
@@ -772,13 +1018,10 @@ function renderGraphTooltip() {
 
 function rebuildGraph() {
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
-  const canvas = document.querySelector('#p5-canvas-container canvas');
-  if (canvas) canvas.remove();
-  const empty = document.getElementById('memory-empty-state');
-  if (empty) empty.remove();
-  const tip = document.getElementById('memory-tooltip');
-  if (tip) tip.remove();
-  // controls are kept alive — never remove them
+  document.querySelector('#p5-canvas-container canvas')?.remove();
+  document.getElementById('memory-empty-state')?.remove();
+  document.getElementById('memory-tooltip')?.remove();
+  // controls are kept alive across rebuilds
   initGraph();
 }
 
@@ -792,7 +1035,7 @@ function showInfoPanel(node) {
       if (!answer || parseInt(qi) === 5) return;
       if (answer.toLowerCase().includes(node.word)) {
         const q       = QUESTIONS[parseInt(qi)] || '';
-        const snippet = answer.length > 120 ? answer.slice(0, 120) + '…' : answer;
+        const snippet = answer.length > 120 ? answer.slice(0, 120) + '...' : answer;
         contexts.push({ question: `${session.date} · ${q}`, snippet });
       }
     });
@@ -807,7 +1050,7 @@ function showInfoPanel(node) {
         <div style="font-size:0.72rem;opacity:0.5;margin-bottom:0.25rem;">${c.question}</div>
         <div style="font-family:var(--font-meta);font-size:0.88rem;line-height:1.65;">${c.snippet}</div>
       </div>
-    `).join('') || '<div style="opacity:0.4;font-size:0.8rem;">No context found.</div>'}
+    `).join('') || '<div style="opacity:0.4;font-size:0.8rem;">no context found.</div>'}
   `;
   panel.style.opacity       = '1';
   panel.style.pointerEvents = 'all';
@@ -819,100 +1062,10 @@ function hideInfoPanel() {
 }
 
 
-// ─── relog overlay ────────────────────────────────────────────────────────────
-
-function openRelogOverlay() {
-  const locations = [...new Map(
-    sessions.filter(s => s.answers[0]).map(s => [s.answers[0], s.answers[0]])
-  ).values()];
-
-  if (!document.getElementById('relog-overlay')) {
-    const el = document.createElement('div');
-    el.id = 'relog-overlay';
-    el.className = 'relog-overlay';
-    el.innerHTML = `
-      <div class="relog-overlay-content">
-        <p class="relog-overlay-title">Start a new log entry? Your previous entries will be kept.</p>
-        <button class="relog-new-btn mono" id="relog-new-btn">Log a new location →</button>
-        <div class="relog-existing-row">
-          <div style="flex:1">
-            <p class="relog-existing-label">Add to existing location</p>
-            <div style="display:flex;gap:0.75rem">
-              <select class="relog-existing-select" id="relog-existing-select">
-                <option value="">Select a location…</option>
-                ${locations.map(l => `<option value="${l}">${l}</option>`).join('')}
-              </select>
-              <button class="relog-go-btn mono" id="relog-go-btn">Go →</button>
-            </div>
-          </div>
-        </div>
-        <button class="relog-cancel-btn mono" id="relog-cancel-btn">cancel</button>
-      </div>
-    `;
-    document.body.appendChild(el);
-
-    document.getElementById('relog-new-btn').addEventListener('click', () => {
-      closeRelogOverlay();
-      localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
-      localStorage.removeItem(`${CURRENT_DISTRICT}-relog-prefill`);
-      window.location.href = `${CURRENT_DISTRICT}.html`;
-    });
-
-    document.getElementById('relog-go-btn').addEventListener('click', () => {
-      const selected = document.getElementById('relog-existing-select').value;
-      if (!selected) return;
-      closeRelogOverlay();
-      localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
-      localStorage.setItem(`${CURRENT_DISTRICT}-relog-prefill`, selected);
-      window.location.href = `${CURRENT_DISTRICT}.html`;
-    });
-
-    document.getElementById('relog-cancel-btn').addEventListener('click', closeRelogOverlay);
-    el.addEventListener('click', e => { if (e.target.id === 'relog-overlay') closeRelogOverlay(); });
-  }
-
-  requestAnimationFrame(() => document.getElementById('relog-overlay').classList.add('active'));
-}
-
-function closeRelogOverlay() {
-  document.getElementById('relog-overlay')?.classList.remove('active');
-}
-
-
-// ─── media (photo + music) ────────────────────────────────────────────────────
+// media (photo + music)
 
 function loadMedia() {
-  const savedPhoto   = localStorage.getItem(`${CURRENT_DISTRICT}-photo`);
-  const photoVisible = localStorage.getItem(`${CURRENT_DISTRICT}-photo-visible`) === 'true';
-  updatePhotoPreview(savedPhoto);
-  updatePhotoToggle(photoVisible);
   updateMusicPreview(localStorage.getItem(`${CURRENT_DISTRICT}-music-name`));
-}
-
-function updatePhotoPreview(dataUrl) {
-  const preview     = document.getElementById('media-photo-preview');
-  const placeholder = document.getElementById('media-photo-placeholder');
-  const removeBtn   = document.getElementById('media-photo-remove');
-  const toggleRow   = document.getElementById('media-photo-toggle-row');
-  if (!preview) return;
-  if (dataUrl) {
-    preview.src = dataUrl;
-    preview.classList.remove('hidden');
-    if (placeholder) placeholder.classList.add('hidden');
-    if (removeBtn)   removeBtn.classList.remove('hidden');
-    if (toggleRow)   toggleRow.classList.remove('hidden');
-  } else {
-    preview.src = '';
-    preview.classList.add('hidden');
-    if (placeholder) placeholder.classList.remove('hidden');
-    if (removeBtn)   removeBtn.classList.add('hidden');
-    if (toggleRow)   toggleRow.classList.add('hidden');
-  }
-}
-
-function updatePhotoToggle(isVisible) {
-  const track = document.getElementById('media-photo-track');
-  if (track) track.classList.toggle('on', isVisible);
 }
 
 function updateMusicPreview(name) {
@@ -922,64 +1075,31 @@ function updateMusicPreview(name) {
   if (name) {
     label.textContent = name;
     label.classList.remove('hidden');
-    if (removeBtn) removeBtn.classList.remove('hidden');
+    removeBtn?.classList.remove('hidden');
   } else {
     label.textContent = '';
     label.classList.add('hidden');
-    if (removeBtn) removeBtn.classList.add('hidden');
+    removeBtn?.classList.add('hidden');
   }
 }
 
 function initMediaListeners() {
-  const photoInput     = document.getElementById('media-photo-input');
-  const photoUploadBtn = document.getElementById('media-photo-upload-btn');
-  if (photoUploadBtn) photoUploadBtn.addEventListener('click', () => photoInput?.click());
-
-  if (photoInput) {
-    photoInput.addEventListener('change', () => {
-      const file = photoInput.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        localStorage.setItem(`${CURRENT_DISTRICT}-photo`, e.target.result);
-        updatePhotoPreview(e.target.result);
-      };
-      reader.readAsDataURL(file);
-      photoInput.value = '';
-    });
-  }
-
-  document.getElementById('media-photo-remove')?.addEventListener('click', () => {
-    localStorage.removeItem(`${CURRENT_DISTRICT}-photo`);
-    localStorage.removeItem(`${CURRENT_DISTRICT}-photo-visible`);
-    updatePhotoPreview(null);
-    updatePhotoToggle(false);
-  });
-
-  document.getElementById('media-photo-toggle-cell')?.addEventListener('click', () => {
-    const next = localStorage.getItem(`${CURRENT_DISTRICT}-photo-visible`) !== 'true';
-    localStorage.setItem(`${CURRENT_DISTRICT}-photo-visible`, next);
-    updatePhotoToggle(next);
-  });
-
   const musicInput     = document.getElementById('media-music-input');
   const musicUploadBtn = document.getElementById('media-music-upload-btn');
-  if (musicUploadBtn) musicUploadBtn.addEventListener('click', () => musicInput?.click());
+  musicUploadBtn?.addEventListener('click', () => musicInput?.click());
 
-  if (musicInput) {
-    musicInput.addEventListener('change', () => {
-      const file = musicInput.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        localStorage.setItem(`${CURRENT_DISTRICT}-music`, e.target.result);
-        localStorage.setItem(`${CURRENT_DISTRICT}-music-name`, file.name);
-        updateMusicPreview(file.name);
-      };
-      reader.readAsDataURL(file);
-      musicInput.value = '';
-    });
-  }
+  musicInput?.addEventListener('change', () => {
+    const file = musicInput.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      localStorage.setItem(`${CURRENT_DISTRICT}-music`, e.target.result);
+      localStorage.setItem(`${CURRENT_DISTRICT}-music-name`, file.name);
+      updateMusicPreview(file.name);
+    };
+    reader.readAsDataURL(file);
+    musicInput.value = '';
+  });
 
   document.getElementById('media-music-remove')?.addEventListener('click', () => {
     localStorage.removeItem(`${CURRENT_DISTRICT}-music`);
