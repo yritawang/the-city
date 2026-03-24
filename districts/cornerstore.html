@@ -11,15 +11,12 @@
 </head>
 <body>
 
-  <!-- Entering Overlay -->
   <div class="entering-overlay" id="entering-overlay">
     <h1 class="entering-text">Entering The Cornerstore</h1>
   </div>
 
-  <!-- District Content -->
   <div class="district-content hidden" id="district-content">
 
-    <!-- Intro -->
     <div class="cornerstore-screen" id="cornerstore-intro">
       <header class="district-header">
         <div class="district-header-left">
@@ -33,13 +30,12 @@
         </div>
       </header>
       <div class="cornerstore-prompt-container">
-        <h1 class="cornerstore-main-prompt">Think of a place where you often frequented.</h1>
-        <h3 class="cornerstore-sub-prompt">A place baked into your daily routine outside of your home.</h3>
+        <h1 class="cornerstore-main-prompt" id="cornerstore-main-prompt"></h1>
+        <h3 class="cornerstore-sub-prompt" id="cornerstore-sub-prompt"></h3>
         <button class="ready-btn mono hidden" id="ready-btn">Ready?</button>
       </div>
     </div>
 
-    <!-- Questions -->
     <div class="cornerstore-screen hidden" id="cornerstore-questions">
       <header class="district-header">
         <div class="district-header-left">
@@ -72,36 +68,36 @@
       </div>
     </div>
 
-    <!-- Completion Screen -->
+    <!-- completion -->
     <div class="cornerstore-screen hidden" id="cornerstore-completion">
       <header class="district-header">
-        <div class="district-header-left"></div>
+        <div class="district-header-left">
+          <button class="back-btn mono">← Back to the city</button>
+        </div>
         <div class="district-header-center">
           <span class="district-header-title">The Cornerstore: Routine</span>
         </div>
-        <div class="district-header-right"></div>
+        <div class="district-header-right">
+          <button class="district-share-btn mono">Share</button>
+        </div>
       </header>
       <div class="completion-container">
-          <img src="../assets/districts/cornerstore-unlocked.png" alt="" class="completion-illustration">
+        <img src="../assets/districts/cornerstore-unlocked.png" alt="" class="completion-illustration">
         <h1 class="completion-title">You've completed<br>The Cornerstore</h1>
         <p class="completion-sentence">
           <i class="fa-solid fa-location-dot"></i>
           <span id="completion-place-name"></span> is a place you formed habits in.
         </p>
-        <div class="completion-buttons">
-          <button class="completion-btn mono" id="complete-districts-btn">Complete other districts</button>
-          <button class="completion-btn mono" id="customize-btn">Customize this district</button>
-        </div>
+        <button class="completion-btn mono" id="done-btn">Done</button>
       </div>
     </div>
 
-  </div><!-- end .district-content -->
+  </div>
 
-  <!-- District Guide Overlay -->
   <div class="district-guide-overlay hidden" id="district-guide-overlay">
     <div class="district-guide-box cornerstore-guide">
       <h2 class="district-guide-title">The Cornerstore: Routine</h2>
-      <p class="district-guide-text">Think of a place you returned to again and again. Answer each question in your own way. Your answers are private until you choose to share them.</p>
+      <p class="district-guide-text">Answer each question in whatever way feels true. Your answers are private until you choose to share them.</p>
       <button class="district-guide-close mono" id="district-guide-close">Close</button>
     </div>
   </div>

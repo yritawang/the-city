@@ -758,8 +758,6 @@ function closeConstellation() {
     if (constellationSketch) { constellationSketch.remove(); constellationSketch = null; }
     const controls = document.getElementById('constellation-controls');
     if (controls) controls.remove();
-    const legend = document.getElementById('constellation-legend');
-    if (legend) legend.remove();
   }, 600);
 }
 
@@ -799,23 +797,6 @@ function initConstellationSketch() {
   const container = document.getElementById('constellation-canvas-container');
   if (!container) return;
   if (constellationSketch) { constellationSketch.remove(); constellationSketch = null; }
-
-  // legend
-  if (!document.getElementById('constellation-legend')) {
-    const legend = document.createElement('div');
-    legend.id        = 'constellation-legend';
-    legend.className = 'constellation-legend';
-    DISTRICT_META.forEach(d => {
-      const item = document.createElement('div');
-      item.className = 'constellation-legend-item';
-      item.innerHTML = `
-        <div class="constellation-legend-dot" style="background-color:${d.color}"></div>
-        <span class="constellation-legend-label">${d.label}</span>
-      `;
-      legend.appendChild(item);
-    });
-    container.appendChild(legend);
-  }
 
   // controls (time slider + district checkboxes)
   if (!document.getElementById('constellation-controls')) {
@@ -951,7 +932,7 @@ function initConstellationSketch() {
       }
 
       nodes.forEach(n => {
-        const pull = n.singleDistrict ? 0.04 : 0.015;
+        const pull = n.singleDistrict ? 0.012 : 0.004;
         n.vx += (n.anchorX * W - n.x) * pull;
         n.vy += (n.anchorY * H - n.y) * pull;
         n.vx *= damping; n.vy *= damping;
@@ -1163,6 +1144,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initDarkMode();
   initRandomize();
   initShowPhotos();
+  if (typeof initTrain === 'function') initTrain();
 
   // city name overlay
   document.getElementById('cancel-btn')?.addEventListener('click', closeCityNameOverlay);

@@ -92,6 +92,7 @@ html, body {
 }
 
 .map-districts {
+  overflow: visible;
   position: relative;
   width: 1100px;
   height: 750px;

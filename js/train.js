@@ -1,12 +1,12 @@
 // train.js
 // load after map.js in map.html
-// call initTrain() from map.js DOMContentLoaded
+// initTrain() is called from map.js DOMContentLoaded
+
 
 const TRAIN_SPOTS = [
-  { x: 40,  y: 280, zIndex: 5   },
-  { x: 480, y: 510, zIndex: 200 },
-  { x: 820, y: 260, zIndex: 5   },
-  { x: 440, y: 100, zIndex: -1  },
+  { x: 20,  y: 530, zIndex: 5   },  // bottom-left
+  { x: 880, y: 530, zIndex: 5   },  // bottom-right
+  { x: 450, y: 600, zIndex: 200 },  // bottom center, above everything
 ];
 
 const TRAIN_PROMPTS = [
@@ -46,22 +46,20 @@ let lastTrainSpot  = -1;
 let selectedPrompt = null;
 
 
-// ─── init ─────────────────────────────────────────────────────────────────────
+// init
 
 function initTrain() {
   const states  = JSON.parse(localStorage.getItem('districtStates') || '{}');
-  const anyDone = TRAIN_DISTRICT_KEYS.some(d => {
-    return states[d] === 'unlocked' ||
-           JSON.parse(localStorage.getItem(d + '-sessions') || '[]').length > 0;
-  });
+  const anyDone = TRAIN_DISTRICT_KEYS.some(d =>
+    states[d] === 'unlocked' ||
+    JSON.parse(localStorage.getItem(d + '-sessions') || '[]').length > 0
+  );
   if (!anyDone) return;
 
-  const hasLog = JSON.parse(localStorage.getItem('train-log') || '[]').length > 0;
-  if (hasLog) {
-    setTimeout(renderTrainBoard, 1800);
-  } else {
-    setTimeout(showTrain, 1800);
-  }
+  // pick randomly between train and board on every visit
+  const hasLog    = JSON.parse(localStorage.getItem('train-log') || '[]').length > 0;
+  const showBoard = hasLog && Math.random() < 0.5;
+  setTimeout(showBoard ? renderTrainBoard : showTrain, 1800);
 
   if (localStorage.getItem('trainDebug')) showDebugSpots();
 }
@@ -71,14 +69,20 @@ function showDebugSpots() {
   if (!md) return;
   TRAIN_SPOTS.forEach((s, i) => {
     const el = document.createElement('div');
-    el.style.cssText = `position:absolute;left:${s.x}px;top:${s.y}px;width:200px;height:160px;border:2px dashed #DD6204;background:rgba(221,98,4,0.1);display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:11px;color:#DD6204;pointer-events:none;z-index:9999;`;
+    el.style.cssText = `
+      position:absolute;left:${s.x}px;top:${s.y}px;width:120px;height:100px;
+      border:2px dashed #DD6204;background:rgba(221,98,4,0.1);
+      display:flex;align-items:center;justify-content:center;
+      font-family:monospace;font-size:11px;color:#DD6204;
+      pointer-events:none;z-index:9999;
+    `;
     el.textContent = `spot ${i + 1} (z:${s.zIndex})`;
     md.appendChild(el);
   });
 }
 
 
-// ─── spot picker ──────────────────────────────────────────────────────────────
+// spot picker
 
 function pickSpot() {
   const available = TRAIN_SPOTS
@@ -90,7 +94,7 @@ function pickSpot() {
 }
 
 
-// ─── train on map ─────────────────────────────────────────────────────────────
+// train on map
 
 function showTrain() {
   if (trainVisible) return;
@@ -105,11 +109,23 @@ function placeTrain() {
 
   const pos = trainPos;
 
-  // single element — no separate hit div, no mouseenter/mouseleave = no blink
   const el = document.createElement('div');
   el.id = 'train-on-map';
-  el.style.cssText = `position:absolute;left:${pos.x}px;top:${pos.y}px;width:200px;height:160px;z-index:${pos.zIndex ?? 50};opacity:0;display:flex;align-items:flex-end;cursor:pointer;transition:opacity 0.4s ease;`;
+  el.style.cssText = `
+    position: absolute;
+    left: ${pos.x}px;
+    top: ${pos.y}px;
+    width: 200px;
+    z-index: ${pos.zIndex ?? 50};
+    opacity: 0;
+    cursor: pointer;
+    transition: opacity 0.4s ease, transform 0.25s ease;
+    transform: translateY(0px);
+  `;
   el.innerHTML = `<img src="assets/districts/train.png" alt="The Train" style="display:block;width:100%;height:auto;pointer-events:none;">`;
+
+  el.addEventListener('mouseenter', () => { el.style.transform = 'translateY(-7px)'; });
+  el.addEventListener('mouseleave', () => { el.style.transform = 'translateY(0px)'; });
   el.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openTrainOverlay(); });
 
   md.appendChild(el);
@@ -134,7 +150,7 @@ function restoreTrainHit() {
 }
 
 
-// ─── train board on map ───────────────────────────────────────────────────────
+// train board on map
 
 function renderTrainBoard() {
   const trainLog = JSON.parse(localStorage.getItem('train-log') || '[]');
@@ -149,8 +165,24 @@ function renderTrainBoard() {
 
   const el = document.createElement('div');
   el.id = 'train-board';
-  el.style.cssText = `position:absolute;left:${pos.x}px;top:${pos.y}px;width:200px;height:160px;z-index:${pos.zIndex ?? 50};opacity:0;display:flex;align-items:flex-end;justify-content:flex-end;cursor:pointer;transition:opacity 0.4s ease;`;
-  el.innerHTML = `<img src="assets/districts/trainboard.png" alt="Train Board" style="display:block;max-width:50px;height:auto;pointer-events:none;">`;
+  el.style.cssText = `
+    position: absolute;
+    left: ${pos.x}px;
+    top: ${pos.y}px;
+    width: 40px;
+    z-index: ${pos.zIndex ?? 50};
+    opacity: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    transition: opacity 0.4s ease, transform 0.25s ease;
+    transform: translateY(0px);
+  `;
+  el.innerHTML = `<img src="assets/districts/trainboard.png" alt="Train Board" style="display:block;width:100%;height:auto;pointer-events:none;">`;
+
+  el.addEventListener('mouseenter', () => { el.style.transform = 'translateY(-5px)'; });
+  el.addEventListener('mouseleave', () => { el.style.transform = 'translateY(0px)'; });
   el.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); openBoardOverlay(); });
 
   md.appendChild(el);
@@ -158,7 +190,7 @@ function renderTrainBoard() {
 }
 
 
-// ─── train overlay ────────────────────────────────────────────────────────────
+// train overlay
 
 function openTrainOverlay() {
   const trainEl = document.getElementById('train-on-map');
@@ -167,7 +199,7 @@ function openTrainOverlay() {
   document.getElementById('train-overlay')?.remove();
 
   const overlay = document.createElement('div');
-  overlay.id = 'train-overlay';
+  overlay.id        = 'train-overlay';
   overlay.className = 'overlay train-overlay';
   document.body.appendChild(overlay);
 
@@ -176,7 +208,8 @@ function openTrainOverlay() {
   });
 
   const shuffled = [...TRAIN_PROMPTS].sort(() => Math.random() - 0.5).slice(0, 3);
-  const states = JSON.parse(localStorage.getItem('districtStates') || '{}');
+  const states   = JSON.parse(localStorage.getItem('districtStates') || '{}');
+
   const districtOptions = TRAIN_DISTRICT_KEYS
     .filter(d => states[d] === 'unlocked' ||
                  JSON.parse(localStorage.getItem(d + '-sessions') || '[]').length > 0)
@@ -234,6 +267,7 @@ function openTrainOverlay() {
   overlay.classList.add('active');
   selectedPrompt = null;
 
+  // prompt selection
   overlay.querySelectorAll('.train-prompt-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       overlay.querySelectorAll('.train-prompt-btn').forEach(b => b.classList.remove('selected'));
@@ -266,7 +300,7 @@ function closeTrainOverlay() {
 }
 
 
-// ─── send thought ─────────────────────────────────────────────────────────────
+// send thought
 
 function sendTrainThought() {
   const text     = document.getElementById('train-textarea')?.value?.trim();
@@ -307,17 +341,20 @@ function sendTrainThought() {
   toast.textContent = `Sent to ${TRAIN_DISTRICT_LABELS[district]}`;
   document.body.appendChild(toast);
   requestAnimationFrame(() => toast.classList.add('visible'));
-  setTimeout(() => { toast.classList.remove('visible'); setTimeout(() => toast.remove(), 400); }, 2400);
+  setTimeout(() => {
+    toast.classList.remove('visible');
+    setTimeout(() => toast.remove(), 400);
+  }, 2400);
 }
 
 
-// ─── board overlay ────────────────────────────────────────────────────────────
+// board overlay
 
 function openBoardOverlay() {
   document.getElementById('board-overlay')?.remove();
 
   const overlay = document.createElement('div');
-  overlay.id = 'board-overlay';
+  overlay.id        = 'board-overlay';
   overlay.className = 'overlay board-overlay';
   document.body.appendChild(overlay);
 
@@ -357,7 +394,7 @@ function openBoardOverlay() {
   overlay.querySelectorAll('.train-log-delete').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const ts = parseInt(btn.dataset.ts);
+      const ts      = parseInt(btn.dataset.ts);
       const updated = JSON.parse(localStorage.getItem('train-log') || '[]')
         .filter(entry => entry.timestamp !== ts);
       localStorage.setItem('train-log', JSON.stringify(updated));

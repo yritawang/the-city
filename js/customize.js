@@ -280,12 +280,15 @@ function renderJournalEntries() {
     const body = document.createElement('div');
     body.className = 'journal-location-body';
 
-    // per-location relog button
-    const relogBtn = document.createElement('button');
-    relogBtn.className = 'journal-relog-location-btn mono';
-    relogBtn.textContent = '+ Log this location again';
-    relogBtn.addEventListener('click', () => relogExistingLocation(place));
-    body.appendChild(relogBtn);
+    // per-location relog button — skip for train thought entries
+    const isTrainGroup = groupSessions.some(s => s.isTrainThought);
+    if (!isTrainGroup) {
+      const relogBtn = document.createElement('button');
+      relogBtn.className = 'journal-relog-location-btn mono';
+      relogBtn.textContent = '+ Log this location again';
+      relogBtn.addEventListener('click', () => relogExistingLocation(place));
+      body.appendChild(relogBtn);
+    }
 
     // entries
     groupSessions.forEach(session => {
@@ -313,12 +316,18 @@ function renderJournalEntries() {
           </div>
         </div>
         <div class="journal-entry-body">
-          ${Object.entries(session.answers).map(([i, a]) => `
-            <div class="journal-qa">
-              <span class="journal-question">${QUESTIONS[i] || ''}</span>
-              <span class="journal-answer">${a || '—'}</span>
-            </div>
-          `).join('')}
+          ${session.isTrainThought
+            ? `<div class="journal-qa">
+                ${session.answers[1] ? `<span class="journal-question">${session.answers[1]}</span>` : ''}
+                <span class="journal-answer">${session.answers[2] || '—'}</span>
+               </div>`
+            : Object.entries(session.answers).map(([i, a]) => `
+                <div class="journal-qa">
+                  <span class="journal-question">${QUESTIONS[i] || ''}</span>
+                  <span class="journal-answer">${a || '—'}</span>
+                </div>
+              `).join('')
+          }
           ${musicHtml}
         </div>
       `;
@@ -473,7 +482,7 @@ function relogExistingLocation(locationName) {
 
 function openRelogOverlay() {
   const locations = [...new Map(
-    sessions.filter(s => s.answers[0]).map(s => [s.answers[0], s.answers[0]])
+    sessions.filter(s => s.answers[0] && !s.isTrainThought).map(s => [s.answers[0], s.answers[0]])
   ).values()];
 
   if (!document.getElementById('relog-overlay')) {
