@@ -1,29 +1,14 @@
-// Plaza questions data
+// plaza.js
+
+window.CURRENT_DISTRICT = 'plaza';
+
 const PLAZA_QUESTIONS = [
-  {
-    main: "What place comes to mind?",
-    sub: ""
-  },
-  {
-    main: "Who else was in this place? How did you connect with them?",
-    sub: ""
-  },
-  {
-    main: "What brought you together in this place?",
-    sub: "A shared experience, a common objective."
-  },
-  {
-    main: "When you think of this place, what do you remember?",
-    sub: "A smell, a sound, a feeling, a moment."
-  },
-  {
-    main: "If this place were to fade from memory completely, what would be lost?",
-    sub: ""
-  },
-  {
-    main: "Finally, please give your plaza a name.",
-    sub: ""
-  }
+  { main: "What place comes to mind?",                                        sub: "" },
+  { main: "Who else was in this place? How did you connect with them?",        sub: "" },
+  { main: "What brought you together in this place?",                         sub: "A shared experience, a common objective." },
+  { main: "When you think of this place, what do you remember?",               sub: "A smell, a sound, a feeling, a moment." },
+  { main: "If this place were to fade from memory completely, what would be lost?", sub: "" },
+  { main: "Finally, please give your plaza a name.",                          sub: "" },
 ];
 
 const CARD_COLORS = ['#816993', '#513963', '#412953', '#311943', '#210933'];
@@ -32,27 +17,32 @@ let currentQuestion = 0;
 let answers = {};
 
 document.addEventListener('DOMContentLoaded', () => {
-  const readyBtn = document.getElementById('ready-btn');
-  const backBtn = document.getElementById('back-btn');
+  const readyBtn         = document.getElementById('ready-btn');
+  const backBtn          = document.getElementById('back-btn');
   const questionsBackBtn = document.getElementById('questions-back-btn');
 
   const savedAnswers = localStorage.getItem('plaza-answers');
   if (savedAnswers) answers = JSON.parse(savedAnswers);
 
-  setTimeout(() => {
-    readyBtn.classList.remove('hidden');
-  }, 8800);
-
-  if (backBtn) backBtn.addEventListener('click', goBackToCity);
-  if (questionsBackBtn) questionsBackBtn.addEventListener('click', goBackToCity);
-  if (readyBtn) readyBtn.addEventListener('click', startQuestions);
-
-  // Input save only — district.js handles Enter key
-  const questionInput = document.getElementById('question-input');
-  if (questionInput) {
-    questionInput.addEventListener('input', saveCurrentAnswer);
+  // skip intro if returning to relog an existing location
+  const prefill = localStorage.getItem('plaza-relog-prefill');
+  if (prefill) {
+    answers[0] = prefill;
+    localStorage.removeItem('plaza-relog-prefill');
+    currentQuestion = 1;
+    setTimeout(() => startQuestions(), 100);
   }
+
+  setTimeout(() => { readyBtn?.classList.remove('hidden'); }, 8800);
+
+  if (backBtn)          backBtn.addEventListener('click', goBackToCity);
+  if (questionsBackBtn) questionsBackBtn.addEventListener('click', goBackToCity);
+  if (readyBtn)         readyBtn.addEventListener('click', startQuestions);
+
+  const questionInput = document.getElementById('question-input');
+  if (questionInput) questionInput.addEventListener('input', saveCurrentAnswer);
 });
+
 
 function goBackToCity() {
   saveProgress();
@@ -60,10 +50,15 @@ function goBackToCity() {
 }
 
 function startQuestions() {
-  unlockAchievement('began-plaza');
-  document.getElementById('plaza-intro').classList.add('hidden');
-  document.getElementById('plaza-questions').classList.remove('hidden');
-  currentQuestion = 0;
+  try { unlockAchievement('began-plaza'); } catch(e) {}
+
+  const intro     = document.getElementById('plaza-intro');
+  const questions = document.getElementById('plaza-questions');
+
+  if (intro)     { intro.classList.add('hidden');       intro.style.display     = 'none'; }
+  if (questions) { questions.classList.remove('hidden'); questions.style.display = 'flex'; }
+
+  if (currentQuestion !== 1) currentQuestion = 0;
   renderQuestion();
 
   const prevBtn = document.getElementById('prev-btn');
@@ -73,26 +68,21 @@ function startQuestions() {
 }
 
 function renderQuestion() {
-  const question = PLAZA_QUESTIONS[currentQuestion];
+  const question    = PLAZA_QUESTIONS[currentQuestion];
   const questionCard = document.querySelector('.question-card');
 
   document.getElementById('question-main').textContent = question.main;
-  document.getElementById('question-sub').textContent = question.sub;
+  document.getElementById('question-sub').textContent  = question.sub;
 
   const input = document.getElementById('question-input');
   input.value = answers[currentQuestion] || '';
 
-  if (currentQuestion === 5) {
-    questionCard.classList.add('naming');
-  } else {
-    questionCard.classList.remove('naming');
-  }
+  if (currentQuestion === 5) questionCard.classList.add('naming');
+  else                       questionCard.classList.remove('naming');
 
   document.getElementById('question-progress').textContent = `${currentQuestion + 1}/6`;
   document.getElementById('prev-btn').disabled = currentQuestion === 0;
-
-  const nextBtn = document.getElementById('next-btn');
-  nextBtn.textContent = currentQuestion === 5 ? 'Finish' : 'Next';
+  document.getElementById('next-btn').textContent = currentQuestion === 5 ? 'Finish' : 'Next';
 
   const progressPercent = ((currentQuestion + 1) / 6) * 100;
   document.getElementById('progress-bar').style.height = `${progressPercent}%`;
@@ -104,21 +94,13 @@ function renderQuestion() {
 function renderStackedCards() {
   const container = document.getElementById('stacked-cards');
   container.innerHTML = '';
-
   for (let i = 0; i < currentQuestion; i++) {
     const card = document.createElement('div');
     card.className = 'stacked-card';
     card.style.backgroundColor = CARD_COLORS[i];
-
-    const verticalOffset = i * 20;
-    card.style.bottom = `${verticalOffset}px`;
-    card.style.zIndex = i;
-
-    card.onclick = () => {
-      currentQuestion = i;
-      renderQuestion();
-    };
-
+    card.style.bottom  = `${i * 20}px`;
+    card.style.zIndex  = i;
+    card.onclick = () => { currentQuestion = i; renderQuestion(); };
     container.appendChild(card);
   }
 }
@@ -143,12 +125,8 @@ function prevQuestion() {
 
 function nextQuestion() {
   saveCurrentAnswer();
-  if (currentQuestion === 5) {
-    completePlaza();
-  } else {
-    currentQuestion++;
-    renderQuestion();
-  }
+  if (currentQuestion === 5) completePlaza();
+  else { currentQuestion++; renderQuestion(); }
 }
 
 function completePlaza() {
@@ -166,38 +144,24 @@ function completePlaza() {
 }
 
 function showCompletionScreen() {
-  const questionsDiv = document.getElementById('plaza-questions');
+  const questionsDiv  = document.getElementById('plaza-questions');
   const completionDiv = document.getElementById('plaza-completion');
 
-  if (questionsDiv) {
-    questionsDiv.classList.add('hidden');
-    questionsDiv.style.display = 'none';
-  }
-
-  if (completionDiv) {
-    completionDiv.classList.remove('hidden');
-    completionDiv.style.display = 'flex';
-  }
+  if (questionsDiv)  { questionsDiv.classList.add('hidden');      questionsDiv.style.display  = 'none'; }
+  if (completionDiv) { completionDiv.classList.remove('hidden');  completionDiv.style.display = 'flex'; }
 
   const session = {
-    date: new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }),
+    date:      new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }),
     timestamp: Date.now(),
-    answers: { ...answers }
+    answers:   { ...answers },
   };
   const savedSessions = JSON.parse(localStorage.getItem('plaza-sessions') || '[]');
   savedSessions.push(session);
   localStorage.setItem('plaza-sessions', JSON.stringify(savedSessions));
   localStorage.setItem('plaza-date', session.date);
 
-  const placeName = answers[0] || 'this place';
   const placeNameEl = document.getElementById('completion-place-name');
-  if (placeNameEl) placeNameEl.textContent = placeName;
+  if (placeNameEl) placeNameEl.textContent = answers[0] || 'this place';
 
-  document.getElementById('complete-districts-btn').onclick = () => {
-    window.location.href = '../map.html';
-  };
-
-  document.getElementById('customize-btn').onclick = () => {
-    window.location.href = 'plaza-customize.html';
-  };
+  // done button is handled by district.js via window.CURRENT_DISTRICT
 }
