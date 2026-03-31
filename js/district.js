@@ -3,7 +3,8 @@
 
 
 // safe fallback for unlockAchievement
-// achievements.js is only loaded on map.html, district pages need this stub
+// achievements.js is included on district pages so this should always be defined,
+// but keep the stub as a safety net
 if (typeof unlockAchievement === 'undefined') {
   window.unlockAchievement = (id) => {
     const pending = JSON.parse(localStorage.getItem('pending-achievements') || '[]');
@@ -32,18 +33,24 @@ function fadeToPage(url) {
   });
 }
 
-
 document.addEventListener('DOMContentLoaded', () => {
 
   // entering overlay: fade out after 3s, then reveal district content
+  // fires the began-x achievement exactly when the overlay finishes clearing
   const enteringOverlay = document.getElementById('entering-overlay');
-  const districtContent  = document.getElementById('district-content');
+  const districtContent = document.getElementById('district-content');
 
   setTimeout(() => {
     enteringOverlay.classList.add('fade-out');
     setTimeout(() => {
       enteringOverlay.style.display = 'none';
       districtContent.classList.remove('hidden');
+
+      // unlock the began achievement now that the user can see the intro screen
+      // each district js sets window.DISTRICT_BEGAN_ID before this runs
+      if (window.DISTRICT_BEGAN_ID) {
+        unlockAchievement(window.DISTRICT_BEGAN_ID);
+      }
     }, 800);
   }, 3000);
 

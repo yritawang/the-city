@@ -1,12 +1,13 @@
 // plaza.js
 
-window.CURRENT_DISTRICT = 'plaza';
+window.CURRENT_DISTRICT  = 'plaza';
+window.DISTRICT_BEGAN_ID = 'began-plaza';
 
 const PLAZA_QUESTIONS = [
   { main: "What place comes to mind?",                                        sub: "" },
   { main: "Who else was in this place? How did you connect with them?",        sub: "" },
   { main: "What brought you together in this place?",                         sub: "A shared experience, a common objective." },
-  { main: "When you think of this place, what do you remember?",               sub: "A smell, a sound, a feeling, a moment." },
+  { main: "When you think of this place, what do you remember?",              sub: "A smell, a sound, a feeling, a moment." },
   { main: "If this place were to fade from memory completely, what would be lost?", sub: "" },
   { main: "Finally, please give your plaza a name.",                          sub: "" },
 ];
@@ -15,6 +16,47 @@ const CARD_COLORS = ['#816993', '#513963', '#412953', '#311943', '#210933'];
 
 let currentQuestion = 0;
 let answers = {};
+
+// --- word limits ---
+// question 5 is the naming question (50 words), all others are journaling (200 words)
+
+const WORD_LIMIT_JOURNAL = 200;
+const WORD_LIMIT_NAME    = 50;
+
+function getLimit() {
+  return currentQuestion === 5 ? WORD_LIMIT_NAME : WORD_LIMIT_JOURNAL;
+}
+
+function countWords(str) {
+  return str.trim() === '' ? 0 : str.trim().split(/\s+/).length;
+}
+
+function enforceWordLimit() {
+  const input = document.getElementById('question-input');
+  if (!input) return;
+  const limit = getLimit();
+  const words = input.value.trim().split(/\s+/);
+  if (countWords(input.value) > limit) {
+    input.value = words.slice(0, limit).join(' ');
+    saveCurrentAnswer();
+  }
+  updateWordCounter(input.value, limit);
+}
+
+function updateWordCounter(value, limit) {
+  let counter = document.getElementById('word-counter');
+  if (!counter) {
+    counter = document.createElement('p');
+    counter.id = 'word-counter';
+    counter.style.cssText = 'font-family:var(--font-whois);font-size:0.78rem;text-align:right;margin-top:0.4rem;color:var(--color-black);transition:opacity 0.2s';
+    const input = document.getElementById('question-input');
+    input?.parentNode.insertBefore(counter, input.nextSibling);
+  }
+  const count = countWords(value);
+  counter.textContent = `${count} / ${limit} words`;
+  counter.style.opacity = count >= limit ? '0.85' : '0.4';
+}
+
 
 document.addEventListener('DOMContentLoaded', () => {
   const readyBtn         = document.getElementById('ready-btn');
@@ -40,7 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
   if (readyBtn)         readyBtn.addEventListener('click', startQuestions);
 
   const questionInput = document.getElementById('question-input');
-  if (questionInput) questionInput.addEventListener('input', saveCurrentAnswer);
+  if (questionInput) {
+    questionInput.addEventListener('input', () => {
+      saveCurrentAnswer();
+      enforceWordLimit();
+    });
+  }
 });
 
 
@@ -50,12 +97,10 @@ function goBackToCity() {
 }
 
 function startQuestions() {
-  try { unlockAchievement('began-plaza'); } catch(e) {}
-
   const intro     = document.getElementById('plaza-intro');
   const questions = document.getElementById('plaza-questions');
 
-  if (intro)     { intro.classList.add('hidden');       intro.style.display     = 'none'; }
+  if (intro)     { intro.classList.add('hidden');        intro.style.display     = 'none'; }
   if (questions) { questions.classList.remove('hidden'); questions.style.display = 'flex'; }
 
   if (currentQuestion !== 1) currentQuestion = 0;
@@ -68,7 +113,7 @@ function startQuestions() {
 }
 
 function renderQuestion() {
-  const question    = PLAZA_QUESTIONS[currentQuestion];
+  const question     = PLAZA_QUESTIONS[currentQuestion];
   const questionCard = document.querySelector('.question-card');
 
   document.getElementById('question-main').textContent = question.main;
@@ -89,6 +134,9 @@ function renderQuestion() {
 
   renderStackedCards();
   input.focus();
+
+  // update counter whenever we land on a new question
+  updateWordCounter(input.value, getLimit());
 }
 
 function renderStackedCards() {
@@ -147,8 +195,8 @@ function showCompletionScreen() {
   const questionsDiv  = document.getElementById('plaza-questions');
   const completionDiv = document.getElementById('plaza-completion');
 
-  if (questionsDiv)  { questionsDiv.classList.add('hidden');      questionsDiv.style.display  = 'none'; }
-  if (completionDiv) { completionDiv.classList.remove('hidden');  completionDiv.style.display = 'flex'; }
+  if (questionsDiv)  { questionsDiv.classList.add('hidden');     questionsDiv.style.display  = 'none'; }
+  if (completionDiv) { completionDiv.classList.remove('hidden'); completionDiv.style.display = 'flex'; }
 
   const session = {
     date:      new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' }),

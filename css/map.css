@@ -98,6 +98,9 @@ html, body {
   height: 750px;
 }
 
+
+/* ─── districts ─── */
+
 .district {
   position: absolute;
   cursor: pointer;
@@ -108,9 +111,25 @@ html, body {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  object-position: bottom center;
   display: block;
+  position: relative;
+  z-index: 1;
   transition: opacity 0.3s ease;
 }
+
+/* photo layer peeks behind the illustration */
+.district-photo-layer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+  transition: opacity 0.3s ease;
+}
+.district:hover .district-photo-layer { opacity: 0.55; }
 
 .district-label {
   position: absolute;
@@ -128,6 +147,10 @@ html, body {
   align-items: center;
   gap: 0.25rem;
 }
+
+/* garden and plaza labels sit closer to their images */
+#garden .district-label { top: -28px; }
+#plaza  .district-label { top: -28px; }
 
 .district-emotion-tag {
   font-size: 0.88rem;
@@ -153,16 +176,16 @@ html, body {
   background: var(--color-bg);
 }
 
-.district.locked .district-image   { opacity: 1; }
-.district.locked:hover .district-label { opacity: 1; }
-.district.unlocked .district-image  { opacity: 1 !important; }
-.district.unlocked .district-label  { opacity: 1; }
+.district.locked .district-image        { opacity: 1; }
+.district.locked:hover .district-label  { opacity: 1; }
+.district.unlocked .district-image      { opacity: 1 !important; }
+.district.unlocked .district-label      { opacity: 1; }
 
-#cornerstore { bottom: 100px; left: 160px;  width: 360px; height: 360px; z-index: 11; }
-#plaza       { bottom: 80px;  right: 80px;  width: 360px; height: 360px; z-index: 11; }
-#shrine      { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 360px; height: 360px; z-index: 10; }
-#garden      { top: 80px;  left: 140px;  width: 360px; height: 360px; z-index: 1; position: absolute; }
-#tower       { top: 80px;  right: 140px; width: 360px; height: 360px; z-index: 1; position: absolute; }
+#cornerstore { bottom: 80px; left: 160px;   width: 360px; height: 360px; z-index: 11; }
+#plaza       { bottom: 80px; right: 90px;  width: 360px; height: 360px; z-index: 11; }
+#shrine      { top: calc(49%); left: calc(50% + 10px); transform: translate(-50%, -50%); width: 360px; height: 360px; z-index: 10; }
+#garden      { top: 70px;  left: 140px;  width: 360px; height: 360px; z-index: 1; position: absolute; }
+#tower       { top: 70px;  right: 140px; width: 360px; height: 360px; z-index: 1; position: absolute; }
 
 .district:hover  { transform: translateY(-5px); }
 #shrine:hover    { transform: translate(-50%, calc(-50% - 5px)); }
@@ -171,6 +194,24 @@ body.visit-mode .district,
 body.visit-mode .district:hover { transform: none !important; cursor: default !important; }
 body.visit-mode #shrine,
 body.visit-mode #shrine:hover   { transform: translate(-50%, -50%) !important; cursor: default !important; }
+
+
+/* ─── district pulse ─── */
+
+.district-highlight { animation: districtPulse 1.5s ease forwards; }
+@keyframes districtPulse {
+  0%   { transform: translateY(0); }
+  30%  { transform: translateY(-10px); }
+  70%  { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+#shrine.district-highlight { animation: shrineDistrictPulse 1.5s ease forwards; }
+@keyframes shrineDistrictPulse {
+  0%   { transform: translate(-50%, -50%); }
+  30%  { transform: translate(-50%, calc(-50% - 10px)); }
+  70%  { transform: translate(-50%, calc(-50% - 8px)); }
+  100% { transform: translate(-50%, -50%); }
+}
 
 
 /* ─── overlay base ─── */
@@ -234,24 +275,6 @@ body.visit-mode #shrine:hover   { transform: translate(-50%, -50%) !important; c
   display: flex;
   justify-content: flex-end;
   margin-top: 1.5rem;
-}
-
-
-/* ─── district pulse ─── */
-
-.district-highlight { animation: districtPulse 1.5s ease forwards; }
-@keyframes districtPulse {
-  0%   { transform: translateY(0); }
-  30%  { transform: translateY(-10px); }
-  70%  { transform: translateY(-8px); }
-  100% { transform: translateY(0); }
-}
-#shrine.district-highlight { animation: shrineDistrictPulse 1.5s ease forwards; }
-@keyframes shrineDistrictPulse {
-  0%   { transform: translate(-50%, -50%); }
-  30%  { transform: translate(-50%, calc(-50% - 10px)); }
-  70%  { transform: translate(-50%, calc(-50% - 8px)); }
-  100% { transform: translate(-50%, -50%); }
 }
 
 
@@ -379,9 +402,7 @@ body.dark-mode {
 }
 body.dark-mode .customize-toggle-btn,
 body.dark-mode .customize-panel,
-body.dark-mode .achievement-toast,
-body.dark-mode .achievements-panel,
-body.dark-mode .achievements-toggle-btn { background-color: #101010; }
+body.dark-mode .achievement-toast { background-color: #101010; }
 body.dark-mode .toggle-thumb { background-color: #101010; }
 
 
@@ -868,11 +889,11 @@ body.dark-mode .toggle-thumb { background-color: #101010; }
   opacity: 0.9;
 }
 
-body.visit-mode .return-btn    { display: flex; align-items: center; }
-body.visit-mode .visit-banner  { display: block; }
-body.visit-mode .header-right  { display: none; }
-body.visit-mode .map-container { margin-top: 32px; height: calc(100vh - 90px - 32px); }
-body.visit-mode .constellation-btn { display: none; }
+body.visit-mode .return-btn             { display: flex; align-items: center; }
+body.visit-mode .visit-banner           { display: block; }
+body.visit-mode .header-right           { display: none; }
+body.visit-mode .map-container          { margin-top: 32px; height: calc(100vh - 90px - 32px); }
+body.visit-mode .constellation-btn      { display: none; }
 
 .return-overlay-content { max-width: 420px; }
 .return-overlay-title {
@@ -895,161 +916,6 @@ body.visit-mode .constellation-btn { display: none; }
 }
 
 
-/* ─── achievements ─── */
-
-.achievement-toast {
-  position: fixed;
-  bottom: 2rem; left: 2rem;
-  width: 280px;
-  border: 2px solid var(--blue);
-  background-color: var(--color-bg);
-  display: grid;
-  grid-template-rows: auto auto;
-  z-index: 500;
-  cursor: pointer;
-  transform-origin: bottom left;
-  transform: scaleY(0);
-  opacity: 0;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
-}
-.achievement-toast.visible  { transform: scaleY(1); opacity: 1; }
-.achievement-toast.fade-out { transform: scaleY(0); opacity: 0; transition: transform 0.25s cubic-bezier(0.64, 0, 0.78, 0), opacity 0.2s ease; }
-.achievement-toast.wiggle   { animation: toastWiggle 0.4s ease; }
-@keyframes toastWiggle {
-  0%   { transform: scaleY(1) rotate(0deg); }
-  25%  { transform: scaleY(1) rotate(1.5deg); }
-  50%  { transform: scaleY(1) rotate(-1.5deg); }
-  75%  { transform: scaleY(1) rotate(0.8deg); }
-  100% { transform: scaleY(1) rotate(0deg); }
-}
-.achievement-toast-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--blue);
-  background-color: var(--blue);
-  transition: background-color 0.2s ease;
-}
-.achievement-toast:hover .achievement-toast-header { background-color: white; }
-.achievement-toast-label {
-  font-family: var(--font-whois);
-  font-size: 0.78rem;
-  color: white;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  transition: color 0.2s ease;
-}
-.achievement-toast:hover .achievement-toast-label { color: var(--blue); }
-.achievement-toast-close {
-  font-family: var(--font-whois);
-  font-size: 0.83rem;
-  color: white;
-  opacity: 0.7;
-  cursor: pointer;
-  background: none;
-  border: none;
-  padding: 0;
-  line-height: 1;
-  transition: color 0.2s ease, opacity 0.2s ease;
-}
-.achievement-toast-close:hover { opacity: 1; }
-.achievement-toast:hover .achievement-toast-close { color: var(--blue); }
-.achievement-toast-body { padding: 0.85rem 1rem; }
-.achievement-toast-title {
-  font-family: var(--font-whois);
-  font-size: 0.88rem;
-  color: var(--blue);
-  line-height: 1.4;
-}
-
-.achievements-panel {
-  position: fixed;
-  bottom: 2rem; left: 2rem;
-  width: 280px;
-  border: 2px solid var(--blue);
-  background-color: var(--color-bg);
-  z-index: 499;
-  max-height: 60vh;
-  display: flex;
-  flex-direction: column;
-  transform-origin: bottom left;
-  transform: scaleY(0);
-  opacity: 0;
-  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
-}
-.achievements-panel.visible { transform: scaleY(1); opacity: 1; }
-.achievements-panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid var(--blue);
-  background-color: var(--blue);
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-}
-.achievements-panel-header:hover { background-color: white; }
-.achievements-panel-label {
-  font-family: var(--font-whois);
-  font-size: 0.78rem;
-  color: white;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  transition: color 0.2s ease;
-}
-.achievements-panel-toggle {
-  font-family: var(--font-whois);
-  font-size: 0.83rem;
-  color: white;
-  transition: color 0.2s ease;
-}
-.achievements-panel-header:hover .achievements-panel-label,
-.achievements-panel-header:hover .achievements-panel-toggle { color: var(--blue); }
-.achievements-panel-list { overflow-y: auto; flex: 1; }
-.achievement-item {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--blue);
-  font-family: var(--font-whois);
-  font-size: 0.86rem;
-  color: var(--blue);
-  line-height: 1.4;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-.achievement-item:last-child { border-bottom: none; }
-.achievement-item:hover { background-color: var(--blue); color: white; }
-.achievement-item-date { display: block; opacity: 0.5; font-size: 0.75rem; margin-top: 0.2rem; }
-.achievements-empty {
-  padding: 1.5rem 1rem;
-  font-family: var(--font-whois);
-  font-size: 0.86rem;
-  color: var(--blue);
-  opacity: 0.5;
-  text-align: center;
-}
-.achievements-toggle-btn {
-  position: fixed;
-  bottom: 2rem; left: 2rem;
-  border: 2px solid var(--blue);
-  background-color: var(--color-bg);
-  cursor: pointer;
-  z-index: 498;
-  display: flex;
-  align-items: stretch;
-}
-.achievements-btn-label {
-  padding: 0.6rem 0.75rem;
-  font-family: var(--font-whois);
-  font-size: 0.8rem;
-  color: var(--blue);
-  letter-spacing: 0.03em;
-  transition: background-color 0.2s ease, color 0.2s ease;
-  width: 100%;
-}
-.achievements-toggle-btn:hover .achievements-btn-label { background-color: var(--blue); color: white; }
-
-
 /* ─── map hint ─── */
 
 .map-hint {
@@ -1064,22 +930,6 @@ body.visit-mode .constellation-btn { display: none; }
   letter-spacing: 0.04em;
   pointer-events: none;
   white-space: nowrap;
-}
-
-
-/* ─── district floating photo ─── */
-
-.district-photo-float {
-  position: absolute;
-  bottom: 40%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: auto;
-  object-fit: cover;
-  z-index: 5;
-  pointer-events: none;
-  display: none;
 }
 
 
@@ -1111,7 +961,6 @@ body.visit-mode .constellation-btn { display: none; }
   max-width: 200px;
   object-fit: contain;
 }
-
 .train-map-label {
   font-size: 0.65rem;
   color: var(--blue);
@@ -1177,22 +1026,18 @@ body.visit-mode .constellation-btn { display: none; }
   max-height: 90vh;
   overflow-y: auto;
 }
-
-/* header: image + title + subtitle */
 .train-overlay-header {
   display: flex;
   align-items: center;
   gap: 1.25rem;
   margin-bottom: 1.25rem;
 }
-
 .train-overlay-img {
   width: 48px;
   height: 48px;
   object-fit: contain;
   flex-shrink: 0;
 }
-
 .train-overlay-title {
   font-family: var(--font-meta);
   font-size: 1.7rem;
@@ -1201,7 +1046,6 @@ body.visit-mode .constellation-btn { display: none; }
   margin: 0 0 0.2rem;
   line-height: 1.1;
 }
-
 .train-overlay-subtitle {
   font-family: var(--font-whois);
   font-size: 0.78rem;
@@ -1210,8 +1054,6 @@ body.visit-mode .constellation-btn { display: none; }
   margin: 0;
   letter-spacing: 0.02em;
 }
-
-/* link to board inside the train overlay header */
 .train-board-link {
   background: none;
   border: none;
@@ -1230,10 +1072,7 @@ body.visit-mode .constellation-btn { display: none; }
 }
 .train-board-link:hover { opacity: 1; }
 
-/* prompt section */
-.train-prompt-section {
-  margin-bottom: 0.85rem;
-}
+.train-prompt-section { margin-bottom: 0.85rem; }
 
 .train-section-label {
   font-family: var(--font-whois);
@@ -1283,7 +1122,6 @@ body.visit-mode .constellation-btn { display: none; }
 }
 .train-prompt-btn.selected .train-prompt-num { opacity: 0.7; }
 
-/* write section — hidden until prompt chosen */
 .train-write-section {
   display: none;
   flex-direction: column;
@@ -1291,9 +1129,7 @@ body.visit-mode .constellation-btn { display: none; }
   margin-bottom: 0.85rem;
   margin-top: 0.35rem;
 }
-.train-write-section.visible {
-  display: flex;
-}
+.train-write-section.visible { display: flex; }
 
 .train-selected-prompt {
   font-family: var(--font-whois);
@@ -1322,13 +1158,8 @@ body.visit-mode .constellation-btn { display: none; }
 .train-textarea:focus { border-width: 2px; }
 .train-textarea::placeholder { opacity: 0.35; }
 
-/* send section — hidden until prompt chosen */
-.train-send-section {
-  display: none;
-}
-.train-send-section.visible {
-  display: block;
-}
+.train-send-section { display: none; }
+.train-send-section.visible { display: block; }
 
 .train-send-row {
   display: flex;
@@ -1524,37 +1355,3 @@ body.visit-mode .constellation-btn { display: none; }
   .map-header { grid-template-columns: 1fr 1fr; height: auto; }
   .header-right { flex-wrap: wrap; }
 }
-
-/* add to css/map.css, inside the district section */
-
-/* photo layer peeks behind the illustration */
-.district-photo-layer {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  opacity: 0.35;
-  pointer-events: none;
-  z-index: 0;
-  transition: opacity 0.3s ease;
-}
-
-.district:hover .district-photo-layer { opacity: 0.55; }
-
-/* illustration sits above the photo layer */
-.district-image {
-  position: relative;
-  z-index: 1;
-}
-
-/* add show photos row to the settings panel in map.html: */
-/*
-<div class="customize-row">
-  <span class="customize-row-label">Show Photos</span>
-  <div class="customize-toggle-cell" onclick="toggleShowPhotos()">
-    <div class="toggle-track" id="show-photos-track">
-      <div class="toggle-thumb"></div>
-    </div>
-  </div>
-</div>
-*/

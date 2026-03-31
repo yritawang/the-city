@@ -1,43 +1,52 @@
 // achievements.js — universal, include on every page
-// ─────────────────────────────────────────────────
-// HOW TO ADD A NEW ACHIEVEMENT:
-//   1. Add an entry to ACHIEVEMENT_DEFINITIONS below: 'your-key': 'Display label'
-//   2. Call unlockAchievement('your-key') from anywhere in any page's JS
+// -------------------------------------------------
+// how to add a new achievement:
+//   1. add an entry to ACHIEVEMENT_DEFINITIONS below: 'your-key': 'Display label'
+//   2. call unlockAchievement('your-key') from anywhere in any page's js
 //      when the triggering action happens.
-// That's it. The toast + panel handle themselves.
-// ─────────────────────────────────────────────────
+// -------------------------------------------------
+// button + panel: only on map.html. call initAchievementsPanel() after this
+// script loads on that page. district pages get the toast only.
+// -------------------------------------------------
 
 const ACHIEVEMENT_DEFINITIONS = {
-  // City
+  // city
   'named-city':            'Named your city',
   'completed-all':         'Completed all five districts',
 
-  // Garden
+  // garden
   'began-garden':          'Began exploring the Garden',
   'completed-garden':      'Completed the Garden',
+  'returned-garden':       'Returned to the Garden',
+  'named-garden':          'Named the Garden',
 
-  // Shrine
+  // shrine
   'began-shrine':          'Began exploring the Shrine',
   'completed-shrine':      'Completed the Shrine',
+  'returned-shrine':       'Returned to the Shrine',
+  'named-shrine':          'Named the Shrine',
 
-  // Cornerstore
+  // cornerstore
   'began-cornerstore':     'Began exploring the Cornerstore',
   'completed-cornerstore': 'Completed the Cornerstore',
+  'returned-cornerstore':  'Returned to the Cornerstore',
+  'named-cornerstore':     'Named the Cornerstore',
 
-  // Tower
+  // tower
   'began-tower':           'Began exploring the Tower',
   'completed-tower':       'Completed the Tower',
+  'returned-tower':        'Returned to the Tower',
+  'named-tower':           'Named the Tower',
 
-  // Plaza
+  // plaza
   'began-plaza':           'Began exploring the Plaza',
   'completed-plaza':       'Completed the Plaza',
-
-  // Add more here as the project grows:
-  // 'returned-to-shrine':  'Returned to the Shrine',
-  // 'renamed-district':    'Renamed a district',
+  'returned-plaza':        'Returned to the Plaza',
+  'named-plaza':           'Named the Plaza',
 };
 
-// ─── Core storage ───────────────────────────────
+
+// --- core storage ---
 
 function getAchievements() {
   return JSON.parse(localStorage.getItem('achievements') || '[]');
@@ -48,7 +57,7 @@ function hasAchievement(id) {
 }
 
 function unlockAchievement(id) {
-  if (hasAchievement(id)) return; // already earned, do nothing
+  if (hasAchievement(id)) return; // already earned, skip
   const achievements = getAchievements();
   const entry = {
     id,
@@ -58,16 +67,23 @@ function unlockAchievement(id) {
   achievements.push(entry);
   localStorage.setItem('achievements', JSON.stringify(achievements));
   showToast(entry.label);
-  renderAchievementPanel();
+  renderAchievementPanel(); // no-op if panel doesn't exist on this page
 }
 
-// ─── Toast ──────────────────────────────────────
+
+// --- toast ---
 
 let toastTimeout = null;
 
 function showToast(label) {
   const toast = document.getElementById('achievement-toast');
-  if (!toast) return;
+
+  // defer if the toast element hasn't been injected yet (race condition on map.html)
+  if (!toast) {
+    setTimeout(() => showToast(label), 50);
+    return;
+  }
+
   document.getElementById('toast-title').textContent = label;
 
   if (toastTimeout) clearTimeout(toastTimeout);
@@ -98,18 +114,17 @@ function dismissToast() {
   if (toastTimeout) { clearTimeout(toastTimeout); toastTimeout = null; }
 }
 
-// ─── Panel ──────────────────────────────────────
+
+// --- panel (map.html only) ---
 
 function renderAchievementPanel() {
   const list = document.getElementById('achievements-panel-list');
-  if (!list) return;
+  if (!list) return; // not on map page, skip silently
   const achievements = getAchievements();
-
   if (achievements.length === 0) {
     list.innerHTML = '<p class="achievements-empty">No achievements yet.<br>Start exploring a district.</p>';
     return;
   }
-
   list.innerHTML = [...achievements].reverse().map(a => `
     <div class="achievement-item">
       ${a.label}
@@ -120,7 +135,7 @@ function renderAchievementPanel() {
 
 function openAchievementsPanel() {
   const panel = document.getElementById('achievements-panel');
-  const btn = document.getElementById('achievements-toggle-btn');
+  const btn   = document.getElementById('achievements-toggle-btn');
   if (!panel) return;
   panel.classList.add('visible');
   if (btn) btn.style.display = 'none';
@@ -129,35 +144,19 @@ function openAchievementsPanel() {
 
 function closeAchievementsPanel() {
   const panel = document.getElementById('achievements-panel');
-  const btn = document.getElementById('achievements-toggle-btn');
+  const btn   = document.getElementById('achievements-toggle-btn');
   if (!panel) return;
   panel.classList.remove('visible');
   if (btn) btn.style.display = 'flex';
 }
 
-// ─── Init (runs on every page that includes this file) ───
-
-document.addEventListener('DOMContentLoaded', () => {
-  // Inject toast + panel HTML into the page automatically
+// call this from map.html after the script loads to inject the button + panel
+function initAchievementsPanel() {
   const ui = document.createElement('div');
   ui.innerHTML = `
-    <!-- Achievement Toast -->
-    <div class="achievement-toast" id="achievement-toast">
-      <div class="achievement-toast-header">
-        <span class="achievement-toast-label">Achievement Unlocked</span>
-        <button class="achievement-toast-close" id="toast-close">✕</button>
-      </div>
-      <div class="achievement-toast-body">
-        <p class="achievement-toast-title" id="toast-title"></p>
-      </div>
-    </div>
-
-    <!-- Achievements Toggle Button -->
     <div class="achievements-toggle-btn" id="achievements-toggle-btn">
       <span class="achievements-btn-label">Achievements</span>
     </div>
-
-    <!-- Achievements Panel -->
     <div class="achievements-panel" id="achievements-panel">
       <div class="achievements-panel-header" id="achievements-panel-header">
         <span class="achievements-panel-label">Achievements</span>
@@ -172,13 +171,42 @@ document.addEventListener('DOMContentLoaded', () => {
     ?.addEventListener('click', openAchievementsPanel);
   document.getElementById('achievements-panel-header')
     ?.addEventListener('click', closeAchievementsPanel);
+
   renderAchievementPanel();
+
   document.addEventListener('click', (e) => {
-  const panel = document.getElementById('achievements-panel');
-  const btn = document.getElementById('achievements-toggle-btn');
-  if (!panel || !panel.classList.contains('visible')) return;
-  if (!panel.contains(e.target) && !btn?.contains(e.target)) {
-    closeAchievementsPanel();
+    const panel = document.getElementById('achievements-panel');
+    const btn   = document.getElementById('achievements-toggle-btn');
+    if (!panel || !panel.classList.contains('visible')) return;
+    if (!panel.contains(e.target) && !btn?.contains(e.target)) {
+      closeAchievementsPanel();
+    }
+  });
+}
+
+
+// --- init (runs on every page that includes this file) ---
+
+document.addEventListener('DOMContentLoaded', () => {
+  // inject toast html into the page automatically
+  const ui = document.createElement('div');
+  ui.innerHTML = `
+    <div class="achievement-toast" id="achievement-toast">
+      <div class="achievement-toast-header">
+        <span class="achievement-toast-label">Achievement Unlocked</span>
+        <button class="achievement-toast-close" id="toast-close">✕</button>
+      </div>
+      <div class="achievement-toast-body">
+        <p class="achievement-toast-title" id="toast-title"></p>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(ui);
+
+  // flush any achievements queued from district pages before map loaded
+  const pending = JSON.parse(localStorage.getItem('pending-achievements') || '[]');
+  if (pending.length) {
+    localStorage.removeItem('pending-achievements');
+    pending.forEach(id => unlockAchievement(id));
   }
-});
 });

@@ -4,9 +4,8 @@
 
 
 const TRAIN_SPOTS = [
-  { x: 20,  y: 530, zIndex: 5   },  // bottom-left
-  { x: 880, y: 530, zIndex: 5   },  // bottom-right
-  { x: 450, y: 600, zIndex: 200 },  // bottom center, above everything
+  { x: 40,   y: 300, zIndex: 5 }, 
+  { x: 850, y: 260, zIndex: 5 },  
 ];
 
 const TRAIN_PROMPTS = [
@@ -58,7 +57,7 @@ function initTrain() {
 
   // pick randomly between train and board on every visit
   const hasLog    = JSON.parse(localStorage.getItem('train-log') || '[]').length > 0;
-  const showBoard = hasLog && Math.random() < 0.5;
+  const showBoard = hasLog && Math.random() < 0.75;
   setTimeout(showBoard ? renderTrainBoard : showTrain, 1800);
 
   if (localStorage.getItem('trainDebug')) showDebugSpots();

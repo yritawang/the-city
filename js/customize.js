@@ -49,8 +49,8 @@ const DISTRICT_CONFIG = {
   },
   cornerstore: {
     displayName: 'The Cornerstore',
-    emotion: 'Comfort',
-    emotionWord: 'comfort',
+    emotion: 'Routine',
+    emotionWord: 'routine',
     questions: [
       "What place comes to mind?",
       "What was your routine in this place?",
@@ -77,8 +77,8 @@ const DISTRICT_CONFIG = {
   },
   plaza: {
     displayName: 'The Plaza',
-    emotion: 'Belonging',
-    emotionWord: 'belonging',
+    emotion: 'Community',
+    emotionWord: 'community',
     questions: [
       "What place comes to mind?",
       "Who else was in this place? How did you connect with them?",
@@ -103,9 +103,52 @@ const STOPWORDS = new Set([
   'even','very','much','many','some','any','time','way'
 ]);
 
-const EMOTION_WORDS     = new Set(['happy','happiness','sad','sadness','grief','joy','joyful','love','loved','lonely','loneliness','fear','afraid','scared','anxious','anxiety','angry','anger','rage','calm','peace','peaceful','safe','unsafe','comfort','comfortable','uncomfortable','proud','pride','shame','ashamed','guilt','guilty','hopeful','hope','hopeless','lost','found','free','freedom','trapped','nostalgic','nostalgia','homesick','longing','yearning','missing','belonging','connected','disconnected','isolated','warm','warmth','cold','hurt','pain','painful','tender','gentle','alive','numb','empty','full','overwhelmed','grateful','gratitude','bitter','bittersweet','melancholy','wonder','awe','curious','confused','clarity','certain','uncertain','excited','excitement','nervous','relief','relieved','tired','exhausted','energized','inspired','inspiration','content','restless','vulnerable','strong','weak','brave','courage']);
-const LOCATION_WORDS    = new Set(['home','house','room','bedroom','kitchen','garden','park','school','church','temple','mosque','street','road','alley','corner','market','store','shop','cafe','restaurant','library','hospital','office','studio','apartment','building','city','town','village','country','neighborhood','district','plaza','shrine','tower','forest','lake','river','ocean','beach','mountain','field','farm','barn','garage','basement','attic','hallway','staircase','window','door','yard','balcony','rooftop','bridge','station','airport','train','bus','court','campus','dormitory','dorm','classroom','gym','pool','stadium','theater','cinema','museum','gallery','mall','hotel','motel','cabin','cottage','palace','castle','ruins','cemetery','playground','lobby','corridor','passage','square','avenue','boulevard','lane']);
-const DESCRIPTIVE_WORDS = new Set(['quiet','loud','bright','dark','small','large','big','tiny','huge','narrow','wide','open','closed','clean','dirty','old','ancient','modern','empty','crowded','busy','still','chaotic','familiar','unfamiliar','strange','ordinary','special','sacred','forgotten','remembered','hidden','visible','distant','close','near','far','deep','shallow','heavy','light','soft','hard','rough','smooth','broken','whole','perfect','imperfect','beautiful','ugly','simple','complex','extraordinary','invisible','tangible','fleeting','permanent','temporary','endless','brief','vast','intimate','public','private','shared','personal','collective','universal','specific','vivid','faded','fresh','alive','growing','changing','fixed','steady','grounded','real','dreamlike','concrete','meaningful','powerful','fragile','resilient','delicate','sturdy','urgent','slow','fast']);
+// emotion words — includes district emotion words so they surface as anchors
+const EMOTION_WORDS = new Set([
+  'happy','happiness','sad','sadness','grief','joy','joyful','love','loved',
+  'lonely','loneliness','fear','afraid','scared','anxious','anxiety','angry',
+  'anger','rage','calm','peace','peaceful','safe','unsafe','comfort','comfortable',
+  'uncomfortable','proud','pride','shame','ashamed','guilt','guilty','hopeful',
+  'hope','hopeless','lost','found','free','freedom','trapped','nostalgic',
+  'nostalgia','homesick','longing','yearning','missing','belonging','connected',
+  'disconnected','isolated','warm','warmth','cold','hurt','pain','painful',
+  'tender','gentle','alive','numb','empty','full','overwhelmed','grateful',
+  'gratitude','bitter','bittersweet','melancholy','wonder','awe','curious',
+  'confused','clarity','certain','uncertain','excited','excitement','nervous',
+  'relief','relieved','tired','exhausted','energized','inspired','inspiration',
+  'content','restless','vulnerable','strong','weak','brave','courage',
+  // district emotion words
+  'reverence','growth','routine','solitude','community'
+]);
+
+const LOCATION_WORDS = new Set([
+  'home','house','room','bedroom','kitchen','garden','park','school','church',
+  'temple','mosque','street','road','alley','corner','market','store','shop',
+  'cafe','restaurant','library','hospital','office','studio','apartment',
+  'building','city','town','village','country','neighborhood','district','plaza',
+  'shrine','tower','forest','lake','river','ocean','beach','mountain','field',
+  'farm','barn','garage','basement','attic','hallway','staircase','window',
+  'door','yard','balcony','rooftop','bridge','station','airport','train','bus',
+  'court','campus','dormitory','dorm','classroom','gym','pool','stadium',
+  'theater','cinema','museum','gallery','mall','hotel','motel','cabin','cottage',
+  'palace','castle','ruins','cemetery','playground','lobby','corridor','passage',
+  'square','avenue','boulevard','lane'
+]);
+
+const DESCRIPTIVE_WORDS = new Set([
+  'quiet','loud','bright','dark','small','large','big','tiny','huge','narrow',
+  'wide','open','closed','clean','dirty','old','ancient','modern','empty',
+  'crowded','busy','still','chaotic','familiar','unfamiliar','strange','ordinary',
+  'special','sacred','forgotten','remembered','hidden','visible','distant','close',
+  'near','far','deep','shallow','heavy','light','soft','hard','rough','smooth',
+  'broken','whole','perfect','imperfect','beautiful','ugly','simple','complex',
+  'extraordinary','invisible','tangible','fleeting','permanent','temporary',
+  'endless','brief','vast','intimate','public','private','shared','personal',
+  'collective','universal','specific','vivid','faded','fresh','alive','growing',
+  'changing','fixed','steady','grounded','real','dreamlike','concrete',
+  'meaningful','powerful','fragile','resilient','delicate','sturdy','urgent',
+  'slow','fast'
+]);
 
 function getWordCategory(w) {
   if (EMOTION_WORDS.has(w) || DESCRIPTIVE_WORDS.has(w)) return 'emotional';
@@ -147,10 +190,10 @@ let graphSketch   = null;
 let isGraphMode   = false;
 
 const TIME_OPTIONS = [
-  { value: 'week',  label: 'Past week' },
+  { value: 'week',  label: 'Past week'  },
   { value: 'month', label: 'Past month' },
-  { value: 'year',  label: 'Past year' },
-  { value: 'all',   label: 'All time' },
+  { value: 'year',  label: 'Past year'  },
+  { value: 'all',   label: 'All time'   },
 ];
 let memoryTimeRange  = 'all';
 let memoryAnchorMode = 'location';
@@ -159,6 +202,7 @@ let memoryAnchorMode = 'location';
 // init
 
 document.addEventListener('DOMContentLoaded', () => {
+  document.body.classList.toggle('dark-mode', localStorage.getItem('dark-mode') === 'true');
   loadData();
   renderUI();
   setupListeners();
@@ -172,6 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const overlayBox = document.createElement('div');
   overlayBox.className = 'illustration-overlay-box';
   const overlayImg = document.createElement('img');
+  overlayImg.className = 'illustration-overlay-img';
   overlayBox.appendChild(overlayImg);
   overlayEl.appendChild(overlayBox);
   document.body.appendChild(overlayEl);
@@ -214,10 +259,12 @@ function renderUI() {
   const dateEl = document.getElementById('district-date');
   if (dateEl) dateEl.textContent = `Edited: ${districtData.date}`;
 
-  // show all unique locations in the subheader
+  // show all unique locations in the subheader — exclude train thought entries
   const locationEl = document.getElementById('location-value');
   if (locationEl) {
-    const unique = [...new Set(sessions.map(s => s.answers[0]).filter(Boolean))];
+    const unique = [...new Set(
+      sessions.filter(s => !s.isTrainThought).map(s => s.answers[0]).filter(Boolean)
+    )];
     locationEl.textContent = unique.length ? unique.join(', ') : '—';
   }
 
@@ -290,9 +337,8 @@ function renderJournalEntries() {
       body.appendChild(relogBtn);
     }
 
-    // entries
     groupSessions.forEach(session => {
-      const entry = document.createElement('div');
+      const entry     = document.createElement('div');
       entry.className = 'journal-entry';
 
       const musicName = localStorage.getItem(`${CURRENT_DISTRICT}-music-name-${session.timestamp}`);
@@ -361,7 +407,6 @@ function renderAlbumView() {
   const songsContainer  = document.getElementById('album-songs');
   if (!photosContainer || !songsContainer) return;
 
-  // photos section — one row per session that either has a photo or can get one
   if (sessions.length === 0) {
     photosContainer.innerHTML = `
       <div class="album-section-label mono">Photos</div>
@@ -370,7 +415,7 @@ function renderAlbumView() {
   } else {
     const rows = sessions.map(s => {
       const photoData = localStorage.getItem(`${CURRENT_DISTRICT}-photo-${s.timestamp}`);
-      const label     = s.answers[0] ? s.answers[0] : s.date;
+      const label     = s.answers[0] || s.date;
       return `
         <div class="album-photo-row" data-ts="${s.timestamp}">
           <div class="album-photo-slot">
@@ -569,6 +614,7 @@ function setupListeners() {
     if (newName) {
       districtData.name = newName;
       localStorage.setItem(`${CURRENT_DISTRICT}-name`, newName);
+      unlockAchievement(`named-${CURRENT_DISTRICT}`);
     }
     titleEl.textContent = districtData.name;
     titleEl.classList.remove('hidden');
@@ -668,18 +714,28 @@ function buildAnchors(filtered) {
       label: place, ax: positions[i].ax, ay: positions[i].ay, px: 0, py: 0
     }));
   } else {
-    const found = new Set();
+    // count how often each emotion word appears across all responses
+    const freq = {};
     filtered.forEach(session => {
       Object.entries(session.answers).forEach(([qi, answer]) => {
         if (parseInt(qi) === 5 || !answer) return;
         answer.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/).forEach(w => {
-          if (EMOTION_WORDS.has(w)) found.add(w);
+          if (EMOTION_WORDS.has(w)) freq[w] = (freq[w] || 0) + 1;
         });
       });
     });
-    const emotionList = found.size > 0 ? [...found].slice(0, 5) : [config.emotionWord];
-    const positions   = computeAnchorPositions(emotionList.length);
-    return emotionList.map((word, i) => ({
+
+    // sort by frequency descending, take top 5
+    const emotionList = Object.entries(freq)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([word]) => word);
+
+    // fall back to the district's own emotion word if nothing found
+    const finalList = emotionList.length > 0 ? emotionList : [config.emotionWord];
+
+    const positions = computeAnchorPositions(finalList.length);
+    return finalList.map((word, i) => ({
       label: word, ax: positions[i].ax, ay: positions[i].ay, px: 0, py: 0
     }));
   }
@@ -710,12 +766,7 @@ function initGraph() {
   if (!container) return;
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
 
-  // info panel: only create once
-  if (!document.getElementById('constellation-panel')) {
-    const panel = document.createElement('div');
-    panel.id = 'constellation-panel';
-    document.getElementById('graph-view').appendChild(panel);
-  }
+  // no click panel needed — tooltips are drawn inline on hover
 
   // controls bar: only create once, kept alive across rebuilds
   if (!document.getElementById('memory-controls')) {
@@ -780,18 +831,73 @@ function initGraph() {
   const maxCount = Math.max(...keywords.map(k => k.count), 1);
   const minCount = Math.min(...keywords.map(k => k.count), 1);
 
-  const nodes = keywords.map(k => {
-    const anchorIdx = assignAnchorIdx(k.word, anchors, filtered);
-    const recency   = (k.lastSeen - oldest) / timespan;
-    return { ...k, x: 0, y: 0, vx: 0, vy: 0, anchorIdx, recency };
+  // build one node per anchor the word appears in — words shared across
+  // locations get duplicated, with lines drawn between the copies
+  const nodes = [];
+  keywords.forEach(k => {
+    const recency = (k.lastSeen - oldest) / timespan;
+
+    // find every anchor this word appears in
+    const anchorHits = anchors.map((a, ai) => {
+      let hit = false;
+      filtered.forEach(session => {
+        const place = session.answers[0] || '';
+        Object.entries(session.answers).forEach(([qi, answer]) => {
+          if (parseInt(qi) === 5 || !answer) return;
+          const lower = answer.toLowerCase();
+          if (!lower.includes(k.word)) return;
+          if (memoryAnchorMode === 'location' && place === a.label) hit = true;
+          if (memoryAnchorMode === 'emotion'  && lower.includes(a.label)) hit = true;
+        });
+      });
+      return hit ? ai : -1;
+    }).filter(ai => ai !== -1);
+
+    // fall back to best single anchor if none matched explicitly
+    const anchorIdxList = anchorHits.length > 0
+      ? anchorHits
+      : [assignAnchorIdx(k.word, anchors, filtered)];
+
+    anchorIdxList.forEach(ai => {
+      nodes.push({ ...k, x: 0, y: 0, vx: 0, vy: 0, anchorIdx: ai, recency });
+    });
   });
+
+  // pairs of duplicate nodes (same word, different anchors) get a connecting line
+  const duplicatePairs = [];
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      if (nodes[i].word === nodes[j].word && nodes[i].anchorIdx !== nodes[j].anchorIdx) {
+        duplicatePairs.push([i, j]);
+      }
+    }
+  }
+
+  // root pairs: words sharing a prefix stem, across different anchors
+  const rootPairs = [];
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      // skip if already a duplicate pair
+      if (nodes[i].word === nodes[j].word) continue;
+      const a = nodes[i].word;
+      const b = nodes[j].word;
+      const minLen  = Math.min(a.length, b.length);
+      if (minLen < 4) continue;
+      const shorter = a.length <= b.length ? a : b;
+      const longer  = a.length <= b.length ? b : a;
+      if (longer.startsWith(shorter) && nodes[i].anchorIdx !== nodes[j].anchorIdx) {
+        rootPairs.push([i, j]);
+      }
+    }
+  }
 
   const bg    = getComputedStyle(document.body).getPropertyValue('--color-bg').trim() || '#F7F2F1';
   const PAD_X = 8, PAD_Y = 4;
   const ANCHOR_FONT  = 13;
   const ANCHOR_PAD_X = 10, ANCHOR_PAD_Y = 13;
 
-  let selectedIdx   = null;
+  let selectedIdx   = null;  // unused visually but kept for hit checks
+  let hoveredIdx    = null;
   let dragAnchorIdx = null;
   let dragOffX = 0, dragOffY = 0;
 
@@ -804,7 +910,7 @@ function initGraph() {
       const controlsH  = controlsEl ? controlsEl.offsetHeight : 0;
       W = graphView ? graphView.offsetWidth  : 800;
       H = graphView ? graphView.offsetHeight - controlsH : 500;
-      if (H < 100) H = 500; // fallback if layout hasn't settled
+      if (H < 100) H = 500;
       sk.createCanvas(W, H).parent('p5-canvas-container');
       sk.textFont('monospace');
 
@@ -814,15 +920,15 @@ function initGraph() {
         const a = anchors[n.anchorIdx] || anchors[0];
         n.x  = a.px + (Math.random() - 0.5) * 120;
         n.y  = a.py + (Math.random() - 0.5) * 120;
-        n.vx = (Math.random() - 0.5) * 2;
-        n.vy = (Math.random() - 0.5) * 2;
+        n.vx = (Math.random() - 0.5) * 0.5;
+        n.vy = (Math.random() - 0.5) * 0.5;
       });
     };
 
     sk.draw = () => {
       sk.background(bg);
       frame++;
-      const damping = Math.min(0.88 + frame * 0.0005, 0.97);
+      const damping = Math.min(0.92 + frame * 0.0003, 0.98);
 
       // repulsion between word nodes
       for (let i = 0; i < nodes.length; i++) {
@@ -830,7 +936,7 @@ function initGraph() {
           const a = nodes[i], b = nodes[j];
           const dx = b.x - a.x, dy = b.y - a.y;
           const d  = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
-          const f  = 2000 / (d * d);
+          const f  = 800 / (d * d);
           a.vx -= (dx / d) * f; a.vy -= (dy / d) * f;
           b.vx += (dx / d) * f; b.vy += (dy / d) * f;
         }
@@ -842,7 +948,7 @@ function initGraph() {
           const dx = n.x - a.px, dy = n.y - a.py;
           const d  = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
           if (d < 90) {
-            const f = 2500 / (d * d);
+            const f = 1000 / (d * d);
             n.vx += (dx / d) * f;
             n.vy += (dy / d) * f;
           }
@@ -852,12 +958,32 @@ function initGraph() {
       // soft pull toward each node's anchor
       nodes.forEach(n => {
         const a = anchors[n.anchorIdx] || anchors[0];
-        n.vx += (a.px - n.x) * 0.006;
-        n.vy += (a.py - n.y) * 0.006;
+        n.vx += (a.px - n.x) * 0.002;
+        n.vy += (a.py - n.y) * 0.002;
         n.vx *= damping; n.vy *= damping;
         n.x = Math.max(40, Math.min(W - 40, n.x + n.vx));
         n.y = Math.max(24, Math.min(H - 24, n.y + n.vy));
       });
+
+      // draw lines between duplicate nodes (same word, different anchors)
+      if (duplicatePairs.length > 0) {
+        sk.strokeWeight(0.8);
+        sk.stroke(DIST_COLOR + '50'); // ~31% opacity
+        duplicatePairs.forEach(([i, j]) => {
+          sk.line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+        });
+        sk.noStroke();
+      }
+
+      // draw faint lines between root-related word nodes (behind everything)
+      if (rootPairs.length > 0) {
+        sk.strokeWeight(0.5);
+        sk.stroke(DIST_COLOR + '28'); // ~16% opacity
+        rootPairs.forEach(([i, j]) => {
+          sk.line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
+        });
+        sk.noStroke();
+      }
 
       // draw anchor labels
       anchors.forEach(a => {
@@ -891,26 +1017,56 @@ function initGraph() {
         const opacity = 0.55 + n.recency * 0.45;
         const opHex   = Math.round(opacity * 255).toString(16).padStart(2, '0');
 
-        const isSelected = selectedIdx === idx;
-        const isHovered  = sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
-                           sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2;
+        const isHovered = idx === hoveredIdx;
 
         sk.noStroke();
 
         if (n.category === 'location') {
-          // bare word, no box
-          sk.fill(DIST_COLOR + (isSelected || isHovered ? 'ff' : opHex));
+          sk.fill(DIST_COLOR + (isHovered ? 'ff' : opHex));
           sk.textAlign(sk.CENTER, sk.CENTER);
           sk.text(n.word, n.x, n.y);
         } else {
-          // filled box
-          sk.fill(DIST_COLOR + (isSelected || isHovered ? 'ff' : opHex));
+          sk.fill(DIST_COLOR + (isHovered ? 'ff' : opHex));
           sk.rect(n.x - rw / 2, n.y - rh / 2, rw, rh);
           sk.fill(bg);
           sk.textAlign(sk.CENTER, sk.CENTER);
           sk.text(n.word, n.x, n.y);
         }
       });
+
+      // draw hover tooltip above the hovered node
+      if (hoveredIdx !== null) {
+        const n = nodes[hoveredIdx];
+        const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
+        const fontSize = 10 + t * 8;
+        const rh       = fontSize + PAD_Y * 2;
+
+        // build tooltip text
+        let tipText;
+        if (memoryAnchorMode === 'location') {
+          const anchorSet = new Set(
+            nodes.filter(nd => nd.word === n.word).map(nd => nd.anchorIdx)
+          );
+          tipText = `Appearance: ${anchorSet.size}`;
+        } else {
+          tipText = `Appearance: ${n.count}`;
+        }
+
+        const TIP_FONT = 9;
+        sk.textFont('monospace');
+        sk.textSize(TIP_FONT);
+        const tipW = sk.textWidth(tipText) + 12;
+        const tipH = TIP_FONT + 10;
+        const tipX = n.x - tipW / 2;
+        const tipY = n.y - rh / 2 - tipH - 4;
+
+        sk.noStroke();
+        sk.fill(DIST_COLOR);
+        sk.rect(tipX, tipY, tipW, tipH);
+        sk.fill(bg);
+        sk.textAlign(sk.LEFT, sk.TOP);
+        sk.text(tipText, tipX + 6, tipY + 5);
+      }
     };
 
     // helpers
@@ -934,24 +1090,6 @@ function initGraph() {
           return;
         }
       }
-      // word node click
-      let hit = null;
-      nodes.forEach((n, idx) => {
-        const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
-        const fontSize = 10 + t * 8;
-        sk.textSize(fontSize);
-        const tw = sk.textWidth(n.word);
-        const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
-        if (sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
-            sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2) hit = idx;
-      });
-      if (hit !== null) {
-        selectedIdx = hit;
-        showInfoPanel(nodes[hit]);
-      } else {
-        selectedIdx = null;
-        hideInfoPanel();
-      }
     };
 
     sk.mouseDragged = () => {
@@ -965,17 +1103,19 @@ function initGraph() {
 
     sk.mouseMoved = () => {
       const onAnchor = anchors.some(a => hitAnchor(sk.mouseX, sk.mouseY, a));
-      let onNode = false;
-      nodes.forEach(n => {
+
+      hoveredIdx = null;
+      nodes.forEach((n, idx) => {
         const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
         const fontSize = 10 + t * 8;
         sk.textSize(fontSize);
         const tw = sk.textWidth(n.word);
         const rw = tw + PAD_X * 2, rh = fontSize + PAD_Y * 2;
         if (sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
-            sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2) onNode = true;
+            sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2) hoveredIdx = idx;
       });
-      container.style.cursor = (onAnchor || onNode) ? 'pointer' : 'default';
+
+      container.style.cursor = (onAnchor || hoveredIdx !== null) ? 'pointer' : 'default';
     };
 
     sk.windowResized = () => {
@@ -1034,41 +1174,8 @@ function rebuildGraph() {
   initGraph();
 }
 
-function showInfoPanel(node) {
-  const panel = document.getElementById('constellation-panel');
-  if (!panel) return;
-  const filtered = getSessionsForTimeRange();
-  const contexts = [];
-  filtered.forEach(session => {
-    Object.entries(session.answers).forEach(([qi, answer]) => {
-      if (!answer || parseInt(qi) === 5) return;
-      if (answer.toLowerCase().includes(node.word)) {
-        const q       = QUESTIONS[parseInt(qi)] || '';
-        const snippet = answer.length > 120 ? answer.slice(0, 120) + '...' : answer;
-        contexts.push({ question: `${session.date} · ${q}`, snippet });
-      }
-    });
-  });
-  panel.innerHTML = `
-    <div style="font-family:var(--font-meta);font-size:1.05rem;color:var(--blue);
-                border-bottom:1px solid var(--blue);padding-bottom:0.5rem;margin-bottom:0.75rem;">
-      ${node.word}
-    </div>
-    ${contexts.map(c => `
-      <div style="margin-bottom:0.75rem;">
-        <div style="font-size:0.72rem;opacity:0.5;margin-bottom:0.25rem;">${c.question}</div>
-        <div style="font-family:var(--font-meta);font-size:0.88rem;line-height:1.65;">${c.snippet}</div>
-      </div>
-    `).join('') || '<div style="opacity:0.4;font-size:0.8rem;">no context found.</div>'}
-  `;
-  panel.style.opacity       = '1';
-  panel.style.pointerEvents = 'all';
-}
-
-function hideInfoPanel() {
-  const panel = document.getElementById('constellation-panel');
-  if (panel) { panel.style.opacity = '0'; panel.style.pointerEvents = 'none'; }
-}
+function showInfoPanel(node) {}  // unused, kept for safety
+function hideInfoPanel() {}      // unused, kept for safety
 
 
 // media (photo + music)

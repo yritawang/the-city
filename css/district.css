@@ -1,6 +1,5 @@
 /* district.css */
 
-/* ─── SCROLL LOCK ─── */
 html, body {
   overflow: hidden;
   height: 100vh;
@@ -8,8 +7,6 @@ html, body {
   margin: 0;
   padding: 0;
 }
-
-/* ─── ENTERING OVERLAY ─── */
 
 .entering-overlay {
   position: fixed;
@@ -32,7 +29,7 @@ html, body {
 .entering-text {
   font-size: 3rem;
   text-align: center;
-  animation: fadeInOut 3s ease-in-out;
+  animation: fadeInOut 2.5s ease-in-out forwards;
 }
 
 @keyframes fadeInOut {
@@ -41,7 +38,6 @@ html, body {
   80%  { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(-10px); }
 }
-
 
 /* ─── DISTRICT CONTENT WRAPPER ─── */
 
@@ -677,3 +673,195 @@ body.page-exit {
   background-color: rgba(255, 255, 255, 0.15);
   opacity: 1;
 }
+
+/* achievements.css */
+/* include on every page alongside achievements.js */
+
+
+/* --- toast --- */
+
+.achievement-toast {
+  position: fixed;
+  bottom: 2rem; left: 2rem;
+  width: 280px;
+  border: 2px solid var(--blue);
+  background-color: var(--color-bg);
+  display: grid;
+  grid-template-rows: auto auto;
+  z-index: 500;
+  cursor: pointer;
+  transform-origin: bottom left;
+  transform: scaleY(0);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+}
+.achievement-toast.visible  { transform: scaleY(1); opacity: 1; }
+.achievement-toast.fade-out { transform: scaleY(0); opacity: 0; transition: transform 0.25s cubic-bezier(0.64, 0, 0.78, 0), opacity 0.2s ease; }
+.achievement-toast.wiggle   { animation: toastWiggle 0.4s ease; }
+
+@keyframes toastWiggle {
+  0%   { transform: scaleY(1) rotate(0deg); }
+  25%  { transform: scaleY(1) rotate(1.5deg); }
+  50%  { transform: scaleY(1) rotate(-1.5deg); }
+  75%  { transform: scaleY(1) rotate(0.8deg); }
+  100% { transform: scaleY(1) rotate(0deg); }
+}
+
+.achievement-toast-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--blue);
+  background-color: var(--blue);
+  transition: background-color 0.2s ease;
+}
+.achievement-toast:hover .achievement-toast-header { background-color: white; }
+
+.achievement-toast-label {
+  font-family: var(--font-whois);
+  font-size: 0.78rem;
+  color: white;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+.achievement-toast:hover .achievement-toast-label { color: var(--blue); }
+
+.achievement-toast-close {
+  font-family: var(--font-whois);
+  font-size: 0.83rem;
+  color: white;
+  opacity: 0.7;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+.achievement-toast-close:hover { opacity: 1; }
+.achievement-toast:hover .achievement-toast-close { color: var(--blue); }
+
+.achievement-toast-body { padding: 0.85rem 1rem; }
+
+.achievement-toast-title {
+  font-family: var(--font-whois);
+  font-size: 0.88rem;
+  color: var(--blue);
+  line-height: 1.4;
+}
+
+
+/* --- panel --- */
+
+.achievements-panel {
+  position: fixed;
+  bottom: 2rem; left: 2rem;
+  width: 280px;
+  border: 2px solid var(--blue);
+  background-color: var(--color-bg);
+  z-index: 499;
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  transform-origin: bottom left;
+  transform: scaleY(0);
+  opacity: 0;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+}
+.achievements-panel.visible { transform: scaleY(1); opacity: 1; }
+
+.achievements-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--blue);
+  background-color: var(--blue);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+.achievements-panel-header:hover { background-color: white; }
+
+.achievements-panel-label {
+  font-family: var(--font-whois);
+  font-size: 0.78rem;
+  color: white;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition: color 0.2s ease;
+}
+.achievements-panel-toggle {
+  font-family: var(--font-whois);
+  font-size: 0.83rem;
+  color: white;
+  transition: color 0.2s ease;
+}
+.achievements-panel-header:hover .achievements-panel-label,
+.achievements-panel-header:hover .achievements-panel-toggle { color: var(--blue); }
+
+.achievements-panel-list { overflow-y: auto; flex: 1; }
+
+.achievement-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--blue);
+  font-family: var(--font-whois);
+  font-size: 0.86rem;
+  color: var(--blue);
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.achievement-item:last-child { border-bottom: none; }
+.achievement-item:hover { background-color: var(--blue); color: white; }
+
+.achievement-item-date {
+  display: block;
+  opacity: 0.5;
+  font-size: 0.75rem;
+  margin-top: 0.2rem;
+}
+
+.achievements-empty {
+  padding: 1.5rem 1rem;
+  font-family: var(--font-whois);
+  font-size: 0.86rem;
+  color: var(--blue);
+  opacity: 0.5;
+  text-align: center;
+}
+
+
+/* --- toggle button --- */
+
+.achievements-toggle-btn {
+  position: fixed;
+  bottom: 2rem; left: 2rem;
+  border: 2px solid var(--blue);
+  background-color: var(--color-bg);
+  cursor: pointer;
+  z-index: 498;
+  display: flex;
+  align-items: stretch;
+}
+
+.achievements-btn-label {
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-whois);
+  font-size: 0.8rem;
+  color: var(--blue);
+  letter-spacing: 0.05em;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.achievements-toggle-btn:hover .achievements-btn-label {
+  background-color: var(--blue);
+  color: var(--color-bg);
+}
+
+
+/* --- dark mode overrides --- */
+
+body.dark-mode .achievement-toast,
+body.dark-mode .achievements-panel,
+body.dark-mode .achievements-toggle-btn { background-color: #101010; }
