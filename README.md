@@ -1,5 +1,4 @@
-# Emotional Hometown
-
+# Your City is Always Being Built
 ## Setup Instructions
 
 ### 1. Add Font Files
@@ -15,6 +14,7 @@ Place district images in `/assets/districts/` with this naming convention:
 - `shrine-locked.png`, `shrine-hover.png`, `shrine-unlocked.png`
 - `tower-locked.png`, `tower-hover.png`, `tower-unlocked.png`
 - `plaza-locked.png`, `plaza-hover.png`, `plaza-unlocked.png`
+- 'train.png', 'trainboard.png'
 
 ### 3. Run the Project
 Open `index.html` in a browser to start the experience.
