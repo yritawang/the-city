@@ -97,10 +97,8 @@
   letter-spacing: 0.05em;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-.achievements-toggle-btn:hover .achievements-btn-label {
-  background-color: var(--blue);
-  color: white;
-}
+.achievements-toggle-btn:hover .achievements-btn-label { background-color: var(--blue-faint); color: var(--blue); }
+
 
 
 /* --- panel (map.html only) --- */
@@ -132,7 +130,7 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-.achievements-panel-header:hover { background-color: white; }
+.achievements-panel-header:hover { background-color: var(--blue-faint); }
 .achievements-panel-header:hover .achievements-panel-label,
 .achievements-panel-header:hover .achievements-panel-toggle { color: var(--blue); }
 
@@ -164,7 +162,7 @@
   transition: background-color 0.15s ease, color 0.15s ease;
 }
 .achievement-item:last-child { border-bottom: none; }
-.achievement-item:hover { background-color: var(--blue); color: white; }
+.achievement-item:hover { background-color: var(--blue-faint); color: var(--blue); }
 
 .achievement-item-date {
   display: block;

@@ -327,15 +327,15 @@ function renderJournalEntries() {
     const body = document.createElement('div');
     body.className = 'journal-location-body';
 
-    // per-location relog button — skip for train thought entries
-    const isTrainGroup = groupSessions.some(s => s.isTrainThought);
-    if (!isTrainGroup) {
-      const relogBtn = document.createElement('button');
-      relogBtn.className = 'journal-relog-location-btn mono';
-      relogBtn.textContent = '+ Log this location again';
-      relogBtn.addEventListener('click', () => relogExistingLocation(place));
-      body.appendChild(relogBtn);
-    }
+    // // per-location relog button — skip for train thought entries
+    // const isTrainGroup = groupSessions.some(s => s.isTrainThought);
+    // if (!isTrainGroup) {
+    //   const relogBtn = document.createElement('button');
+    //   relogBtn.className = 'journal-relog-location-btn mono';
+    //   relogBtn.textContent = '+ Log this location again';
+    //   relogBtn.addEventListener('click', () => relogExistingLocation(place));
+    //   body.appendChild(relogBtn);
+    // }
 
     groupSessions.forEach(session => {
       const entry     = document.createElement('div');

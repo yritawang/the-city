@@ -33,9 +33,9 @@ html, body {
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-.header-left:hover { background-color: var(--blue); }
+.header-left:hover { background-color: var(--blue-faint); }
 .header-left:hover .header-title h1,
-.header-left:hover .location-icon { color: white; }
+.header-left:hover .location-icon { color: var(--blue); }
 
 .header-right { display: flex; align-items: stretch; }
 
@@ -53,7 +53,7 @@ html, body {
   letter-spacing: 0.02em;
 }
 .header-btn:last-child { border-right: none; }
-.header-btn:hover { background-color: var(--blue); color: white; }
+.header-btn:hover { background-color: var(--blue-faint); color: var(--blue); }
 
 .header-title {
   display: flex;
@@ -195,6 +195,27 @@ body.visit-mode .district:hover { transform: none !important; cursor: default !i
 body.visit-mode #shrine,
 body.visit-mode #shrine:hover   { transform: translate(-50%, -50%) !important; cursor: default !important; }
 
+.district-image {
+  width: 360px;
+  height: 360px;
+  object-fit: contain;
+  object-position: bottom center;
+  display: block;
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.district {
+  position: absolute;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+  overflow: visible;
+}
 
 /* ─── district pulse ─── */
 
@@ -267,9 +288,9 @@ body.visit-mode #shrine:hover   { transform: translate(-50%, -50%) !important; c
   cursor: pointer;
   transition: all 0.2s;
 }
-.overlay-btn:hover         { background-color: var(--blue); color: var(--color-bg); }
-.overlay-btn.primary       { background-color: var(--blue); color: var(--color-bg); }
-.overlay-btn.primary:hover { opacity: 0.8; }
+.overlay-btn:hover         { background-color: var(--blue-faint); color: var(--blue); }
+.overlay-btn.primary       { background-color: var(--blue-mid); color: var(--blue); }
+.overlay-btn.primary:hover { background-color: var(--blue-mid); opacity: 1; }
 
 .overlay-footer {
   display: flex;
@@ -300,7 +321,7 @@ body.visit-mode #shrine:hover   { transform: translate(-50%, -50%) !important; c
   width: 100%;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-.customize-toggle-btn:hover .customize-btn-label { background-color: var(--blue); color: white; }
+.customize-toggle-btn:hover .customize-btn-label { background-color: var(--blue-faint); color: var(--blue); }
 
 .customize-panel {
   position: fixed;
@@ -328,7 +349,7 @@ body.visit-mode #shrine:hover   { transform: translate(-50%, -50%) !important; c
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-.customize-panel-header:hover { background-color: white; }
+.customize-panel-header:hover { background-color: var(--blue-faint); }
 .customize-panel-header:hover .customize-panel-label,
 .customize-panel-header:hover .customize-panel-toggle { color: var(--blue); }
 
@@ -372,8 +393,8 @@ body.visit-mode #shrine:hover   { transform: translate(-50%, -50%) !important; c
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
-.customize-toggle-cell:hover { background-color: var(--blue); }
-.customize-toggle-cell:hover .toggle-track { border-color: white; }
+.customize-toggle-cell:hover { background-color: var(--blue-faint); }
+.customize-toggle-cell:hover .toggle-track { border-color: var(--blue); }
 
 .toggle-track {
   width: 32px; height: 16px;
@@ -431,9 +452,9 @@ body.dark-mode .toggle-thumb { background-color: #101010; }
   letter-spacing: 0.1em;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-.constellation-btn:hover:not(.locked) .constellation-btn-label { background-color: var(--blue); color: white; }
+.constellation-btn:hover:not(.locked) .constellation-btn-label { background-color: var(--blue-faint); color: var(--blue); }
 .constellation-btn.locked  { opacity: 0.3; cursor: not-allowed; }
-.constellation-btn.active .constellation-btn-label { background-color: var(--blue); color: white; }
+.constellation-btn.active .constellation-btn-label { background-color: var(--blue-mid); color: var(--blue); }
 
 .constellation-overlay {
   position: fixed;
@@ -775,7 +796,7 @@ body.dark-mode .toggle-thumb { background-color: #101010; }
   transition: background-color 0.2s, color 0.2s;
 }
 .share-copy-btn:hover,
-.share-copy-btn.copied { background-color: var(--blue); color: var(--color-bg); }
+.share-copy-btn.copied { background-color: var(--blue-faint); color: var(--blue); }
 .share-hint { font-family: var(--font-whois); font-size: 0.8rem; opacity: 0.45; line-height: 1.6; }
 
 
@@ -832,8 +853,8 @@ body.dark-mode .toggle-thumb { background-color: #101010; }
   margin-top: 0.15rem;
 }
 .visitor-visit-btn {
-  background-color: var(--blue);
-  color: var(--color-bg);
+  background-color: var(--blue-mid); 
+  color: var(--blue);
   border: none;
   font-family: var(--font-whois);
   font-size: 0.83rem;
@@ -842,7 +863,7 @@ body.dark-mode .toggle-thumb { background-color: #101010; }
   flex-shrink: 0;
   transition: opacity 0.2s;
 }
-.visitor-visit-btn:hover { opacity: 0.75; }
+.visitor-visit-btn:hover { opacity: 1; background-color: var(--blue-faint); }
 .visitor-empty {
   padding: 1.5rem;
   font-family: var(--font-whois);

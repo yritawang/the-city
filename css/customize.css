@@ -3,6 +3,7 @@
 :root {
   --blue: #0A059B;
   --blue-faint: rgba(10, 5, 155, 0.08);
+    --blue-mid: rgba(10, 5, 155, 0.2);
 }
 
 html { font-size: 110%; }
@@ -115,7 +116,6 @@ html, body {
   cursor: pointer;
   border: 2px solid transparent;
   transition: border-color 0.2s;
-  padding: 0.3rem;
   background-color: white;
 }
 
@@ -338,9 +338,9 @@ html, body {
   transition: background-color 0.2s;
 }
 
-.customize-header-title-cell:hover { background-color: var(--blue); }
-.customize-header-title-cell:hover .customize-header-title       { color: white; }
-.customize-header-title-cell:hover .customize-header-title-input { color: white; border-bottom-color: white; caret-color: white; }
+.customize-header-title-cell:hover { background-color: var(--blue-faint); }
+.customize-header-title-cell:hover .customize-header-title       { color: var(--blue); }
+.customize-header-title-cell:hover .customize-header-title-input { color: var(--blue); border-bottom-color: var(--blue); caret-color: var(--blue); }
 
 .customize-header-title {
   font-family: var(--font-meta);
@@ -392,10 +392,7 @@ html, body {
   padding: 0;
 }
 
-.customize-header-cell:hover {
-  background-color: var(--blue);
-  color: white;
-}
+.customize-header-cell:hover { background-color: var(--blue-faint); color: var(--blue); }
 
 /* location sub-header */
 
@@ -443,7 +440,7 @@ html, body {
 }
 
 .toggle-btn:hover  { background-color: var(--blue-faint); }
-.toggle-btn.active { background-color: var(--blue); color: white; border-color: var(--blue); }
+.toggle-btn.active { background-color: var(--blue-mid); color: var(--blue); border-color: var(--blue); }
 
 
 /* journal view */
@@ -571,7 +568,7 @@ html, body {
   transition: background-color 0.2s;
 }
 
-.journal-entry-header:hover { background-color: rgba(10, 5, 155, 0.05); }
+.journal-entry-header:hover { background-color: var(--blue-faint); }
 
 .journal-entry-date {
   font-family: var(--font-whois);

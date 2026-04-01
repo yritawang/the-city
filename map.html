@@ -30,13 +30,10 @@
     </div>
   </header>
 
-  <!-- Visit mode: return button (fixed, top right, matches header height) -->
   <button class="return-btn mono" id="return-btn">Return to Your City</button>
 
-  <!-- Visit mode: thin banner below header -->
   <div class="visit-banner mono" id="visit-banner"></div>
 
-  <!-- Map -->
   <div class="map-container">
     <div class="map-districts">
       <div class="district" id="garden" data-district="garden" data-emotion="Growth">
@@ -63,7 +60,6 @@
     <p class="map-hint" id="map-hint">Click on a district to start</p>
   </div>
 
-  <!-- Constellation button + overlay -->
   <div class="constellation-btn locked" id="constellation-btn">
     <span class="constellation-btn-label">See as Memories</span>
   </div>
@@ -76,7 +72,6 @@
     </div>
   </div>
 
-  <!-- ─── CITY NAME OVERLAY ─── -->
   <div class="overlay" id="city-name-overlay">
     <div class="overlay-content">
       <h2>Name Your City</h2>
@@ -95,18 +90,17 @@
     </div>
   </div>
 
-  <!-- ─── ABOUT OVERLAY ─── -->
 <div class="overlay" id="about-overlay">
   <div class="overlay-content about-overlay-content">
-    <h2 class="guide-concept-title">Somewhere I Belong</h2>
-    <p class="guide-concept-text">The places we've lived shape who we are. But so many exist only in memory, frozen in time. This is a space to reclaim them. By mapping real locations from your life onto an emotional city, you become the author of your own geography as they live in you.</p>
+    <h2 class="guide-concept-title">Your City is Always Being Built</h2>
+    <p class="guide-concept-text">This website and architecture illustrations were created by Rita Wang for the Communication Design BFA Capstone at Washington University in St. Louis (2026). The typefaces used are Luuse's Meta Old French and Raphaël Bastide’s Whois Mono.</p>
+    <p class="guide-concept-text">My many thanks belong to: Bei Hu for her endless kindness and patience, my fellow capstone cohort for their support and feedback (shoutout Mahjong group), my friends for enduring my endless user testing requests, and my mom for her courage to move to a foreign country for my education.</p>
     <div class="overlay-footer">
       <button class="overlay-btn mono" id="about-close-btn">Close</button>
     </div>
   </div>
 </div>
 
-  <!-- ─── GUIDE OVERLAY ─── -->
 <div class="overlay" id="guide-overlay">
   <div class="overlay-content guide-overlay-content">
 
@@ -146,7 +140,6 @@
   </div>
 </div>
 
-  <!-- ─── SHARE OVERLAY (two tabs: Share / Friend Cities) ─── -->
   <div class="overlay" id="share-overlay">
     <div class="overlay-content share-overlay-content">
 
@@ -155,7 +148,6 @@
         <button class="share-tab" id="share-tab-log">Friend Cities</button>
       </div>
 
-      <!-- Share tab -->
       <div class="share-tab-panel active" id="share-panel-share">
         <p class="share-hint mono">Share your city with someone. They can visit your map and constellation in a read-only view.</p>
         <div class="share-code-display">
@@ -175,7 +167,6 @@
         <p class="share-hint mono">Send this code to a friend. They paste it into their Friends Cities to see your city.</p>
       </div>
 
-      <!-- Friends Cities tab -->
       <div class="share-tab-panel hidden" id="share-panel-log">
         <div class="visitor-log-input-row">
           <input type="text" class="visitor-code-input mono" id="visitor-code-input" placeholder="Paste a city code…" maxlength="16">
@@ -192,7 +183,6 @@
     </div>
   </div>
 
-  <!-- ─── RETURN TO CITY CONFIRMATION ─── -->
   <div class="overlay" id="return-overlay">
     <div class="overlay-content return-overlay-content">
       <h2 class="return-overlay-title">Are you sure you want to go back to your city?</h2>
