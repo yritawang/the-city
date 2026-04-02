@@ -1,4 +1,5 @@
-# Your City is Always Being Built
+# Emotional Hometown
+
 ## Setup Instructions
 
 ### 1. Add Font Files
@@ -14,7 +15,6 @@ Place district images in `/assets/districts/` with this naming convention:
 - `shrine-locked.png`, `shrine-hover.png`, `shrine-unlocked.png`
 - `tower-locked.png`, `tower-hover.png`, `tower-unlocked.png`
 - `plaza-locked.png`, `plaza-hover.png`, `plaza-unlocked.png`
-- 'train.png', 'trainboard.png'
 
 ### 3. Run the Project
 Open `index.html` in a browser to start the experience.
@@ -41,8 +41,3 @@ emotional-hometown/
 - **Locked**: Shows locked image, 40% opacity
 - **Hover**: Shows hover image, 70% opacity, emotion label appears
 - **Unlocked**: Shows unlocked image, 100% opacity, label visible
-
-## Next Steps
-1. Build Shrine district flow (`districts/shrine.html`)
-2. Add reflection questions for Shrine
-3. Create completion flow that unlocks the district

@@ -139,7 +139,7 @@ html, body {
   font-family: var(--font-whois);
   opacity: 0;
   transition: opacity 0.3s ease;
-  pointer-events: none;
+  pointer-events: all;
   white-space: nowrap;
   text-align: center;
   display: flex;
@@ -148,9 +148,9 @@ html, body {
   gap: 0.25rem;
 }
 
-/* garden and plaza labels sit closer to their images */
-#garden .district-label { top: -28px; }
-#plaza  .district-label { top: -28px; }
+#cornerstore .district-label { top: -20px; }
+#garden .district-label { top: -10px; }
+#plaza  .district-label { top: 40px; }
 
 .district-emotion-tag {
   font-size: 0.88rem;
@@ -1376,3 +1376,18 @@ body.visit-mode .constellation-btn      { display: none; }
   .map-header { grid-template-columns: 1fr 1fr; height: auto; }
   .header-right { flex-wrap: wrap; }
 }
+
+.train-log-delete {
+  background: none;
+  border: none;
+  color: var(--blue);
+  opacity: 0.35;
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+.train-log-delete:hover { opacity: 1; }

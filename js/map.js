@@ -15,7 +15,7 @@ const DISTRICT_COLORS = {
   garden:      '#6A6405',
   cornerstore: '#D05038',
   tower:       '#205A97',
-  plaza:       '#614973',
+  plaza:       '#6E4C77',
 };
 
 const DISTRICT_META = [
@@ -23,7 +23,7 @@ const DISTRICT_META = [
   { key: 'shrine',      label: 'Reverence', color: '#DD6204' },
   { key: 'cornerstore', label: 'Routine',   color: '#D05038' },
   { key: 'tower',       label: 'Solitude',  color: '#205A97' },
-  { key: 'plaza',       label: 'Community', color: '#614973' },
+  { key: 'plaza',       label: 'Community', color: '#6E4C77' },
 ];
 
 
@@ -110,21 +110,47 @@ function handleDistrictClick(name) {
 
 function displayDistrictNames() {
   if (document.body.classList.contains('visit-mode')) return;
+
   const states = JSON.parse(localStorage.getItem('districtStates')) || {};
+
   DISTRICTS.forEach(name => {
     const el          = document.getElementById(name);
     const hasSessions = JSON.parse(localStorage.getItem(`${name}-sessions`) || '[]').length > 0;
-    if (!el || (states[name] !== 'unlocked' && !hasSessions)) return;
+    const isUnlocked  = states[name] === 'unlocked' || hasSessions;
+    if (!el || !isUnlocked) return;
+
     const savedName = localStorage.getItem(`${name}-name`);
+    const label     = el.querySelector('.district-label');
+    if (!label) return;
+
+    // remove stale span so we always reflect the latest saved name
+    const existing = label.querySelector('.district-custom-name');
+    if (existing) existing.remove();
+
+    // only render if a name has been saved
     if (!savedName) return;
-    const label = el.querySelector('.district-label');
-    if (label && !label.querySelector('.district-custom-name')) {
-      const span = document.createElement('span');
-      span.className   = 'district-custom-name';
-      span.textContent = savedName;
-      label.appendChild(span);
-    }
+
+    const span = document.createElement('span');
+    span.className   = 'district-custom-name';
+    span.textContent = savedName;
+    // only the custom name tag is clickable — emotion tag and district body unaffected
+    span.style.cursor        = 'pointer';
+    span.style.pointerEvents = 'all';
+    span.addEventListener('click', (e) => {
+      e.stopPropagation();
+      localStorage.setItem('currentDistrict', name);
+      window.location.href = `districts/${name}-customize.html`;
+    });
+    label.appendChild(span);
   });
+
+  // update hint text once any district has been started
+  const anyDone = DISTRICTS.some(name => {
+    const hasSessions = JSON.parse(localStorage.getItem(`${name}-sessions`) || '[]').length > 0;
+    return states[name] === 'unlocked' || hasSessions;
+  });
+  const hint = document.getElementById('map-hint');
+  if (hint && anyDone) hint.textContent = 'Forever building your city';
 }
 
 
@@ -677,7 +703,7 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
 
     const questions = DISTRICT_QUESTIONS[d] || [];
 
-    distSessions.forEach(session => {
+    distSessions.filter(s => !s.isTrainThought).forEach(session => {
       Object.entries(session.answers).forEach(([qi, answer]) => {
         const qIdx = parseInt(qi);
         if (qIdx === 5 || !answer) return;
@@ -714,7 +740,7 @@ function extractAllKeywords(topN = 20, timeRange = 'all', activeDistricts = null
 
   completed.forEach(d => {
     const distSessions2 = JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]')
-      .filter(s => s.timestamp >= cutoff);
+      .filter(s => s.timestamp >= cutoff && !s.isTrainThought);
     if (distSessions2.length === 0) return;
 
     const answers = distSessions2.reduce((acc, s) => {
@@ -1168,7 +1194,11 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="customize-panel" id="customize-panel">
       <div class="customize-panel-header" id="customize-panel-header">
         <span class="customize-panel-label">Settings</span>
-        <span class="customize-panel-toggle">∧</span>
+        <span class="customize-panel-toggle">
+          <svg width="12" height="8" viewBox="0 0 12 8" fill="none">
+            <polyline points="1,7 6,1 11,7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
       </div>
       <div class="customize-panel-body">
         <div class="customize-row">

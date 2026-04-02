@@ -103,7 +103,6 @@ const STOPWORDS = new Set([
   'even','very','much','many','some','any','time','way'
 ]);
 
-// emotion words — includes district emotion words so they surface as anchors
 const EMOTION_WORDS = new Set([
   'happy','happiness','sad','sadness','grief','joy','joyful','love','loved',
   'lonely','loneliness','fear','afraid','scared','anxious','anxiety','angry',
@@ -117,7 +116,6 @@ const EMOTION_WORDS = new Set([
   'confused','clarity','certain','uncertain','excited','excitement','nervous',
   'relief','relieved','tired','exhausted','energized','inspired','inspiration',
   'content','restless','vulnerable','strong','weak','brave','courage',
-  // district emotion words
   'reverence','growth','routine','solitude','community'
 ]);
 
@@ -158,7 +156,8 @@ function getWordCategory(w) {
 
 function extractKeywords(filteredSessions, topN = 24) {
   const freq = {}, wordSessions = {};
-  filteredSessions.forEach(session => {
+  // skip train thought sessions — their answers[0] is "Train Thoughts" not a real place
+  filteredSessions.filter(s => !s.isTrainThought).forEach(session => {
     Object.entries(session.answers).forEach(([qi, answer]) => {
       if (parseInt(qi) === 5 || !answer) return;
       const words = answer.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/);
@@ -229,6 +228,64 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 
+// skin display
+
+function updateSkinDisplay() {
+  const skins = [
+    `${CURRENT_DISTRICT}-unlocked`,
+    `${CURRENT_DISTRICT}-skin2`,
+    `${CURRENT_DISTRICT}-skin3`
+  ];
+  const preview = document.getElementById('district-preview-img');
+  if (preview) preview.src = `../assets/districts/${skins[currentSkin]}.png`;
+
+  document.querySelectorAll('.skin-thumb').forEach((thumb, i) => {
+    thumb.classList.toggle('active', i === currentSkin);
+    const img = thumb.querySelector('img');
+    if (img) img.src = `../assets/districts/${skins[i]}.png`;
+  });
+
+  // auto-save on every skin change
+  localStorage.setItem(`${CURRENT_DISTRICT}-skin`, currentSkin);
+}
+
+
+// delete confirmation overlay
+
+function confirmDeleteEntry(ts) {
+  document.getElementById('delete-confirm-overlay')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'delete-confirm-overlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,5,155,0.15);display:flex;align-items:center;justify-content:center;z-index:1000;';
+  overlay.innerHTML = `
+    <div class="delete-confirm-content">
+      <p class="delete-confirm-msg mono">Are you sure you want to delete this entry?</p>
+      <div class="delete-confirm-actions">
+        <button class="overlay-btn mono" id="delete-confirm-no">No, I want to keep it</button>
+        <button class="overlay-btn mono primary" id="delete-confirm-yes">Yes, I want to delete it</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+
+  document.getElementById('delete-confirm-no').addEventListener('click', () => {
+    overlay.remove();
+  });
+
+  document.getElementById('delete-confirm-yes').addEventListener('click', () => {
+    overlay.remove();
+    sessions = sessions.filter(s => s.timestamp !== ts);
+    localStorage.setItem(`${CURRENT_DISTRICT}-sessions`, JSON.stringify(sessions));
+    renderJournalEntries();
+  });
+}
+
+
 // data
 
 function loadData() {
@@ -272,25 +329,6 @@ function renderUI() {
   renderJournalEntries();
 }
 
-function updateSkinDisplay() {
-  const skins = [
-    `${CURRENT_DISTRICT}-unlocked`,
-    `${CURRENT_DISTRICT}-skin2`,
-    `${CURRENT_DISTRICT}-skin3`
-  ];
-  const preview = document.getElementById('district-preview-img');
-  if (preview) preview.src = `../assets/districts/${skins[currentSkin]}.png`;
-
-  document.querySelectorAll('.skin-thumb').forEach((thumb, i) => {
-    thumb.classList.toggle('active', i === currentSkin);
-    const img = thumb.querySelector('img');
-    if (img) img.src = `../assets/districts/${skins[i]}.png`;
-  });
-
-  // auto-save on every skin change — no save button needed
-  localStorage.setItem(`${CURRENT_DISTRICT}-skin`, currentSkin);
-}
-
 
 // journal entries
 
@@ -313,29 +351,28 @@ function renderJournalEntries() {
 
   container.innerHTML = '';
 
+  // use event delegation for delete — avoids issues with inner svg click targets
+  container.addEventListener('click', (e) => {
+    const btn = e.target.closest('.delete-entry-btn');
+    if (!btn) return;
+    e.stopPropagation();
+    const ts = parseInt(btn.dataset.ts);
+    confirmDeleteEntry(ts);
+  });
+
   groups.forEach((groupSessions, place) => {
     const group = document.createElement('div');
     group.className = 'journal-location-group open';
 
-    // collapsible heading
+    // collapsible heading with svg chevron
     const heading = document.createElement('div');
     heading.className = 'journal-location-heading mono';
-    heading.innerHTML = `<span>${place}</span><span class="journal-location-chevron">∨</span>`;
+    heading.innerHTML = `<span>${place}</span><span class="journal-location-chevron"><svg width="12" height="8" viewBox="0 0 12 8" fill="none"><polyline points="1,1 6,7 11,1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
     heading.addEventListener('click', () => group.classList.toggle('open'));
     group.appendChild(heading);
 
     const body = document.createElement('div');
     body.className = 'journal-location-body';
-
-    // // per-location relog button — skip for train thought entries
-    // const isTrainGroup = groupSessions.some(s => s.isTrainThought);
-    // if (!isTrainGroup) {
-    //   const relogBtn = document.createElement('button');
-    //   relogBtn.className = 'journal-relog-location-btn mono';
-    //   relogBtn.textContent = '+ Log this location again';
-    //   relogBtn.addEventListener('click', () => relogExistingLocation(place));
-    //   body.appendChild(relogBtn);
-    // }
 
     groupSessions.forEach(session => {
       const entry     = document.createElement('div');
@@ -357,8 +394,14 @@ function renderJournalEntries() {
           <span class="journal-entry-date mono">${session.date}</span>
           <div class="journal-entry-meta">
             ${photoIndicator}
-            <button class="delete-entry-btn mono" data-ts="${session.timestamp}">delete</button>
-            <span class="journal-entry-chevron">∨</span>
+            <button class="delete-entry-btn" data-ts="${session.timestamp}" title="Delete" aria-label="Delete entry">
+              <svg width="13" height="14" viewBox="0 0 13 14" fill="none">
+                <path d="M1 3.5h11M4.5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M2 3.5l.75 8a.5.5 0 0 0 .5.5h6.5a.5.5 0 0 0 .5-.5L11 3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                <line x1="5" y1="6" x2="5" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+                <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <span class="journal-entry-chevron"><svg width="12" height="8" viewBox="0 0 12 8" fill="none"><polyline points="1,1 6,7 11,1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
           </div>
         </div>
         <div class="journal-entry-body">
@@ -379,16 +422,8 @@ function renderJournalEntries() {
       `;
 
       entry.querySelector('.journal-entry-header').addEventListener('click', (e) => {
-        if (e.target.classList.contains('delete-entry-btn')) return;
+        if (e.target.closest('.delete-entry-btn')) return;
         entry.classList.toggle('open');
-      });
-
-      entry.querySelector('.delete-entry-btn').addEventListener('click', (e) => {
-        e.stopPropagation();
-        const ts = parseInt(e.target.dataset.ts);
-        sessions = sessions.filter(s => s.timestamp !== ts);
-        localStorage.setItem(`${CURRENT_DISTRICT}-sessions`, JSON.stringify(sessions));
-        renderJournalEntries();
       });
 
       body.appendChild(entry);
@@ -402,77 +437,133 @@ function renderJournalEntries() {
 
 // album view
 
+function getAlbumPhotos() {
+  return JSON.parse(localStorage.getItem(`${CURRENT_DISTRICT}-album-photos`) || '[]');
+}
+
+function saveAlbumPhotos(photos) {
+  localStorage.setItem(`${CURRENT_DISTRICT}-album-photos`, JSON.stringify(photos));
+}
+
+// returns [[locationName, latestTimestamp], ...] sorted by most recent session
+function getLocationsSortedByRecency() {
+  const seen = new Map();
+  [...sessions]
+    .filter(s => !s.isTrainThought && s.answers[0])
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .forEach(s => {
+      if (!seen.has(s.answers[0])) seen.set(s.answers[0], s.timestamp);
+    });
+  return [...seen.entries()];
+}
+
+// sort photos: grouped by location recency, unattached photos last
+function sortAlbumPhotos(photos) {
+  const locationOrder = getLocationsSortedByRecency().map(([name]) => name);
+  return [...photos].sort((a, b) => {
+    const ai = a.location ? locationOrder.indexOf(a.location) : Infinity;
+    const bi = b.location ? locationOrder.indexOf(b.location) : Infinity;
+    if (ai !== bi) return ai - bi;
+    // within same location, newest photo first
+    return b.addedAt - a.addedAt;
+  });
+}
+
 function renderAlbumView() {
   const photosContainer = document.getElementById('album-photos');
   const songsContainer  = document.getElementById('album-songs');
   if (!photosContainer || !songsContainer) return;
 
-  if (sessions.length === 0) {
-    photosContainer.innerHTML = `
-      <div class="album-section-label mono">Photos</div>
-      <p class="album-empty mono">No entries yet.</p>
-    `;
-  } else {
-    const rows = sessions.map(s => {
-      const photoData = localStorage.getItem(`${CURRENT_DISTRICT}-photo-${s.timestamp}`);
-      const label     = s.answers[0] || s.date;
-      return `
-        <div class="album-photo-row" data-ts="${s.timestamp}">
-          <div class="album-photo-slot">
-            ${photoData
-              ? `<img src="${photoData}" class="album-photo-thumb" alt="session photo" data-ts="${s.timestamp}">`
-              : `<div class="album-photo-empty mono">no photo</div>`
-            }
-          </div>
-          <div class="album-photo-row-info">
-            <span class="album-photo-label mono">${label}</span>
-            <span class="album-photo-date mono">${s.date}</span>
-          </div>
-          <label class="album-photo-add-btn mono" title="Upload photo for this entry">
-            ${photoData ? '↺' : '+'}
-            <input type="file" accept="image/*" class="album-photo-input hidden" data-ts="${s.timestamp}">
-          </label>
-          ${photoData
-            ? `<button class="album-photo-remove mono" data-ts="${s.timestamp}" title="Remove photo">✕</button>`
-            : ''
-          }
-        </div>
-      `;
-    }).join('');
+  const photos = sortAlbumPhotos(getAlbumPhotos());
 
-    photosContainer.innerHTML = `
-      <div class="album-section-label mono">Photos</div>
-      ${rows}
-    `;
+  // hidden file input — created once, reused across renders
+  let fileInput = document.getElementById('album-file-input');
+  if (!fileInput) {
+    fileInput = document.createElement('input');
+    fileInput.type      = 'file';
+    fileInput.accept    = 'image/*';
+    fileInput.id        = 'album-file-input';
+    fileInput.className = 'hidden';
+    fileInput.multiple  = true;
+    document.body.appendChild(fileInput);
 
-    // wire upload inputs
-    photosContainer.querySelectorAll('.album-photo-input').forEach(input => {
-      input.addEventListener('change', () => {
-        const file = input.files[0];
-        const ts   = input.dataset.ts;
-        if (!file || !ts) return;
+    fileInput.addEventListener('change', () => {
+      const files = Array.from(fileInput.files);
+      if (!files.length) return;
+      // read all files then show preview overlay one by one
+      const srcs = [];
+      let loaded  = 0;
+      files.forEach(file => {
         const reader = new FileReader();
         reader.onload = (e) => {
-          localStorage.setItem(`${CURRENT_DISTRICT}-photo-${ts}`, e.target.result);
-          renderAlbumView();
+          srcs.push(e.target.result);
+          loaded++;
+          if (loaded === files.length) openPhotoPreviewQueue(srcs);
         };
         reader.readAsDataURL(file);
-        input.value = '';
       });
+      fileInput.value = '';
     });
+  }
 
-    // wire remove buttons
-    photosContainer.querySelectorAll('.album-photo-remove').forEach(btn => {
-      btn.addEventListener('click', () => {
-        localStorage.removeItem(`${CURRENT_DISTRICT}-photo-${btn.dataset.ts}`);
+  // build photo grid
+  photosContainer.innerHTML = '';
+
+  const header = document.createElement('div');
+  header.className = 'album-grid-header';
+  header.innerHTML = `
+    <span class="album-section-label mono">Photos</span>
+    <button class="album-add-btn mono" id="album-add-btn">+ Add photos</button>
+  `;
+  photosContainer.appendChild(header);
+  document.getElementById('album-add-btn').addEventListener('click', () => fileInput.click());
+
+  if (photos.length === 0) {
+    const empty = document.createElement('p');
+    empty.className   = 'album-empty mono';
+    empty.textContent = 'No photos yet. Add some above.';
+    photosContainer.appendChild(empty);
+  } else {
+    const grid = document.createElement('div');
+    grid.className = 'album-photo-grid';
+
+    photos.forEach((photo, idx) => {
+      const cell = document.createElement('div');
+      cell.className = 'album-grid-cell';
+
+      const locationBadge = photo.location
+        ? `<span class="album-grid-location mono">${photo.location}</span>`
+        : '';
+
+      cell.innerHTML = `
+        <img src="${photo.src}" class="album-grid-img" alt="photo ${idx + 1}">
+        ${locationBadge}
+        <button class="album-grid-remove" title="Remove photo" aria-label="Remove photo">
+          <svg width="11" height="12" viewBox="0 0 13 14" fill="none">
+            <path d="M1 3.5h11M4.5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M2 3.5l.75 8a.5.5 0 0 0 .5.5h6.5a.5.5 0 0 0 .5-.5L11 3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="5" y1="6" x2="5" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+            <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+          </svg>
+        </button>
+      `;
+
+      // find original index in unsorted array for safe deletion
+      const allPhotos   = getAlbumPhotos();
+      const originalIdx = allPhotos.findIndex(p => p.src === photo.src && p.addedAt === photo.addedAt);
+
+      cell.querySelector('.album-grid-img').addEventListener('click', () => openAlbumLightbox(photo.src));
+      cell.querySelector('.album-grid-remove').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const current = getAlbumPhotos();
+        current.splice(originalIdx, 1);
+        saveAlbumPhotos(current);
         renderAlbumView();
       });
+
+      grid.appendChild(cell);
     });
 
-    // wire lightbox on thumbnails
-    photosContainer.querySelectorAll('.album-photo-thumb').forEach(img => {
-      img.addEventListener('click', () => openAlbumLightbox(img.src));
-    });
+    photosContainer.appendChild(grid);
   }
 
   // songs section
@@ -490,6 +581,82 @@ function renderAlbumView() {
     : `<div class="album-section-label mono">Songs</div>
        <p class="album-empty mono">No songs attached yet.</p>`;
 }
+
+
+// photo preview queue — shown after selecting files, one per image
+
+let previewQueue = [];
+
+function openPhotoPreviewQueue(srcs) {
+  previewQueue = [...srcs];
+  showNextPreview();
+}
+
+function showNextPreview() {
+  if (previewQueue.length === 0) return;
+  const src = previewQueue.shift();
+  openPhotoPreviewOverlay(src, previewQueue.length);
+}
+
+function openPhotoPreviewOverlay(src, remaining) {
+  document.getElementById('photo-preview-overlay')?.remove();
+
+  const locations = getLocationsSortedByRecency();
+
+  const locationOptions = locations.length
+    ? `<option value="">No location</option>` +
+      locations.map(([name]) => `<option value="${name}">${name}</option>`).join('')
+    : `<option value="">No locations logged yet</option>`;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'photo-preview-overlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,5,155,0.15);display:flex;align-items:center;justify-content:center;z-index:1000;';
+  overlay.innerHTML = `
+    <div class="overlay-content photo-preview-content">
+      <div class="photo-preview-img-wrap">
+        <img src="${src}" class="photo-preview-img" alt="preview">
+      </div>
+      <div class="photo-preview-form">
+        <label class="photo-preview-label mono">Attach to a location</label>
+        <select class="photo-preview-select mono" id="photo-preview-select">
+          ${locationOptions}
+        </select>
+        ${remaining > 0 ? `<p class="photo-preview-remaining mono">${remaining} more photo${remaining > 1 ? 's' : ''} after this</p>` : ''}
+        <div class="photo-preview-actions">
+          <button class="overlay-btn mono" id="photo-preview-skip">Skip</button>
+          <button class="overlay-btn mono primary" id="photo-preview-save">Save</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  // clicking outside closes and discards remaining queue
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+      previewQueue = [];
+    }
+  });
+
+  document.getElementById('photo-preview-skip').addEventListener('click', () => {
+    overlay.remove();
+    showNextPreview();
+  });
+
+  document.getElementById('photo-preview-save').addEventListener('click', () => {
+    const location = document.getElementById('photo-preview-select').value || null;
+    const photos   = getAlbumPhotos();
+    photos.push({ src, location, addedAt: Date.now() });
+    saveAlbumPhotos(photos);
+    overlay.remove();
+    renderAlbumView();
+    showNextPreview();
+  });
+}
+
+
+// album lightbox
 
 function openAlbumLightbox(src) {
   let lb = document.getElementById('album-lightbox');
@@ -629,7 +796,7 @@ function setupListeners() {
     });
   });
 
-  // log again button: opens the overlay with new/existing location choice
+  // log again button
   document.getElementById('add-location-btn')?.addEventListener('click', openRelogOverlay);
 
   // view toggles
@@ -707,7 +874,7 @@ function computeAnchorPositions(n) {
 
 function buildAnchors(filtered) {
   if (memoryAnchorMode === 'location') {
-    const places    = [...new Set(filtered.map(s => s.answers[0]).filter(Boolean))];
+    const places    = [...new Set(filtered.filter(s => !s.isTrainThought).map(s => s.answers[0]).filter(Boolean))];
     const list      = places.length ? places : ['here'];
     const positions = computeAnchorPositions(list.length);
     return list.map((place, i) => ({
@@ -725,15 +892,12 @@ function buildAnchors(filtered) {
       });
     });
 
-    // sort by frequency descending, take top 5
     const emotionList = Object.entries(freq)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
       .map(([word]) => word);
 
-    // fall back to the district's own emotion word if nothing found
     const finalList = emotionList.length > 0 ? emotionList : [config.emotionWord];
-
     const positions = computeAnchorPositions(finalList.length);
     return finalList.map((word, i) => ({
       label: word, ax: positions[i].ax, ay: positions[i].ay, px: 0, py: 0
@@ -766,9 +930,7 @@ function initGraph() {
   if (!container) return;
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
 
-  // no click panel needed — tooltips are drawn inline on hover
-
-  // controls bar: only create once, kept alive across rebuilds
+  // controls bar: created once, kept alive across rebuilds
   if (!document.getElementById('memory-controls')) {
     const sliderMax   = TIME_OPTIONS.length - 1;
     const currentIdx  = TIME_OPTIONS.findIndex(o => o.value === memoryTimeRange);
@@ -831,13 +993,10 @@ function initGraph() {
   const maxCount = Math.max(...keywords.map(k => k.count), 1);
   const minCount = Math.min(...keywords.map(k => k.count), 1);
 
-  // build one node per anchor the word appears in — words shared across
-  // locations get duplicated, with lines drawn between the copies
   const nodes = [];
   keywords.forEach(k => {
     const recency = (k.lastSeen - oldest) / timespan;
 
-    // find every anchor this word appears in
     const anchorHits = anchors.map((a, ai) => {
       let hit = false;
       filtered.forEach(session => {
@@ -853,7 +1012,6 @@ function initGraph() {
       return hit ? ai : -1;
     }).filter(ai => ai !== -1);
 
-    // fall back to best single anchor if none matched explicitly
     const anchorIdxList = anchorHits.length > 0
       ? anchorHits
       : [assignAnchorIdx(k.word, anchors, filtered)];
@@ -863,7 +1021,7 @@ function initGraph() {
     });
   });
 
-  // pairs of duplicate nodes (same word, different anchors) get a connecting line
+  // duplicate pairs: same word, different anchors
   const duplicatePairs = [];
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
@@ -873,16 +1031,13 @@ function initGraph() {
     }
   }
 
-  // root pairs: words sharing a prefix stem, across different anchors
+  // root pairs: prefix-related words across different anchors
   const rootPairs = [];
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
-      // skip if already a duplicate pair
       if (nodes[i].word === nodes[j].word) continue;
-      const a = nodes[i].word;
-      const b = nodes[j].word;
-      const minLen  = Math.min(a.length, b.length);
-      if (minLen < 4) continue;
+      const a = nodes[i].word, b = nodes[j].word;
+      if (Math.min(a.length, b.length) < 4) continue;
       const shorter = a.length <= b.length ? a : b;
       const longer  = a.length <= b.length ? b : a;
       if (longer.startsWith(shorter) && nodes[i].anchorIdx !== nodes[j].anchorIdx) {
@@ -891,12 +1046,11 @@ function initGraph() {
     }
   }
 
-  const bg    = getComputedStyle(document.body).getPropertyValue('--color-bg').trim() || '#F7F2F1';
-  const PAD_X = 8, PAD_Y = 4;
+  const bg           = getComputedStyle(document.body).getPropertyValue('--color-bg').trim() || '#F7F2F1';
+  const PAD_X        = 8, PAD_Y = 4;
   const ANCHOR_FONT  = 13;
   const ANCHOR_PAD_X = 10, ANCHOR_PAD_Y = 13;
 
-  let selectedIdx   = null;  // unused visually but kept for hit checks
   let hoveredIdx    = null;
   let dragAnchorIdx = null;
   let dragOffX = 0, dragOffY = 0;
@@ -915,7 +1069,6 @@ function initGraph() {
       sk.textFont('monospace');
 
       anchors.forEach(a => { a.px = a.ax * W; a.py = a.ay * H; });
-
       nodes.forEach(n => {
         const a = anchors[n.anchorIdx] || anchors[0];
         n.x  = a.px + (Math.random() - 0.5) * 120;
@@ -942,7 +1095,7 @@ function initGraph() {
         }
       }
 
-      // repulsion from anchor labels so words don't stack on them
+      // repulsion from anchor labels
       nodes.forEach(n => {
         anchors.forEach(a => {
           const dx = n.x - a.px, dy = n.y - a.py;
@@ -965,27 +1118,23 @@ function initGraph() {
         n.y = Math.max(24, Math.min(H - 24, n.y + n.vy));
       });
 
-      // draw lines between duplicate nodes (same word, different anchors)
+      // duplicate word connecting lines
       if (duplicatePairs.length > 0) {
         sk.strokeWeight(0.8);
-        sk.stroke(DIST_COLOR + '50'); // ~31% opacity
-        duplicatePairs.forEach(([i, j]) => {
-          sk.line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
-        });
+        sk.stroke(DIST_COLOR + '50');
+        duplicatePairs.forEach(([i, j]) => { sk.line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y); });
         sk.noStroke();
       }
 
-      // draw faint lines between root-related word nodes (behind everything)
+      // root-related word connecting lines
       if (rootPairs.length > 0) {
         sk.strokeWeight(0.5);
-        sk.stroke(DIST_COLOR + '28'); // ~16% opacity
-        rootPairs.forEach(([i, j]) => {
-          sk.line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y);
-        });
+        sk.stroke(DIST_COLOR + '28');
+        rootPairs.forEach(([i, j]) => { sk.line(nodes[i].x, nodes[i].y, nodes[j].x, nodes[j].y); });
         sk.noStroke();
       }
 
-      // draw anchor labels
+      // anchor labels
       anchors.forEach(a => {
         sk.textFont('monospace');
         sk.textSize(ANCHOR_FONT);
@@ -1005,7 +1154,7 @@ function initGraph() {
         sk.text(a.label, a.px, a.py);
       });
 
-      // draw word nodes
+      // word nodes
       nodes.forEach((n, idx) => {
         const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
         const fontSize = 10 + t * 8;
@@ -1016,11 +1165,9 @@ function initGraph() {
 
         const opacity = 0.55 + n.recency * 0.45;
         const opHex   = Math.round(opacity * 255).toString(16).padStart(2, '0');
-
         const isHovered = idx === hoveredIdx;
 
         sk.noStroke();
-
         if (n.category === 'location') {
           sk.fill(DIST_COLOR + (isHovered ? 'ff' : opHex));
           sk.textAlign(sk.CENTER, sk.CENTER);
@@ -1034,19 +1181,16 @@ function initGraph() {
         }
       });
 
-      // draw hover tooltip above the hovered node
+      // hover tooltip
       if (hoveredIdx !== null) {
-        const n = nodes[hoveredIdx];
+        const n        = nodes[hoveredIdx];
         const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
         const fontSize = 10 + t * 8;
         const rh       = fontSize + PAD_Y * 2;
 
-        // build tooltip text
         let tipText;
         if (memoryAnchorMode === 'location') {
-          const anchorSet = new Set(
-            nodes.filter(nd => nd.word === n.word).map(nd => nd.anchorIdx)
-          );
+          const anchorSet = new Set(nodes.filter(nd => nd.word === n.word).map(nd => nd.anchorIdx));
           tipText = `Appearance: ${anchorSet.size}`;
         } else {
           tipText = `Appearance: ${n.count}`;
@@ -1069,8 +1213,6 @@ function initGraph() {
       }
     };
 
-    // helpers
-
     function hitAnchor(mx, my, a) {
       sk.textSize(ANCHOR_FONT);
       const lw = sk.textWidth(a.label);
@@ -1081,7 +1223,6 @@ function initGraph() {
     }
 
     sk.mousePressed = () => {
-      // anchors are draggable — check first
       for (let i = 0; i < anchors.length; i++) {
         if (hitAnchor(sk.mouseX, sk.mouseY, anchors[i])) {
           dragAnchorIdx = i;
@@ -1103,7 +1244,6 @@ function initGraph() {
 
     sk.mouseMoved = () => {
       const onAnchor = anchors.some(a => hitAnchor(sk.mouseX, sk.mouseY, a));
-
       hoveredIdx = null;
       nodes.forEach((n, idx) => {
         const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
@@ -1114,7 +1254,6 @@ function initGraph() {
         if (sk.mouseX > n.x - rw / 2 && sk.mouseX < n.x + rw / 2 &&
             sk.mouseY > n.y - rh / 2 && sk.mouseY < n.y + rh / 2) hoveredIdx = idx;
       });
-
       container.style.cursor = (onAnchor || hoveredIdx !== null) ? 'pointer' : 'default';
     };
 

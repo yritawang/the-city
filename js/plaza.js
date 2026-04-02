@@ -12,7 +12,7 @@ const PLAZA_QUESTIONS = [
   { main: "Finally, please give your plaza a name.",                          sub: "" },
 ];
 
-const CARD_COLORS = ['#816993', '#513963', '#412953', '#311943', '#210933'];
+const CARD_COLORS = ['#856993ff', '#6c497eff', '#452953ff', '#381943ff', '#280933ff'];
 
 let currentQuestion = 0;
 let answers = {};

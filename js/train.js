@@ -367,7 +367,13 @@ function openBoardOverlay() {
           <div class="train-log-meta mono">
             <span>${entry.date}</span>
             <span class="train-log-district">${entry.districtLabel}</span>
-            <button class="train-log-delete mono" data-ts="${entry.timestamp}">delete</button>
+            <button class="train-log-delete" data-ts="${entry.timestamp}" title="Delete" aria-label="Delete entry">
+  <svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1 3.5h11M4.5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M2 3.5l.75 8a.5.5 0 0 0 .5.5h6.5a.5.5 0 0 0 .5-.5L11 3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+    <line x1="5" y1="6" x2="5" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+    <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+  </svg>
+</button>
           </div>
           ${entry.prompt ? `<p class="train-log-prompt mono">${entry.prompt}</p>` : ''}
           <p class="train-log-text">${entry.text}</p>
