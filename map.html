@@ -101,43 +101,46 @@
   </div>
 </div>
 
-<div class="overlay" id="guide-overlay">
-  <div class="overlay-content guide-overlay-content">
-
-    <div class="guide-slides" id="guide-slides">
-
-      <div class="guide-slide active" data-index="1">
-        <h3 class="guide-step-title">Each district is related to an emotion.</h3>
-        <p class="guide-step-sub">Hover over them to uncover information. Click on one to begin building your city.</p>
-      </div>
-
-      <div class="guide-slide" data-index="2">
-        <h3 class="guide-step-title">Answer reflective questions about a place.</h3>
-      </div>
-
-      <div class="guide-slide" data-index="3">
-        <h3 class="guide-step-title">Unlock your other districts to complete your map.</h3>
-      </div>
-
-      <div class="guide-slide" data-index="4">
-        <h3 class="guide-step-title">Customize your responses.</h3>
-        <p class="guide-step-sub">Edit your answers, change the district's look.</p>
-      </div>
-
-      <div class="guide-slide" data-index="5">
-        <h3 class="guide-step-title">Share your map with your friends and family.</h3>
-        <p class="guide-step-sub">Let the people in your life see the city you've built.</p>
-      </div>
-
+<!-- spotlight guide -->
+<div id="guide-backdrop" class="guide-backdrop"></div>
+<div id="guide-spotlight" class="guide-spotlight"></div>
+<div id="guide-card" class="guide-card">
+  <div class="guide-card-inner">
+    <div class="guide-card-mascot">
+      <svg class="mascot-svg" viewBox="0 0 64 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Chimney (drawn before roof so roof overlaps its base) -->
+        <rect x="39" y="3" width="10" height="19" fill="#101010"/>
+        <rect x="37" y="3" width="14" height="3" rx="1" fill="#101010"/>
+        <!-- Roof -->
+        <polygon points="1,34 32,6 63,34" fill="#101010"/>
+        <!-- House body -->
+        <rect x="7" y="33" width="50" height="36" fill="#0A059B"/>
+        <!-- Left window / eye -->
+        <rect x="10" y="40" width="15" height="12" rx="2" fill="#F7F2F1"/>
+        <circle cx="17.5" cy="46" r="3.8" fill="#0A059B"/>
+        <circle cx="19.3" cy="44.3" r="1.4" fill="white"/>
+        <!-- Right window / eye -->
+        <rect x="39" y="40" width="15" height="12" rx="2" fill="#F7F2F1"/>
+        <circle cx="46.5" cy="46" r="3.8" fill="#0A059B"/>
+        <circle cx="48.3" cy="44.3" r="1.4" fill="white"/>
+        <!-- Smile / door arch -->
+        <path d="M22 59 Q32 69 42 59" stroke="#F7F2F1" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- Legs -->
+        <rect x="14" y="69" width="11" height="16" rx="4" fill="#101010"/>
+        <rect x="39" y="69" width="11" height="16" rx="4" fill="#101010"/>
+      </svg>
     </div>
-
-    <div class="guide-nav">
-      <button class="overlay-btn mono" id="guide-prev">← Back</button>
-      <span class="guide-progress mono" id="guide-progress"></span>
-      <button class="overlay-btn mono" id="guide-next">Next →</button>
+    <div class="guide-card-body">
+      <h3 class="guide-card-title" id="guide-card-title"></h3>
+      <p class="guide-card-text" id="guide-card-text"></p>
     </div>
-
   </div>
+  <div class="guide-card-nav">
+    <button class="guide-nav-btn mono" id="guide-prev">← Back</button>
+    <span class="guide-nav-progress mono" id="guide-progress">1/5</span>
+    <button class="guide-nav-btn mono" id="guide-next">Next →</button>
+  </div>
+  <button class="guide-skip-btn mono" id="guide-skip">Skip guide ×</button>
 </div>
 
   <div class="overlay" id="share-overlay">

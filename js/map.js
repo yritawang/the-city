@@ -176,35 +176,132 @@ function checkAchievements() {
 }
 
 
-// guide overlay
+// guide spotlight
 
-let guideSlide        = 0;
-const GUIDE_TOTAL_STEPS = 5;
-let guideConceptTimer = null;
+const GUIDE_STEPS = [
+  {
+    target: '.map-districts',
+    title:  'Your City Awaits',
+    text:   'Five districts make up your city — each tied to a different emotion from your past.',
+  },
+  {
+    target: '#garden',
+    title:  'Enter a District',
+    text:   'Hover over any district to reveal its emotion. Click to start answering reflective questions.',
+  },
+  {
+    target: '.header-left',
+    title:  'Name Your City',
+    text:   'Click here to give your emotional hometown a name.',
+  },
+  {
+    target: '#constellation-btn',
+    title:  'Your Memories as Stars',
+    text:   'Complete districts to unlock the constellation — your memories become points of light.',
+  },
+  {
+    target: '#share-btn',
+    title:  'Share Your City',
+    text:   "When you're ready, share your city with friends and family.",
+  },
+];
+
+let guideStep = 0;
 
 function openGuide() {
-  guideSlide = 1;
-  document.getElementById('guide-overlay').classList.add('active');
-  showGuideSlide(1);
+  guideStep = 0;
+  document.getElementById('guide-backdrop').classList.add('active');
+  showGuideStep(0);
 }
 
 function closeGuide() {
-  if (guideConceptTimer) { clearTimeout(guideConceptTimer); guideConceptTimer = null; }
-  document.getElementById('guide-overlay').classList.remove('active');
+  document.getElementById('guide-backdrop').classList.remove('active');
+  document.getElementById('guide-spotlight').classList.remove('active');
+  document.getElementById('guide-card').classList.remove('active');
 }
 
-function showGuideSlide(index) {
-  document.querySelectorAll('.guide-slide').forEach(s => s.classList.remove('active'));
-  const target = document.querySelector(`.guide-slide[data-index="${index}"]`);
-  if (target) target.classList.add('active');
+function showGuideStep(index) {
+  const step = GUIDE_STEPS[index];
+  if (!step) { closeGuide(); return; }
 
-  const prev     = document.getElementById('guide-prev');
-  const next     = document.getElementById('guide-next');
-  const progress = document.getElementById('guide-progress');
+  const el        = document.querySelector(step.target);
+  const spotlight = document.getElementById('guide-spotlight');
+  const card      = document.getElementById('guide-card');
+  const prev      = document.getElementById('guide-prev');
+  const next      = document.getElementById('guide-next');
+  const progress  = document.getElementById('guide-progress');
 
-  if (prev)     prev.style.visibility = index === 1 ? 'hidden' : 'visible';
-  if (next)     next.textContent      = index === GUIDE_TOTAL_STEPS ? 'Begin ↗' : 'Next →';
-  if (progress) progress.textContent  = `${index}/${GUIDE_TOTAL_STEPS}`;
+  document.getElementById('guide-card-title').textContent = step.title;
+  document.getElementById('guide-card-text').textContent  = step.text;
+  progress.textContent = `${index + 1}/${GUIDE_STEPS.length}`;
+  prev.classList.toggle('hidden-btn', index === 0);
+  next.textContent = index === GUIDE_STEPS.length - 1 ? 'Finish ↗' : 'Next →';
+
+  const pad = 10;
+  if (el) {
+    const rect = el.getBoundingClientRect();
+    spotlight.style.top    = `${rect.top    - pad}px`;
+    spotlight.style.left   = `${rect.left   - pad}px`;
+    spotlight.style.width  = `${rect.width  + pad * 2}px`;
+    spotlight.style.height = `${rect.height + pad * 2}px`;
+    spotlight.classList.add('active');
+    positionGuideCard(card, rect, pad);
+  } else {
+    spotlight.classList.remove('active');
+    card.style.top       = '50%';
+    card.style.left      = '50%';
+    card.style.transform = 'translate(-50%, -50%)';
+    card.classList.remove('arrow-left', 'arrow-right', 'arrow-top', 'arrow-bottom');
+  }
+  card.classList.add('active');
+}
+
+function positionGuideCard(card, spotRect, pad) {
+  const vpW   = window.innerWidth;
+  const vpH   = window.innerHeight;
+  const cardW = 280;
+  const cardH = card.offsetHeight || 220;
+  const gap   = 20;
+  const mgn   = 16;
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+  card.classList.remove('arrow-left', 'arrow-right', 'arrow-top', 'arrow-bottom');
+  card.style.transform = '';
+
+  const sr = {
+    top:    spotRect.top    - pad,
+    left:   spotRect.left   - pad,
+    right:  spotRect.right  + pad,
+    bottom: spotRect.bottom + pad,
+    w:      spotRect.width  + pad * 2,
+    h:      spotRect.height + pad * 2,
+  };
+
+  // Prefer right
+  if (sr.right + gap + cardW + mgn < vpW) {
+    card.style.left = `${sr.right + gap}px`;
+    card.style.top  = `${clamp(sr.top + sr.h / 2 - cardH / 2, mgn, vpH - cardH - mgn)}px`;
+    card.classList.add('arrow-left');
+    return;
+  }
+  // Try left
+  if (sr.left - gap - cardW - mgn > 0) {
+    card.style.left = `${sr.left - gap - cardW}px`;
+    card.style.top  = `${clamp(sr.top + sr.h / 2 - cardH / 2, mgn, vpH - cardH - mgn)}px`;
+    card.classList.add('arrow-right');
+    return;
+  }
+  // Try below
+  if (sr.bottom + gap + cardH + mgn < vpH) {
+    card.style.top  = `${sr.bottom + gap}px`;
+    card.style.left = `${clamp(sr.left + sr.w / 2 - cardW / 2, mgn, vpW - cardW - mgn)}px`;
+    card.classList.add('arrow-top');
+    return;
+  }
+  // Above
+  card.style.top  = `${Math.max(mgn, sr.top - gap - cardH)}px`;
+  card.style.left = `${clamp(sr.left + sr.w / 2 - cardW / 2, mgn, vpW - cardW - mgn)}px`;
+  card.classList.add('arrow-bottom');
 }
 
 
@@ -1239,17 +1336,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
   document.querySelector('.header-left')?.addEventListener('click', openCityNameOverlay);
 
-  // guide overlay
+  // guide spotlight
   document.getElementById('guide-btn')?.addEventListener('click', openGuide);
-  document.getElementById('guide-overlay')?.addEventListener('click', e => {
-    if (e.target.id === 'guide-overlay') closeGuide();
-  });
+  document.getElementById('guide-backdrop')?.addEventListener('click', closeGuide);
+  document.getElementById('guide-skip')?.addEventListener('click', closeGuide);
   document.getElementById('guide-prev')?.addEventListener('click', () => {
-    if (guideSlide > 1) { guideSlide--; showGuideSlide(guideSlide); }
+    if (guideStep > 0) { guideStep--; showGuideStep(guideStep); }
   });
   document.getElementById('guide-next')?.addEventListener('click', () => {
-    if (guideSlide < GUIDE_TOTAL_STEPS) { guideSlide++; showGuideSlide(guideSlide); }
+    if (guideStep < GUIDE_STEPS.length - 1) { guideStep++; showGuideStep(guideStep); }
     else closeGuide();
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && document.getElementById('guide-card').classList.contains('active')) closeGuide();
   });
 
   // share overlay

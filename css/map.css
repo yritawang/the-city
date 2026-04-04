@@ -663,14 +663,8 @@ body.dark-mode .toggle-thumb { background-color: #101010; }
 }
 
 
-/* ─── guide overlay ─── */
+/* ─── about overlay reused styles ─── */
 
-.guide-overlay-content {
-  max-width: 520px;
-  width: 92%;
-  padding: 2.5rem;
-  text-align: left;
-}
 .guide-concept-title {
   font-family: var(--font-meta);
   font-size: 1.5rem;
@@ -686,49 +680,172 @@ body.dark-mode .toggle-thumb { background-color: #101010; }
   opacity: 0.8;
 }
 .guide-concept-text + .guide-concept-text { margin-top: 1rem; }
-.guide-step-sub {
+
+
+/* ─── spotlight guide ─── */
+
+.guide-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+.guide-backdrop.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.guide-spotlight {
+  position: fixed;
+  z-index: 901;
+  border-radius: 4px;
+  box-shadow: 0 0 0 9999px rgba(10, 5, 155, 0.68);
+  outline: 1px solid rgba(255, 255, 255, 0.22);
+  outline-offset: 3px;
+  opacity: 0;
+  pointer-events: none;
+  transition: top    0.42s cubic-bezier(0.4, 0, 0.2, 1),
+              left   0.42s cubic-bezier(0.4, 0, 0.2, 1),
+              width  0.42s cubic-bezier(0.4, 0, 0.2, 1),
+              height 0.42s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease;
+}
+.guide-spotlight.active { opacity: 1; }
+
+/* Mascot card */
+.guide-card {
+  position: fixed;
+  z-index: 902;
+  background-color: var(--color-bg);
+  border: 2px solid var(--blue);
+  width: 280px;
+  padding: 1.4rem 1.5rem 1.1rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: top    0.42s cubic-bezier(0.4, 0, 0.2, 1),
+              left   0.42s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease;
+}
+.guide-card.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Arrow pointer toward highlighted element */
+.guide-card::before {
+  content: '';
+  position: absolute;
+  border: 9px solid transparent;
+  pointer-events: none;
+}
+.guide-card.arrow-left::before {
+  left: -18px; top: 50%;
+  transform: translateY(-50%);
+  border-right-color: var(--blue);
+}
+.guide-card.arrow-right::before {
+  right: -18px; top: 50%;
+  transform: translateY(-50%);
+  border-left-color: var(--blue);
+}
+.guide-card.arrow-top::before {
+  top: -18px; left: 50%;
+  transform: translateX(-50%);
+  border-bottom-color: var(--blue);
+}
+.guide-card.arrow-bottom::before {
+  bottom: -18px; left: 50%;
+  transform: translateX(-50%);
+  border-top-color: var(--blue);
+}
+
+.guide-card-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.1rem;
+}
+
+.guide-card-mascot { flex-shrink: 0; width: 52px; }
+
+.mascot-svg {
+  width: 52px;
+  height: auto;
+  display: block;
+  animation: mascotBob 3s ease-in-out infinite;
+}
+@keyframes mascotBob {
+  0%, 100% { transform: translateY(0); }
+  45%, 55% { transform: translateY(-6px); }
+}
+
+.guide-card-body { flex: 1; min-width: 0; }
+
+.guide-card-title {
+  font-family: var(--font-meta);
+  font-size: 1.05rem;
+  font-weight: normal;
+  color: var(--blue);
+  margin-bottom: 0.45rem;
+  line-height: 1.4;
+}
+.guide-card-text {
   font-family: var(--font-whois);
-  font-size: 0.9rem;
-  line-height: 1.6;
+  font-size: 0.78rem;
+  line-height: 1.75;
   color: var(--blue);
   opacity: 0.8;
 }
-.guide-districts-list { display: flex; flex-direction: column; gap: 1.2rem; }
-.guide-district-item  { display: flex; align-items: flex-start; gap: 1rem; }
-.guide-district-dot   { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 0.35rem; }
-.guide-district-name  { font-family: var(--font-whois); font-size: 0.88rem; color: var(--blue); margin-bottom: 0.2rem; }
-.guide-district-desc  { font-family: var(--font-meta); font-size: 0.88rem; color: var(--color-black); opacity: 0.7; line-height: 1.6; }
-.guide-district-dot.garden-dot      { background-color: var(--color-garden); }
-.guide-district-dot.cornerstore-dot { background-color: var(--color-cornerstore); }
-.guide-district-dot.shrine-dot      { background-color: var(--color-shrine); }
-.guide-district-dot.tower-dot       { background-color: var(--color-tower); }
-.guide-district-dot.plaza-dot       { background-color: var(--color-plaza); }
 
-.guide-slides {
-  position: relative;
-  overflow: hidden;
-  min-height: 120px;
+.guide-card-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid var(--blue-mid);
 }
-.guide-slide {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  opacity: 0;
-  transform: translateX(30px);
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  pointer-events: none;
+.guide-nav-btn {
+  font-family: var(--font-whois);
+  font-size: 0.8rem;
+  background: none;
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  cursor: pointer;
+  padding: 0.35rem 0.8rem;
+  transition: background-color 0.2s ease;
+  letter-spacing: 0.02em;
+}
+.guide-nav-btn:hover { background-color: var(--blue-faint); }
+.guide-nav-btn.hidden-btn { opacity: 0; pointer-events: none; }
+
+.guide-nav-progress {
+  font-family: var(--font-whois);
+  font-size: 0.75rem;
+  color: var(--blue);
+  opacity: 0.55;
+}
+
+.guide-skip-btn {
   display: block;
+  width: 100%;
+  text-align: center;
+  margin-top: 0.65rem;
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  background: none;
+  border: none;
+  color: var(--blue);
+  opacity: 0.4;
+  cursor: pointer;
+  padding: 0.2rem 0;
+  transition: opacity 0.2s ease;
+  letter-spacing: 0.03em;
 }
-.guide-slide.active {
-  position: relative;
-  opacity: 1;
-  transform: translateX(0);
-  pointer-events: all;
-}
-@keyframes guideFadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
+.guide-skip-btn:hover { opacity: 0.75; }
+
+body.dark-mode .guide-card { background-color: #101010; }
 
 
 /* ─── share overlay ─── */
