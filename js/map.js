@@ -455,6 +455,14 @@ function exitVisitMode() {
   visitConstellationActive = false;
   document.body.classList.remove('visit-mode');
   if (constellationActive) closeConstellation();
+
+// strip all visitor district name spans before re-rendering own names
+// without this, visitor names linger in the dom until a page refresh
+  DISTRICTS.forEach(d => {
+   const el = document.getElementById(d);
+  if (!el) return;
+   el.querySelectorAll('.district-custom-name').forEach(s => s.remove());
+  });
   initCityName();
   initDistricts();
   displayDistrictNames();
@@ -1179,6 +1187,12 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="toggle-track" id="randomize-track"><div class="toggle-thumb"></div></div>
           </div>
         </div>
+        <div class="customize-row">
+      <span class="customize-row-label">Sound</span>
+      <div class="customize-toggle-cell" id="audio-mute-toggle">
+        <div class="toggle-track" id="audio-mute-track"><div class="toggle-thumb"></div></div>
+      </div>
+    </div>
       </div>
     </div>
   `;
@@ -1188,6 +1202,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('customize-panel-header').addEventListener('click', closeCustomizePanel);
   document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
   document.getElementById('randomize-toggle').addEventListener('click', toggleRandomize);
+  document.getElementById('audio-mute-toggle')?.addEventListener('click', toggleAudioMute);
 
   initDarkMode();
   initRandomize();

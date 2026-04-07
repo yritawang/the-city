@@ -1493,24 +1493,41 @@ function openRelogOverlay() {
     el.id = 'relog-overlay';
     el.className = 'relog-overlay';
     el.innerHTML = `
-      <div class="relog-overlay-content">
-        <p class="relog-overlay-title">Start a new log entry.</p>
-        <div class="relog-locations" id="relog-locations"></div>
-        <div class="relog-overlay-actions">
-          <button class="overlay-btn mono" id="relog-new-btn">A new place</button>
-          <button class="overlay-btn mono primary" id="relog-cancel-btn">Cancel</button>
+  <div class="relog-overlay-content">
+    <p class="relog-overlay-title">Start a new log entry.</p>
+    <button class="relog-new-btn mono" id="relog-new-btn">A new place →</button>
+    <div class="relog-existing-row">
+      <div style="flex:1">
+        <p class="relog-existing-label mono">Return to an existing location</p>
+        <div style="display:flex;gap:0.75rem">
+          <select class="relog-existing-select mono" id="relog-existing-select">
+            <option value="">Select a location...</option>
+            ${locations.map(l => `<option value="${l}">${l}</option>`).join('')}
+          </select>
+          <button class="relog-go-btn mono" id="relog-go-btn">Go →</button>
         </div>
       </div>
-    `;
+    </div>
+    <button class="relog-cancel-btn mono" id="relog-cancel-btn">cancel</button>
+  </div>
+`;
     document.body.appendChild(el);
 
-    document.getElementById('relog-new-btn').addEventListener('click', () => {
+document.getElementById('relog-new-btn').addEventListener('click', () => {
       closeRelogOverlay();
       window.location.href = `${CURRENT_DISTRICT}.html`;
     });
+
+    document.getElementById('relog-go-btn').addEventListener('click', () => {
+      const selected = document.getElementById('relog-existing-select').value;
+      if (!selected) return;
+      closeRelogOverlay();
+      localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
+      localStorage.setItem(`${CURRENT_DISTRICT}-relog-prefill`, selected);
+      window.location.href = `${CURRENT_DISTRICT}.html`;
+    });
+
     document.getElementById('relog-cancel-btn').addEventListener('click', closeRelogOverlay);
-    el.addEventListener('click', e => { if (e.target.id === 'relog-overlay') closeRelogOverlay(); });
-  }
 
   const locContainer = document.getElementById('relog-locations');
   if (locContainer) {
@@ -1531,4 +1548,5 @@ function openRelogOverlay() {
 
 function closeRelogOverlay() {
   document.getElementById('relog-overlay')?.classList.remove('active');
+}
 }

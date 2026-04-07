@@ -19,8 +19,6 @@
     if (img) img.src = birdSrc(variant);
   }
 
-  // click jump: only fires when bird is showing bird-1 (idle state)
-  // jumps up with bird-3, comes back down with bird-1
   function attachBirdClick(mascot) {
     const birdEl = mascot.querySelector('.guide-bird');
     if (!birdEl) return;
@@ -29,7 +27,6 @@
       e.stopPropagation();
       const img = birdEl.querySelector('.guide-bird-img');
       if (!img) return;
-      // only do the jump on bird-1 (idle), not bird-2 (spotlight active)
       if (!img.src.includes('bird-1')) return;
       if (jumping) return;
       jumping = true;
@@ -43,7 +40,6 @@
     });
   }
 
-  // bird on left, bubble on right
   function makeBirdMascot(id) {
     const el = document.createElement('div');
     el.className = 'guide-mascot';
@@ -98,13 +94,12 @@
 
   // ─── mascot positioning ──────────────────────────────────────────────────────
 
-  const UNIT_W = 490;  // bird (150px) + gap + bubble
-  const UNIT_H = 200;  // bird is now 150px tall
+  const UNIT_W = 490;
+  const UNIT_H = 200;
   const MARGIN = 20;
 
   function positionMascot(mascot, rect) {
     if (!rect) {
-      // use CSS centering — no pixel math needed
       mascot.classList.add('centered');
       mascot.style.left = '';
       mascot.style.top  = '';
@@ -149,7 +144,6 @@
   }
 
   // ─── render message with paragraph breaks ────────────────────────────────────
-  // splits on \n\n and wraps each part in a span for spacing
 
   function renderMessage(el, message) {
     el.innerHTML = message.split('\n\n')
@@ -182,6 +176,10 @@
       previewUnlocked: true,
     },
     {
+      selector: '#constellation-btn',
+      message:  "Once you've started building your city, you can view your entries like a constellation here!",
+    },
+    {
       selector: '#share-btn',
       message:  "When you're ready, share your city with someone you love. That's what it's for.",
     },
@@ -196,17 +194,15 @@
     "Each district holds an emotion tied to a real place.",
     "Click a district to begin or revisit it.",
     "Edit your answers and change the look from inside each district.",
+    "View your entries as a memory constellation on the right.",
     "Share your city with friends using the Share button.",
   ];
 
   let mapStep        = 0;
   let mapScrim       = null;
   let mapMascot      = null;
-    let mapActive      = false;
+  let mapActive      = false;
   let mapSummaryMode = false;
-
-  // ─── build dom (called once) ─────────────────────────────────────────────────
-  // scrim click listener added here and NEVER re-added anywhere else
 
   function buildMapDOM() {
     mapScrim = document.createElement('div');
@@ -219,7 +215,6 @@
     document.getElementById('guide-mascot-next').addEventListener('click', mapNextStep);
     document.getElementById('guide-mascot-prev').addEventListener('click', mapPrevStep);
 
-    // single persistent handler — reads flags at click time
     mapScrim.addEventListener('click', function (e) {
       if (!mapActive) return;
       if (mapMascot.contains(e.target)) return;
@@ -235,8 +230,6 @@
       if (!inHole) closeMapGuide();
     });
   }
-
-  // ─── stepped tour ────────────────────────────────────────────────────────────
 
   function showMapStep(index) {
     mapStep        = index;
@@ -284,8 +277,6 @@
     if (mapStep > 0) showMapStep(mapStep - 1);
   }
 
-  // ─── summary box ─────────────────────────────────────────────────────────────
-
   function openMapSummary() {
     if (mapActive) return;
     mapActive      = true;
@@ -301,19 +292,29 @@
     const textEl   = document.getElementById('guide-mascot-text');
     const progress = document.getElementById('guide-mascot-progress');
 
-    nav.innerHTML = `<button class="guide-bubble-btn primary" id="guide-summary-close">Got it</button>`;
+    nav.innerHTML = `
+      <button class="guide-bubble-btn" id="guide-summary-redo">Take me through it again</button>
+      <button class="guide-bubble-btn primary" id="guide-summary-close">Got it!</button>
+    `;
+
     document.getElementById('guide-summary-close').addEventListener('click', closeMapGuide);
+    document.getElementById('guide-summary-redo').addEventListener('click', function() {
+      closeMapGuide();
+      localStorage.removeItem('guide-seen');
+      setTimeout(openMapGuide, 150);
+    });
 
     bubble.classList.add('tail-none');
-    textEl.innerHTML     = MAP_SUMMARY.map(s => `<span class="guide-summary-line">${s}</span>`).join('');
+    textEl.innerHTML = `
+      <span class="guide-msg-para">Hey, welcome back! Here's a quick reminder of how things work:</span>
+      ${MAP_SUMMARY.map(s => `<span class="guide-summary-line">· ${s}</span>`).join('')}
+    `;
     progress.textContent = '';
     setBirdVariant(mapMascot, 1);
     positionMascot(mapMascot, null);
 
     mapMascot.classList.add('visible');
   }
-
-  // ─── open / close ────────────────────────────────────────────────────────────
 
   function openMapGuide() {
     if (mapActive) return;
@@ -335,8 +336,7 @@
     mapScrim.style.background = '';
     mapScrim.style.clipPath   = '';
     mapMascot.classList.remove('visible');
-  
-    // restore stepped nav in case summary replaced it
+
     const nav = mapMascot.querySelector('.guide-bubble-nav');
     nav.innerHTML = `
       <button class="guide-bubble-btn" id="guide-mascot-prev">← Back</button>
@@ -355,15 +355,12 @@
   window.openSpotlightGuide  = openMapGuide;
   window.closeSpotlightGuide = closeMapGuide;
 
-  // ─── init ────────────────────────────────────────────────────────────────────
-
   if (isMapPage) {
     window.addEventListener('DOMContentLoaded', function () {
       const guideBtn = document.getElementById('guide-btn');
       if (guideBtn) {
         guideBtn.addEventListener('click', function (e) {
           e.stopPropagation();
-          // toggle: if open close it, otherwise open stepped or summary
           if (mapActive) { closeMapGuide(); return; }
           if (localStorage.getItem('guide-seen')) openMapSummary();
           else openMapGuide();
@@ -400,7 +397,6 @@
     scrim.style.clipPath   = '';
     document.body.appendChild(scrim);
 
-    // defer active so the opening click doesn't immediately hit it
     requestAnimationFrame(() => scrim.classList.add('active'));
 
     const el = document.createElement('div');
@@ -418,7 +414,6 @@
       </div>
     `;
     document.body.appendChild(el);
-
     el.classList.add('centered');
 
     function dismiss() {
@@ -432,7 +427,6 @@
 
     document.getElementById('constellation-bubble-close').addEventListener('click', dismiss);
 
-    // defer scrim listener so it doesn't catch the opening click
     requestAnimationFrame(() => {
       scrim.addEventListener('click', function (e) {
         if (!el.contains(e.target)) dismiss();
@@ -484,11 +478,8 @@
   let custStep        = 0;
   let custScrim       = null;
   let custMascot      = null;
-    let custActive      = false;
+  let custActive      = false;
   let custSummaryMode = false;
-
-  // ─── build dom (called once) ─────────────────────────────────────────────────
-  // scrim click listener added here and NEVER re-added anywhere else
 
   function buildCustDOM() {
     custScrim = document.createElement('div');
@@ -501,7 +492,6 @@
     document.getElementById('cust-guide-mascot-next').addEventListener('click', custNextStep);
     document.getElementById('cust-guide-mascot-prev').addEventListener('click', custPrevStep);
 
-    // single persistent handler
     custScrim.addEventListener('click', function (e) {
       if (!custActive) return;
       if (custMascot.contains(e.target)) return;
@@ -601,7 +591,7 @@
     custScrim.style.background = '';
     custScrim.style.clipPath   = '';
     custMascot.classList.remove('visible');
-  
+
     const nav = custMascot.querySelector('.guide-bubble-nav');
     nav.innerHTML = `
       <button class="guide-bubble-btn" id="cust-guide-mascot-prev">← Back</button>
@@ -613,7 +603,6 @@
     document.getElementById('cust-guide-mascot-bubble').classList.remove('tail-none');
   }
 
-  // inject guide button into customize header — no need to edit any HTML files
   function injectCustGuideBtn() {
     const shareBtn = document.getElementById('share-btn');
     if (!shareBtn || document.getElementById('customize-guide-btn')) return;
@@ -626,7 +615,6 @@
 
     btn.addEventListener('click', function (e) {
       e.stopPropagation();
-      // toggle: if open close it, otherwise open stepped or summary
       if (custActive) { closeCustGuide(); return; }
       if (localStorage.getItem('customize-guide-seen')) openCustSummary();
       else openCustGuide();

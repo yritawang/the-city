@@ -3,8 +3,6 @@
 
 
 // safe fallback for unlockAchievement
-// achievements.js is included on district pages so this should always be defined,
-// but keep the stub as a safety net
 if (typeof unlockAchievement === 'undefined') {
   window.unlockAchievement = (id) => {
     const pending = JSON.parse(localStorage.getItem('pending-achievements') || '[]');
@@ -15,7 +13,7 @@ if (typeof unlockAchievement === 'undefined') {
   };
 }
 
-// fade to white then navigate — mirrors the entering overlay feel
+// fade to white then navigate — fallback if cursor-loader isn't present
 function fadeToPage(url) {
   const overlay = document.createElement('div');
   overlay.style.cssText = [
@@ -35,41 +33,73 @@ function fadeToPage(url) {
 
 document.addEventListener('DOMContentLoaded', () => {
 
-  // entering overlay: fade out after 3s, then reveal district content
-  // fires the began-x achievement exactly when the overlay finishes clearing
   const enteringOverlay = document.getElementById('entering-overlay');
   const districtContent = document.getElementById('district-content');
+  const textEl          = enteringOverlay?.querySelector('.entering-text');
+  const fullText        = textEl ? textEl.textContent.trim() : '';
 
-  setTimeout(() => {
-    enteringOverlay.classList.add('fade-out');
-    setTimeout(() => {
-      enteringOverlay.style.display = 'none';
-      districtContent.classList.remove('hidden');
+  if (textEl) textEl.textContent = '';
 
-      // unlock the began achievement now that the user can see the intro screen
-      // each district js sets window.DISTRICT_BEGAN_ID before this runs
-      if (window.DISTRICT_BEGAN_ID) {
-        unlockAchievement(window.DISTRICT_BEGAN_ID);
-      }
-    }, 800);
-  }, 3000);
+  // type forward character by character
+  let i = 0;
+  const typeInterval = setInterval(() => {
+    if (!textEl) return;
+    textEl.textContent = fullText.slice(0, i + 1);
+    i++;
+    if (i >= fullText.length) {
+      clearInterval(typeInterval);
+
+      // pause at full text, then erase backwards
+      setTimeout(() => {
+        let j = fullText.length;
+        const eraseInterval = setInterval(() => {
+          textEl.textContent = fullText.slice(0, j - 1);
+          j--;
+          if (j <= 0) {
+            clearInterval(eraseInterval);
+
+            // trigger column fill in district color (defined in cursor-loader.js)
+            if (typeof window.triggerDistrictEnterColumns === 'function') {
+              window.triggerDistrictEnterColumns();
+            }
+
+            // fade out the entering overlay and show district content
+            enteringOverlay.classList.add('fade-out');
+            setTimeout(() => {
+              enteringOverlay.style.display = 'none';
+              districtContent.classList.remove('hidden');
+
+              if (window.DISTRICT_BEGAN_ID) {
+                unlockAchievement(window.DISTRICT_BEGAN_ID);
+              }
+            }, 800);
+          }
+        }, 35);   // erase speed ms per character
+      }, 500);    // pause before erasing
+    }
+  }, 55);         // type speed ms per character
 
 
-  // back buttons: save answer then go to map
+  // back buttons: save answer then navigate with transition
   document.querySelectorAll('.back-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       if (typeof saveCurrentAnswer === 'function') saveCurrentAnswer();
-      window.location.href = '../map.html';
+      if (typeof window.pageTransitionOut === 'function') {
+        window.pageTransitionOut('../map.html', 500);
+      } else {
+        window.location.href = '../map.html';
+      }
     });
   });
 
 
-  // done button on completion screen: fade to white then go to customize
-  // each district js sets window.CURRENT_DISTRICT before showCompletionScreen
+  // done button on completion screen: fade to customize page
   document.addEventListener('click', (e) => {
     if (e.target.id !== 'done-btn') return;
     const district = window.CURRENT_DISTRICT;
-    fadeToPage(district ? `${district}-customize.html` : '../map.html');
+    fadeToPage(district
+      ? `${district}-customize.html`
+      : '../map.html');
   });
 
 

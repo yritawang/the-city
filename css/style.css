@@ -38,17 +38,21 @@
   --color-card-3: #BE9A80;
   --color-card-4: #AC8467;
   --color-card-5: #9F6F4C;
-  
+  --blue: #0A059B;
+
   --font-hershey: 'Hershey', sans-serif;
   --font-meta: 'Meta', serif;
   --font-whois: 'Whois', monospace;
 }
 
-/* base */
-* {
+
+/* ─── base ─── */
+
+*, html, html * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  cursor: none !important;
 }
 
 body {
@@ -59,7 +63,9 @@ body {
   overflow-x: hidden;
 }
 
-/* type */
+
+/* ─── type ─── */
+
 h1, h2, h3 {
   font-family: var(--font-meta);
   font-weight: normal;
@@ -73,7 +79,9 @@ p, .serif {
   font-family: var(--font-whois);
 }
 
-/* utility */
+
+/* ─── utility ─── */
+
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -84,16 +92,242 @@ p, .serif {
   display: none;
 }
 
-/* transition */
 .fade-in {
   animation: fadeIn 0.8s ease-in;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+
+/* ─── custom cursor ─── */
+
+#custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin-left: -12px;
+  margin-top: -12px;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  z-index: 99999;
+  transition: opacity 0.2s ease;
+  will-change: transform;
+}
+
+.cursor-cross {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.cursor-h,
+.cursor-v {
+  position: absolute;
+  background-color: var(--blue, #0A059B);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.cursor-h {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  transform: translateY(-50%);
+}
+
+.cursor-v {
+  left: 50%;
+  top: 0;
+  height: 100%;
+  width: 1.5px;
+  transform: translateX(-50%);
+}
+
+.cursor-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background-color: var(--blue, #0A059B);
+  border-radius: 0;
+  transform: translate(-50%, -50%) scale(1);
+  transition: transform 0.15s ease, background-color 0.15s ease, border-radius 0.15s ease;
+}
+
+#custom-cursor.pointer .cursor-cross {
+  transform: scale(1.2);
+  opacity: 0.7;
+}
+
+#custom-cursor.pointer .cursor-dot {
+  transform: translate(-50%, -50%) scale(2.5);
+}
+
+#custom-cursor.pressed .cursor-cross {
+  transform: scale(0.45);
+  opacity: 0.45;
+}
+
+#custom-cursor.pressed .cursor-dot {
+  transform: translate(-50%, -50%) scale(2.8);
+  border-radius: 50%;
+}
+
+body.dark-mode #custom-cursor .cursor-h,
+body.dark-mode #custom-cursor .cursor-v,
+body.dark-mode #custom-cursor .cursor-dot {
+  background-color: var(--blue, #EDDB97);
+}
+
+
+/* ─── page exit overlay — district column fill only ─── */
+
+#page-out-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.08s ease;
+  overflow: hidden;
+  display: none;
+}
+
+#page-out-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+  display: block;
+}
+
+.page-out-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.page-out-cell {
+  transform: scaleY(1);
+  transform-origin: top center;
+  opacity: 0;
+}
+
+/* column fill — district enter */
+#page-out-overlay.mode-columns.active .page-out-cell {
+  animation: cellFillDown 0.35s ease forwards;
+  animation-delay: var(--cell-delay, 0s);
+}
+
+/* column unfill — district leave */
+#page-out-overlay.mode-columns-out .page-out-cell {
+  opacity: 0.9;
+  transform: scaleY(1);
+}
+#page-out-overlay.mode-columns-out.active .page-out-cell {
+  animation: cellUnfill 0.35s ease forwards;
+  animation-delay: var(--cell-delay, 0s);
+}
+
+@keyframes cellFillDown {
+  0%   { transform: scaleY(0); opacity: 0.9; }
+  100% { transform: scaleY(1); opacity: 0.9; }
+}
+
+@keyframes cellUnfill {
+  0%   { transform: scaleY(1); opacity: 0.9; }
+  100% { transform: scaleY(0); opacity: 0; }
+}
+
+
+/* ─── district entering overlay text ─── */
+
+.entering-overlay .entering-text {
+  font-size: 3rem;
+  color: var(--color-black);
+}
+
+
+/* ─── map page fade-in ─── */
+
+body.page-entering .map-header,
+body.page-entering .map-districts,
+body.page-entering .achievements-toggle-btn,
+body.page-entering .constellation-btn,
+body.page-entering .customize-toggle-btn,
+body.page-entering .rita-notes-btn {
+  animation: fadeIn 0.7s ease forwards;
+  opacity: 0;
+}
+
+
+/* ─── customize page: float in on enter, float out on leave ─── */
+
+body.page-entering .customize-left {
+  animation: floatInFromLeft 0.45s ease forwards;
+  animation-delay: 0.05s;
+  opacity: 0;
+}
+
+body.page-entering .customize-right {
+  animation: floatInFromRight 0.45s ease forwards;
+  animation-delay: 0.15s;
+  opacity: 0;
+}
+
+body.page-leaving .customize-left {
+  animation: floatOutToLeft 0.38s ease forwards;
+}
+
+body.page-leaving .customize-right {
+  animation: floatOutToRight 0.38s ease forwards;
+}
+
+@keyframes floatInFromLeft {
+  from { opacity: 0; transform: translateX(-18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes floatInFromRight {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes floatOutToLeft {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-18px); }
+}
+
+@keyframes floatOutToRight {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(18px); }
+}
+
+
+/* ─── district question page stagger-in ─── */
+
+body.page-entering .district-header {
+  animation: fadeSlideDown 0.45s ease forwards;
+  animation-delay: 0.05s;
+  opacity: 0;
+}
+
+body.page-entering .question-area {
+  animation: fadeSlideUp 0.5s ease forwards;
+  animation-delay: 0.18s;
+  opacity: 0;
+}
+
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

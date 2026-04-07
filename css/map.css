@@ -1461,3 +1461,171 @@ body.visit-mode .constellation-btn      { display: none; }
 }
 
 .train-keep-btn:hover { background-color: var(--blue-faint); }
+
+/* ─── radio on map ─── */
+
+#radio-on-map {
+  pointer-events: all;
+}
+
+.radio-map-label {
+  font-size: 0.62rem;
+  color: var(--blue);
+  letter-spacing: 0.06em;
+  opacity: 0.6;
+  white-space: nowrap;
+}
+
+#radio-on-map:hover .radio-map-label {
+  opacity: 0.95;
+}
+
+
+/* ─── radio overlay ─── */
+
+.radio-overlay-content {
+  max-width: 420px;
+  width: 94%;
+  padding: 2rem 2.5rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.radio-overlay-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.radio-overlay-header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.radio-overlay-title {
+  font-family: var(--font-meta);
+  font-size: 1.6rem;
+  font-weight: normal;
+  color: var(--blue);
+  margin: 0 0 0.15rem;
+  line-height: 1.1;
+}
+
+.radio-overlay-subtitle {
+  font-family: var(--font-whois);
+  font-size: 0.73rem;
+  color: var(--blue);
+  opacity: 0.45;
+  margin: 0;
+  letter-spacing: 0.03em;
+}
+
+.radio-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--blue);
+  opacity: 0.35;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: opacity 0.2s;
+  margin-top: 0.1rem;
+}
+
+.radio-close-btn:hover {
+  opacity: 0.8;
+}
+
+.radio-tracks {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.radio-track-btn {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border: none;
+  border-bottom: 1px solid var(--blue);
+  background: none;
+  color: var(--blue);
+  font-family: var(--font-whois);
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-align: left;
+  opacity: 0.5;
+  letter-spacing: 0.02em;
+  transition: opacity 0.15s, background-color 0.15s;
+  width: 100%;
+}
+
+.radio-track-btn:first-child {
+  border-top: 1px solid var(--blue);
+}
+
+.radio-track-btn:hover {
+  opacity: 0.85;
+  background-color: var(--blue-faint);
+}
+
+.radio-track-btn.active {
+  opacity: 1;
+}
+
+.radio-track-num {
+  font-size: 0.68rem;
+  opacity: 0.5;
+  flex-shrink: 0;
+  min-width: 1.5rem;
+}
+
+.radio-track-btn.active .radio-track-num {
+  opacity: 0.8;
+}
+
+.radio-track-label {
+  flex: 1;
+}
+
+/* playing indicator dot — only visible on active track */
+.radio-track-indicator {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--blue);
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.radio-track-btn.active .radio-track-indicator {
+  opacity: 1;
+  animation: radioPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes radioPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.7); }
+}
+
+.radio-playpause-btn {
+  background: none;
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  font-size: 0.7rem;
+  padding: 0.3rem 0.6rem;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.2s, background-color 0.2s;
+  letter-spacing: 0;
+}
+
+.radio-playpause-btn:hover {
+  opacity: 1;
+  background-color: var(--blue-faint);
+}

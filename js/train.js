@@ -4,8 +4,8 @@
 
 
 const TRAIN_SPOTS = [
-  { x: 40,  y: 300, zIndex: 5 },
-  { x: 850, y: 260, zIndex: 5 },
+  { x: 40,  y: 300, zIndex: 2 },
+  { x: 850, y: 260, zIndex: 2 },
 ];
 
 const TRAIN_PROMPTS = [
@@ -41,6 +41,7 @@ const TRAIN_DISTRICT_LABELS = {
 
 let trainVisible   = false;
 let trainPos       = null;
+let boardPos       = null;
 let lastTrainSpot  = -1;
 let selectedPrompt = null;
 
@@ -120,7 +121,7 @@ function placeTrain() {
     left: ${pos.x}px;
     top: ${pos.y}px;
     width: 200px;
-    z-index: ${pos.zIndex ?? 50};
+    z-index: ${pos.zIndex ?? 2};
     opacity: 0;
     cursor: pointer;
     transition: opacity 0.4s ease, transform 0.25s ease;
@@ -166,7 +167,8 @@ function renderTrainBoard() {
   const md = document.querySelector('.map-districts');
   if (!md) return;
 
-  const pos = pickSpot();
+   boardPos = pickSpot();
+   const pos = boardPos;
   const el  = document.createElement('div');
   el.id = 'train-board';
   el.style.cssText = `
@@ -174,7 +176,7 @@ function renderTrainBoard() {
     right: calc(100% - ${pos.x}px);
     top: ${pos.y}px;
     width: 40px;
-    z-index: ${pos.zIndex ?? 50};
+    z-index: ${pos.zIndex ?? 2};
     opacity: 0;
     cursor: pointer;
     display: flex;
@@ -511,14 +513,20 @@ function openBoardOverlay() {
 
   document.getElementById('board-close-btn').addEventListener('click', closeBoardOverlay);
 
-  document.getElementById('board-recall-btn').addEventListener('click', () => {
-    closeBoardOverlay();
-    document.getElementById('train-board')?.remove();
-    trainVisible = false;
+document.getElementById('board-recall-btn').addEventListener('click', () => {
+   closeBoardOverlay();
+   document.getElementById('train-board')?.remove();
+  trainVisible = false;
+   // reuse the board's spot so the train appears in the same location
+    if (boardPos) {
+      trainPos = { ...boardPos };
+      setTimeout(placeTrain, 400);
+   } else {
     setTimeout(showTrain, 400);
-  });
-}
+  }
+ });
 
 function closeBoardOverlay() {
   document.getElementById('board-overlay')?.remove();
+}
 }

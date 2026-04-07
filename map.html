@@ -62,7 +62,7 @@
   </div>
 
   <div class="constellation-btn locked" id="constellation-btn">
-    <span class="constellation-btn-label">See as Memories</span>
+    <span class="constellation-btn-label">See Memories</span>
   </div>
   <div class="constellation-time-btn hidden" id="constellation-time-btn">
   <span class="constellation-btn-label" id="constellation-time-btn-label">All time</span>
@@ -163,9 +163,14 @@
   <script src="js/map.js"></script>
   <script src="js/train.js"></script>
   <script src="js/guide.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/cursor-loader.js"></script>
 <script>
   document.querySelector('.header-left').addEventListener('click', openCityNameOverlay);
   initAchievementsPanel();
+  initAudio();
+  attachGlobalSfx();
+  
 </script>
 </body>
 </html>
