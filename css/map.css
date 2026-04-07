@@ -4,6 +4,24 @@
   --blue: #0A059B;
   --blue-faint: rgba(10, 5, 155, 0.08);
   --blue-mid: rgba(10, 5, 155, 0.2);
+
+select {
+  border: 1px solid var(--blue);
+  background-color: var(--color-bg);
+  color: var(--blue);
+  font-family: var(--font-whois);
+  font-size: 0.88rem;
+  padding: 0.6rem 0.85rem;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+  transition: background-color 0.2s;
+  letter-spacing: 0.02em;
+}
+
+select:hover  { background-color: var(--blue-faint); }
+select:focus  { border-width: 2px; }
 }
 
 html, body {
@@ -150,7 +168,7 @@ html, body {
 
 #cornerstore .district-label { top: -20px; }
 #garden .district-label { top: -10px; }
-#plaza  .district-label { top: 40px; }
+#plaza  .district-label { top: 20px; }
 
 .district-emotion-tag {
   font-size: 0.88rem;
@@ -1249,6 +1267,8 @@ body.visit-mode .constellation-btn      { display: none; }
   flex-direction: column;
   gap: 1.5rem;
   max-height: 85vh;
+  background-color: var(--color-bg);
+  border: 2px solid var(--blue);
 }
 .board-overlay-header { border-bottom: 1px solid var(--blue); padding-bottom: 1.25rem; }
 .board-overlay-title {
@@ -1391,3 +1411,53 @@ body.visit-mode .constellation-btn      { display: none; }
   flex-shrink: 0;
 }
 .train-log-delete:hover { opacity: 1; }
+
+.train-log-send-row {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+
+.train-log-district-select {
+  flex: 1;
+  border: 1px solid var(--blue);
+  background: none;
+  color: var(--blue);
+  font-family: var(--font-whois);
+  font-size: 0.78rem;
+  padding: 0.45rem 0.65rem;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  outline: none;
+}
+
+
+.train-log-send-btn {
+  background: none;
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  font-family: var(--font-whois);
+  font-size: 0.78rem;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.2s;
+}
+.train-log-send-btn:hover { background-color: var(--blue-faint); }
+
+.train-keep-btn {
+  background: none;
+  border: 1px solid var(--blue);
+  color: var(--blue);
+  font-family: var(--font-whois);
+  font-size: 0.82rem;
+  padding: 0.6rem 1.25rem;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background-color 0.2s;
+}
+
+.train-keep-btn:hover { background-color: var(--blue-faint); }

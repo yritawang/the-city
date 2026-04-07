@@ -1,0 +1,246 @@
+/* guide-additions.css */
+
+/* ─── scrim ─────────────────────────────────────────────────────────────────── */
+
+.guide-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  pointer-events: none;
+  transition: clip-path 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.3s ease;
+}
+
+.guide-scrim.active {
+  pointer-events: all;
+}
+
+
+/* ─── mascot wrapper ─────────────────────────────────────────────────────────── */
+/* row: bird on the left, bubble on the right, tail on bubble points left */
+
+.guide-mascot {
+  position: fixed;
+  z-index: 1300;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;   /* bird and bubble share bottom edge */
+  gap: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+
+.guide-mascot.visible {
+  opacity: 1;
+}
+
+.guide-mascot.centered {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+}
+
+.guide-mascot.centered.visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) !important;
+}
+
+
+/* ─── bird ───────────────────────────────────────────────────────────────────── */
+
+.guide-bird {
+  flex-shrink: 0;
+  width: 150px;
+  height: 150px;
+  cursor: pointer;
+  pointer-events: all;   /* override parent's pointer-events: none */
+  /* no animation by default */
+}
+
+/* hover: bob up and down */
+.guide-bird:hover {
+  animation: birdBob 1.8s ease-in-out infinite;
+}
+
+/* jump overrides hover */
+.guide-bird.bird-jumping {
+  animation: birdJump 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+}
+
+.guide-bird-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+@keyframes birdBob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-7px); }
+}
+
+@keyframes birdJump {
+  0%   { transform: translateY(0); }
+  35%  { transform: translateY(-24px); }
+  65%  { transform: translateY(-16px); }
+  100% { transform: translateY(0); }
+}
+
+
+/* ─── speech bubble ──────────────────────────────────────────────────────────── */
+/* tail always points left toward the bird */
+
+.guide-bubble {
+  background: var(--color-bg, #fffdf5);
+  border: 1.5px solid var(--blue, #0A059B);
+  padding: 1.2rem 1.5rem;
+  max-width: 340px;
+  min-width: 280px;
+  min-height: 120px;
+  position: relative;
+  pointer-events: all;
+}
+
+/* left-pointing tail */
+.guide-bubble::before {
+  content: '';
+  position: absolute;
+  left: -11px;
+  bottom: 22px;
+  width: 0;
+  height: 0;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-right: 11px solid var(--blue, #0A059B);
+}
+
+.guide-bubble::after {
+  content: '';
+  position: absolute;
+  left: -9px;
+  bottom: 23px;
+  width: 0;
+  height: 0;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 10px solid var(--color-bg, #fffdf5);
+}
+
+/* no tail for centered / summary bubbles */
+.guide-bubble.tail-none::before,
+.guide-bubble.tail-none::after {
+  display: none;
+}
+
+
+/* ─── bubble text ────────────────────────────────────────────────────────────── */
+
+.guide-bubble-text {
+  font-family: var(--font-whois);
+  font-size: 0.95rem;
+  color: var(--blue, #0A059B);
+  line-height: 1.8;
+  letter-spacing: 0.01em;
+  margin: 0 0 1rem;
+}
+
+
+/* ─── bubble nav ─────────────────────────────────────────────────────────────── */
+
+.guide-bubble-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.guide-bubble-progress {
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue, #0A059B);
+  opacity: 0.45;
+  letter-spacing: 0.04em;
+}
+
+.guide-bubble-btn {
+  background: none;
+  border: 1px solid var(--blue, #0A059B);
+  color: var(--blue, #0A059B);
+  font-family: var(--font-whois);
+  font-size: 0.8rem;
+  padding: 0.38rem 0.9rem;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background-color 0.15s, color 0.15s;
+  pointer-events: all;
+}
+
+.guide-bubble-btn:hover {
+  background-color: var(--blue, #0A059B);
+  color: var(--color-bg, #fffdf5);
+}
+
+.guide-bubble-btn.primary {
+  background-color: var(--blue, #0A059B);
+  color: var(--color-bg, #fffdf5);
+}
+
+.guide-bubble-btn.primary:hover { opacity: 0.8; }
+
+
+/* ─── skip button ────────────────────────────────────────────────────────────── */
+
+.guide-skip {
+  position: fixed;
+  top: 1.1rem;
+  right: 1.5rem;
+  z-index: 1400;
+  background: none;
+  border: none;
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--color-bg, #fffdf5);
+  opacity: 0.6;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: opacity 0.2s;
+  display: none;
+}
+
+.guide-skip.visible { display: block; }
+.guide-skip:hover   { opacity: 1; }
+
+
+/* ─── summary lines ──────────────────────────────────────────────────────────── */
+
+.guide-summary-line {
+  display: block;
+  font-family: var(--font-whois);
+  font-size: 0.9rem;
+  color: var(--blue, #0A059B);
+  line-height: 1.9;
+  letter-spacing: 0.01em;
+  padding-left: 0.9rem;
+  position: relative;
+}
+
+.guide-summary-line::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  opacity: 0.4;
+}
+
+
+/* ─── constellation mascot ───────────────────────────────────────────────────── */
+
+.constellation-mascot { z-index: 1400; }
+
+/* paragraph breaks inside guide bubble messages */
+.guide-msg-para {
+  display: block;
+}
+.guide-msg-para + .guide-msg-para {
+  margin-top: 0.75rem;
+}

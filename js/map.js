@@ -133,7 +133,7 @@ function displayDistrictNames() {
     const span = document.createElement('span');
     span.className   = 'district-custom-name';
     span.textContent = savedName;
-    // only the custom name tag is clickable — emotion tag and district body unaffected
+    // only the custom name tag is clickable
     span.style.cursor        = 'pointer';
     span.style.pointerEvents = 'all';
     span.addEventListener('click', (e) => {
@@ -163,48 +163,14 @@ function checkAchievements() {
     const ans = localStorage.getItem(`${d}-answers`);
     if (ans && Object.keys(JSON.parse(ans)).length > 0) unlockAchievement(`began-${d}`, true);
     if (states[d] === 'unlocked') unlockAchievement(`completed-${d}`, true);
-    // check return/revisit achievements from session count
     const sessionCount = JSON.parse(localStorage.getItem(`${d}-sessions`) || '[]').length;
     if (sessionCount >= 2) unlockAchievement(`returned-${d}`, true);
-    // check named-district
-    const savedName = localStorage.getItem(`${d}-name`);
+    const savedName    = localStorage.getItem(`${d}-name`);
     const defaultNames = [`The ${d.charAt(0).toUpperCase() + d.slice(1)}`];
     if (savedName && !defaultNames.includes(savedName)) unlockAchievement(`named-${d}`, true);
   });
   if (DISTRICTS.every(d => states[d] === 'unlocked')) unlockAchievement('completed-all', true);
   if (cityName && cityName !== 'Somewhere I Belong' && cityName !== 'Name Your City') unlockAchievement('named-city', true);
-}
-
-
-// guide overlay
-
-let guideSlide        = 0;
-const GUIDE_TOTAL_STEPS = 5;
-let guideConceptTimer = null;
-
-function openGuide() {
-  guideSlide = 1;
-  document.getElementById('guide-overlay').classList.add('active');
-  showGuideSlide(1);
-}
-
-function closeGuide() {
-  if (guideConceptTimer) { clearTimeout(guideConceptTimer); guideConceptTimer = null; }
-  document.getElementById('guide-overlay').classList.remove('active');
-}
-
-function showGuideSlide(index) {
-  document.querySelectorAll('.guide-slide').forEach(s => s.classList.remove('active'));
-  const target = document.querySelector(`.guide-slide[data-index="${index}"]`);
-  if (target) target.classList.add('active');
-
-  const prev     = document.getElementById('guide-prev');
-  const next     = document.getElementById('guide-next');
-  const progress = document.getElementById('guide-progress');
-
-  if (prev)     prev.style.visibility = index === 1 ? 'hidden' : 'visible';
-  if (next)     next.textContent      = index === GUIDE_TOTAL_STEPS ? 'Begin ↗' : 'Next →';
-  if (progress) progress.textContent  = `${index}/${GUIDE_TOTAL_STEPS}`;
 }
 
 
@@ -1238,19 +1204,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target.id === 'city-name-overlay') closeCityNameOverlay();
   });
   document.querySelector('.header-left')?.addEventListener('click', openCityNameOverlay);
-
-  // guide overlay
-  document.getElementById('guide-btn')?.addEventListener('click', openGuide);
-  document.getElementById('guide-overlay')?.addEventListener('click', e => {
-    if (e.target.id === 'guide-overlay') closeGuide();
-  });
-  document.getElementById('guide-prev')?.addEventListener('click', () => {
-    if (guideSlide > 1) { guideSlide--; showGuideSlide(guideSlide); }
-  });
-  document.getElementById('guide-next')?.addEventListener('click', () => {
-    if (guideSlide < GUIDE_TOTAL_STEPS) { guideSlide++; showGuideSlide(guideSlide); }
-    else closeGuide();
-  });
 
   // share overlay
   document.getElementById('share-btn')?.addEventListener('click', openShare);

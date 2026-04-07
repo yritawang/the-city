@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/map.css">
   <link rel="stylesheet" href="css/achievements.css">
+  <link rel="stylesheet" href="css/guide-additions.css">
   <link rel="stylesheet" href="css/notes.css">
 </head>
 <body>
@@ -101,44 +102,7 @@
   </div>
 </div>
 
-<div class="overlay" id="guide-overlay">
-  <div class="overlay-content guide-overlay-content">
 
-    <div class="guide-slides" id="guide-slides">
-
-      <div class="guide-slide active" data-index="1">
-        <h3 class="guide-step-title">Each district is related to an emotion.</h3>
-        <p class="guide-step-sub">Hover over them to uncover information. Click on one to begin building your city.</p>
-      </div>
-
-      <div class="guide-slide" data-index="2">
-        <h3 class="guide-step-title">Answer reflective questions about a place.</h3>
-      </div>
-
-      <div class="guide-slide" data-index="3">
-        <h3 class="guide-step-title">Unlock your other districts to complete your map.</h3>
-      </div>
-
-      <div class="guide-slide" data-index="4">
-        <h3 class="guide-step-title">Customize your responses.</h3>
-        <p class="guide-step-sub">Edit your answers, change the district's look.</p>
-      </div>
-
-      <div class="guide-slide" data-index="5">
-        <h3 class="guide-step-title">Share your map with your friends and family.</h3>
-        <p class="guide-step-sub">Let the people in your life see the city you've built.</p>
-      </div>
-
-    </div>
-
-    <div class="guide-nav">
-      <button class="overlay-btn mono" id="guide-prev">← Back</button>
-      <span class="guide-progress mono" id="guide-progress"></span>
-      <button class="overlay-btn mono" id="guide-next">Next →</button>
-    </div>
-
-  </div>
-</div>
 
   <div class="overlay" id="share-overlay">
     <div class="overlay-content share-overlay-content">
@@ -198,6 +162,7 @@
   <script src="js/achievements.js"></script>
   <script src="js/map.js"></script>
   <script src="js/train.js"></script>
+  <script src="js/guide.js"></script>
 <script>
   document.querySelector('.header-left').addEventListener('click', openCityNameOverlay);
   initAchievementsPanel();

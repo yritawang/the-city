@@ -4,8 +4,8 @@
 
 
 const TRAIN_SPOTS = [
-  { x: 40,   y: 300, zIndex: 5 }, 
-  { x: 850, y: 260, zIndex: 5 },  
+  { x: 40,  y: 300, zIndex: 5 },
+  { x: 850, y: 260, zIndex: 5 },
 ];
 
 const TRAIN_PROMPTS = [
@@ -48,6 +48,11 @@ let selectedPrompt = null;
 // init
 
 function initTrain() {
+  // prevent double-init if called more than once
+  if (document.getElementById('train-on-map') || document.getElementById('train-board')) return;
+  if (window._trainInitDone) return;
+  window._trainInitDone = true;
+
   const states  = JSON.parse(localStorage.getItem('districtStates') || '{}');
   const anyDone = TRAIN_DISTRICT_KEYS.some(d =>
     states[d] === 'unlocked' ||
@@ -55,9 +60,10 @@ function initTrain() {
   );
   if (!anyDone) return;
 
-  // pick randomly between train and board on every visit
-  const hasLog    = JSON.parse(localStorage.getItem('train-log') || '[]').length > 0;
-  const showBoard = hasLog && Math.random() < 0.75;
+  const log        = JSON.parse(localStorage.getItem('train-log') || '[]');
+  const hasStation = log.some(e => !e.district);
+  const hasAnyLog  = log.length > 0;
+  const showBoard  = hasStation ? Math.random() < 0.75 : hasAnyLog && Math.random() < 0.4;
   setTimeout(showBoard ? renderTrainBoard : showTrain, 1800);
 
   if (localStorage.getItem('trainDebug')) showDebugSpots();
@@ -107,8 +113,7 @@ function placeTrain() {
   if (!md || document.getElementById('train-on-map')) return;
 
   const pos = trainPos;
-
-  const el = document.createElement('div');
+  const el  = document.createElement('div');
   el.id = 'train-on-map';
   el.style.cssText = `
     position: absolute;
@@ -152,8 +157,9 @@ function restoreTrainHit() {
 // train board on map
 
 function renderTrainBoard() {
-  const trainLog = JSON.parse(localStorage.getItem('train-log') || '[]');
-  if (trainLog.length === 0) return;
+  const log        = JSON.parse(localStorage.getItem('train-log') || '[]');
+  const hasStation = log.some(e => !e.district);
+  if (!hasStation) return;
 
   document.getElementById('train-board')?.remove();
 
@@ -161,12 +167,11 @@ function renderTrainBoard() {
   if (!md) return;
 
   const pos = pickSpot();
-
-  const el = document.createElement('div');
+  const el  = document.createElement('div');
   el.id = 'train-board';
   el.style.cssText = `
     position: absolute;
-    left: ${pos.x}px;
+    right: calc(100% - ${pos.x}px);
     top: ${pos.y}px;
     width: 40px;
     z-index: ${pos.zIndex ?? 50};
@@ -250,12 +255,13 @@ function openTrainOverlay() {
         <div class="train-send-row">
           <span class="train-section-label mono">Send to</span>
           <select class="train-district-select mono" id="train-district-select">
-            <option value="">Choose a district…</option>
+            <option value="">Pin it to the train board</option>
             ${districtOptions}
           </select>
         </div>
         <div class="train-send-actions">
           <button class="train-cancel-btn mono" id="train-cancel-btn">Cancel</button>
+          <button class="train-keep-btn mono" id="train-keep-btn">Keep at station</button>
           <button class="train-send-btn mono" id="train-send-btn">Send →</button>
         </div>
       </div>
@@ -285,7 +291,19 @@ function openTrainOverlay() {
     restoreTrainHit();
   });
 
-  document.getElementById('train-send-btn').addEventListener('click', sendTrainThought);
+  document.getElementById('train-keep-btn').addEventListener('click', () => {
+    saveTrainThought(null);
+  });
+
+  document.getElementById('train-send-btn').addEventListener('click', () => {
+    const district = document.getElementById('train-district-select')?.value || null;
+    if (!district) {
+      const sel = document.getElementById('train-district-select');
+      if (sel) sel.style.borderColor = '#c0392b';
+      return;
+    }
+    saveTrainThought(district);
+  });
 
   document.getElementById('train-board-link').addEventListener('click', () => {
     closeTrainOverlay();
@@ -299,45 +317,66 @@ function closeTrainOverlay() {
 }
 
 
-// send thought
+// save a train thought — district null means keep at station
 
-function sendTrainThought() {
-  const text     = document.getElementById('train-textarea')?.value?.trim();
-  const district = document.getElementById('train-district-select')?.value;
+function saveTrainThought(district) {
+  const text = document.getElementById('train-textarea')?.value?.trim();
 
   if (!text) {
     const ta = document.getElementById('train-textarea');
     if (ta) { ta.style.borderColor = '#c0392b'; ta.focus(); }
     return;
   }
-  if (!district) {
-    const sel = document.getElementById('train-district-select');
-    if (sel) { sel.style.borderColor = '#c0392b'; sel.focus(); }
-    return;
-  }
 
-  const sessions  = JSON.parse(localStorage.getItem(`${district}-sessions`) || '[]');
   const now       = new Date();
   const dateStr   = now.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
   const timestamp = now.getTime();
 
-  sessions.push({
-    date: dateStr, timestamp, isTrainThought: true,
-    answers: { 0: 'Train Thoughts', 1: selectedPrompt || '', 2: text },
-  });
-  localStorage.setItem(`${district}-sessions`, JSON.stringify(sessions));
+  if (district) {
+    // save to district journal
+    const sessions = JSON.parse(localStorage.getItem(`${district}-sessions`) || '[]');
+    sessions.push({
+      date: dateStr, timestamp, isTrainThought: true,
+      answers: { 0: 'Train Thoughts', 1: selectedPrompt || '', 2: text },
+    });
+    localStorage.setItem(`${district}-sessions`, JSON.stringify(sessions));
+  }
 
+  // always save to train-log; district null = kept at station
   const log = JSON.parse(localStorage.getItem('train-log') || '[]');
-  log.push({ district, districtLabel: TRAIN_DISTRICT_LABELS[district], prompt: selectedPrompt || '', text, date: dateStr, timestamp });
+  log.push({
+    district,
+    districtLabel: district ? TRAIN_DISTRICT_LABELS[district] : null,
+    prompt:        selectedPrompt || '',
+    text,
+    date:          dateStr,
+    timestamp,
+  });
   localStorage.setItem('train-log', JSON.stringify(log));
+
+  // train achievements
+  if (typeof unlockAchievement === 'function') {
+    unlockAchievement('sent-first-train');
+    if (log.length >= 5)  unlockAchievement('sent-5-trains');
+    if (log.length >= 10) unlockAchievement('sent-10-trains');
+    const sentDistricts = new Set(log.filter(e => e.district).map(e => e.district));
+    if (TRAIN_DISTRICT_KEYS.every(d => sentDistricts.has(d))) unlockAchievement('train-to-all');
+  }
 
   closeTrainOverlay();
   removeTrain();
-  if (!document.getElementById('train-board')) renderTrainBoard();
 
+  // show board if there are station entries, otherwise just hide train
+  const hasStation = log.some(e => !e.district);
+  if (hasStation && !document.getElementById('train-board')) renderTrainBoard();
+
+  showToast(district ? `Sent to ${TRAIN_DISTRICT_LABELS[district]}` : 'Kept at the station');
+}
+
+function showToast(text) {
   const toast = document.createElement('div');
-  toast.className = 'train-toast mono';
-  toast.textContent = `Sent to ${TRAIN_DISTRICT_LABELS[district]}`;
+  toast.className   = 'train-toast mono';
+  toast.textContent = text;
   document.body.appendChild(toast);
   requestAnimationFrame(() => toast.classList.add('visible'));
   setTimeout(() => {
@@ -347,44 +386,49 @@ function sendTrainThought() {
 }
 
 
-// board overlay
+// board overlay — shows only station entries
 
 function openBoardOverlay() {
   document.getElementById('board-overlay')?.remove();
 
-  const overlay = document.createElement('div');
-  overlay.id        = 'board-overlay';
-  overlay.className = 'overlay board-overlay';
-  document.body.appendChild(overlay);
+  const states          = JSON.parse(localStorage.getItem('districtStates') || '{}');
+  const districtOptions = TRAIN_DISTRICT_KEYS
+    .filter(d => states[d] === 'unlocked' ||
+                 JSON.parse(localStorage.getItem(d + '-sessions') || '[]').length > 0)
+    .map(d => `<option value="${d}">${TRAIN_DISTRICT_LABELS[d]}</option>`)
+    .join('');
 
-  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeBoardOverlay(); });
+  const log        = JSON.parse(localStorage.getItem('train-log') || '[]');
+  const stationLog = log.filter(e => !e.district);
 
-  const log = JSON.parse(localStorage.getItem('train-log') || '[]');
-  const logHTML = log.length === 0
-    ? '<p class="train-board-empty mono">No train thoughts yet.</p>'
-    : [...log].reverse().map(entry => `
-        <div class="train-log-entry">
+  const logHTML = stationLog.length === 0
+    ? '<p class="train-board-empty mono">No thoughts at the station yet.</p>'
+    : [...stationLog].reverse().map(entry => `
+        <div class="train-log-entry" data-ts="${entry.timestamp}">
           <div class="train-log-meta mono">
             <span>${entry.date}</span>
-            <span class="train-log-district">${entry.districtLabel}</span>
-            <button class="train-log-delete" data-ts="${entry.timestamp}" title="Delete" aria-label="Delete entry">
-  <svg width="13" height="14" viewBox="0 0 13 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1 3.5h11M4.5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M2 3.5l.75 8a.5.5 0 0 0 .5.5h6.5a.5.5 0 0 0 .5-.5L11 3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-    <line x1="5" y1="6" x2="5" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-    <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-  </svg>
-</button>
+            <button class="train-log-delete mono" data-ts="${entry.timestamp}">delete</button>
           </div>
           ${entry.prompt ? `<p class="train-log-prompt mono">${entry.prompt}</p>` : ''}
           <p class="train-log-text">${entry.text}</p>
+          <div class="train-log-send-row">
+            <select class="train-log-district-select mono" data-ts="${entry.timestamp}">
+              <option value="">Send to a district...</option>
+              ${districtOptions}
+            </select>
+            <button class="train-log-send-btn mono" data-ts="${entry.timestamp}">Send →</button>
+          </div>
         </div>
       `).join('');
 
+  const overlay = document.createElement('div');
+  overlay.id = 'board-overlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,5,155,0.15);display:flex;align-items:center;justify-content:center;z-index:1000;';
   overlay.innerHTML = `
-    <div class="overlay-content board-overlay-content">
+    <div class="board-overlay-content">
       <div class="board-overlay-header">
         <h2 class="board-overlay-title">Train Board</h2>
-        <p class="board-overlay-subtitle mono">Fleeting thoughts you sent before they passed.</p>
+        <p class="board-overlay-subtitle mono">Thoughts kept at the station.</p>
       </div>
       <div class="board-log" id="board-log">${logHTML}</div>
       <div class="board-overlay-footer">
@@ -393,9 +437,13 @@ function openBoardOverlay() {
       </div>
     </div>
   `;
+  document.body.appendChild(overlay);
 
-  overlay.classList.add('active');
+  setTimeout(() => {
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeBoardOverlay(); });
+  }, 0);
 
+  // delete buttons
   overlay.querySelectorAll('.train-log-delete').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -403,6 +451,60 @@ function openBoardOverlay() {
       const updated = JSON.parse(localStorage.getItem('train-log') || '[]')
         .filter(entry => entry.timestamp !== ts);
       localStorage.setItem('train-log', JSON.stringify(updated));
+
+      // remove board from map if no station entries remain
+      if (!updated.some(e => !e.district)) {
+        document.getElementById('train-board')?.remove();
+      }
+      openBoardOverlay();
+    });
+  });
+
+  // send to district from board
+  overlay.querySelectorAll('.train-log-send-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const ts       = parseInt(btn.dataset.ts);
+      const select   = overlay.querySelector(`.train-log-district-select[data-ts="${ts}"]`);
+      const district = select?.value;
+
+      if (!district) {
+        if (select) select.style.borderColor = '#c0392b';
+        return;
+      }
+
+      const log   = JSON.parse(localStorage.getItem('train-log') || '[]');
+      const entry = log.find(e => e.timestamp === ts);
+      if (!entry) return;
+
+      // save to district journal
+      const sessions = JSON.parse(localStorage.getItem(`${district}-sessions`) || '[]');
+      sessions.push({
+        date: entry.date, timestamp: entry.timestamp, isTrainThought: true,
+        answers: { 0: 'Train Thoughts', 1: entry.prompt || '', 2: entry.text },
+      });
+      localStorage.setItem(`${district}-sessions`, JSON.stringify(sessions));
+
+      // mark entry as sent in log
+      entry.district      = district;
+      entry.districtLabel = TRAIN_DISTRICT_LABELS[district];
+      localStorage.setItem('train-log', JSON.stringify(log));
+
+      // train achievements on board send too
+      if (typeof unlockAchievement === 'function') {
+        unlockAchievement('sent-first-train');
+        if (log.length >= 5)  unlockAchievement('sent-5-trains');
+        if (log.length >= 10) unlockAchievement('sent-10-trains');
+        const sentDistricts = new Set(log.filter(e => e.district).map(e => e.district));
+        if (TRAIN_DISTRICT_KEYS.every(d => sentDistricts.has(d))) unlockAchievement('train-to-all');
+      }
+
+      // remove board from map if no station entries remain
+      const remaining = log.filter(e => !e.district);
+      if (remaining.length === 0) {
+        document.getElementById('train-board')?.remove();
+      }
+
+      showToast(`Sent to ${TRAIN_DISTRICT_LABELS[district]}`);
       openBoardOverlay();
     });
   });

@@ -156,7 +156,6 @@ function getWordCategory(w) {
 
 function extractKeywords(filteredSessions, topN = 24) {
   const freq = {}, wordSessions = {};
-  // skip train thought sessions — their answers[0] is "Train Thoughts" not a real place
   filteredSessions.filter(s => !s.isTrainThought).forEach(session => {
     Object.entries(session.answers).forEach(([qi, answer]) => {
       if (parseInt(qi) === 5 || !answer) return;
@@ -196,6 +195,8 @@ const TIME_OPTIONS = [
 ];
 let memoryTimeRange  = 'all';
 let memoryAnchorMode = 'location';
+let photoSortOrder   = 'latest';  // 'latest' or 'earliest'
+let songSortOrder    = 'latest';  // 'latest' or 'earliest'
 
 
 // init
@@ -245,7 +246,6 @@ function updateSkinDisplay() {
     if (img) img.src = `../assets/districts/${skins[i]}.png`;
   });
 
-  // auto-save on every skin change
   localStorage.setItem(`${CURRENT_DISTRICT}-skin`, currentSkin);
 }
 
@@ -316,7 +316,6 @@ function renderUI() {
   const dateEl = document.getElementById('district-date');
   if (dateEl) dateEl.textContent = `Edited: ${districtData.date}`;
 
-  // show all unique locations in the subheader — exclude train thought entries
   const locationEl = document.getElementById('location-value');
   if (locationEl) {
     const unique = [...new Set(
@@ -327,6 +326,25 @@ function renderUI() {
 
   updateSkinDisplay();
   renderJournalEntries();
+  renderViewDescriptions();
+}
+
+function renderViewDescriptions() {
+  const toggle = document.querySelector('.view-toggle');
+  if (!toggle || document.getElementById('view-descriptions')) return;
+
+  const name = config.displayName;
+
+  const desc = document.createElement('div');
+  desc.id = 'view-descriptions';
+  desc.className = 'view-descriptions';
+  desc.innerHTML = `
+    <p class="view-desc mono" id="desc-journal">View your memories of ${name} as linear journal entries.</p>
+    <p class="view-desc mono" id="desc-graph" style="display:none">View your memories of ${name} as a constellation.</p>
+    <p class="view-desc mono" id="desc-album" style="display:none">View your memories of ${name} as photos and songs.</p>
+  `;
+
+  toggle.insertAdjacentElement('afterend', desc);
 }
 
 
@@ -341,7 +359,6 @@ function renderJournalEntries() {
     return;
   }
 
-  // group by location (answer[0]), newest first
   const groups = new Map();
   [...sessions].sort((a, b) => b.timestamp - a.timestamp).forEach(session => {
     const place = session.answers[0] || '—';
@@ -351,20 +368,22 @@ function renderJournalEntries() {
 
   container.innerHTML = '';
 
-  // use event delegation for delete — avoids issues with inner svg click targets
-  container.addEventListener('click', (e) => {
-    const btn = e.target.closest('.delete-entry-btn');
-    if (!btn) return;
-    e.stopPropagation();
-    const ts = parseInt(btn.dataset.ts);
-    confirmDeleteEntry(ts);
-  });
+  // add the delegation listener only once — re-renders would stack it otherwise
+  if (!container._deleteListenerAttached) {
+    container._deleteListenerAttached = true;
+    container.addEventListener('click', (e) => {
+      const btn = e.target.closest('.delete-entry-btn');
+      if (!btn) return;
+      e.stopPropagation();
+      const ts = parseInt(btn.dataset.ts);
+      confirmDeleteEntry(ts);
+    });
+  }
 
   groups.forEach((groupSessions, place) => {
     const group = document.createElement('div');
     group.className = 'journal-location-group open';
 
-    // collapsible heading with svg chevron
     const heading = document.createElement('div');
     heading.className = 'journal-location-heading mono';
     heading.innerHTML = `<span>${place}</span><span class="journal-location-chevron"><svg width="12" height="8" viewBox="0 0 12 8" fill="none"><polyline points="1,1 6,7 11,1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
@@ -386,26 +405,24 @@ function renderJournalEntries() {
         : '';
 
       const photoIndicator = photoData
-        ? `<img src="${photoData}" class="journal-entry-thumb" alt="photo">`
+        ? `<span class="journal-entry-photo-dot" title="Has photo"></span>`
         : '';
+
+      const isTrainThought = session.isTrainThought;
 
       entry.innerHTML = `
         <div class="journal-entry-header">
-          <span class="journal-entry-date mono">${session.date}</span>
-          <div class="journal-entry-meta">
-            ${photoIndicator}
-            <button class="delete-entry-btn" data-ts="${session.timestamp}" title="Delete" aria-label="Delete entry">
-              <svg width="13" height="14" viewBox="0 0 13 14" fill="none">
-                <path d="M1 3.5h11M4.5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M2 3.5l.75 8a.5.5 0 0 0 .5.5h6.5a.5.5 0 0 0 .5-.5L11 3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-                <line x1="5" y1="6" x2="5" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-                <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-              </svg>
-            </button>
-            <span class="journal-entry-chevron"><svg width="12" height="8" viewBox="0 0 12 8" fill="none"><polyline points="1,1 6,7 11,1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-          </div>
+          <span class="journal-entry-date mono">${session.date || ''}${photoIndicator}</span>
+          <button class="delete-entry-btn mono" data-ts="${session.timestamp}" title="Delete entry">
+            <svg width="13" height="14" viewBox="0 0 13 14" fill="none">
+              <path d="M1 3.5h11M4.5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M2 3.5l.75 8a.5.5 0 0 0 .5.5h6.5a.5.5 0 0 0 .5-.5L11 3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="5" y1="6" x2="5" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+              <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+            </svg>
+          </button>
         </div>
         <div class="journal-entry-body">
-          ${session.isTrainThought
+          ${isTrainThought
             ? `<div class="journal-qa">
                 ${session.answers[1] ? `<span class="journal-question">${session.answers[1]}</span>` : ''}
                 <span class="journal-answer">${session.answers[2] || '—'}</span>
@@ -435,326 +452,9 @@ function renderJournalEntries() {
 }
 
 
-// album view
-
-function getAlbumPhotos() {
-  return JSON.parse(localStorage.getItem(`${CURRENT_DISTRICT}-album-photos`) || '[]');
-}
-
-function saveAlbumPhotos(photos) {
-  localStorage.setItem(`${CURRENT_DISTRICT}-album-photos`, JSON.stringify(photos));
-}
-
-// returns [[locationName, latestTimestamp], ...] sorted by most recent session
-function getLocationsSortedByRecency() {
-  const seen = new Map();
-  [...sessions]
-    .filter(s => !s.isTrainThought && s.answers[0])
-    .sort((a, b) => b.timestamp - a.timestamp)
-    .forEach(s => {
-      if (!seen.has(s.answers[0])) seen.set(s.answers[0], s.timestamp);
-    });
-  return [...seen.entries()];
-}
-
-// sort photos: grouped by location recency, unattached photos last
-function sortAlbumPhotos(photos) {
-  const locationOrder = getLocationsSortedByRecency().map(([name]) => name);
-  return [...photos].sort((a, b) => {
-    const ai = a.location ? locationOrder.indexOf(a.location) : Infinity;
-    const bi = b.location ? locationOrder.indexOf(b.location) : Infinity;
-    if (ai !== bi) return ai - bi;
-    // within same location, newest photo first
-    return b.addedAt - a.addedAt;
-  });
-}
-
-function renderAlbumView() {
-  const photosContainer = document.getElementById('album-photos');
-  const songsContainer  = document.getElementById('album-songs');
-  if (!photosContainer || !songsContainer) return;
-
-  const photos = sortAlbumPhotos(getAlbumPhotos());
-
-  // hidden file input — created once, reused across renders
-  let fileInput = document.getElementById('album-file-input');
-  if (!fileInput) {
-    fileInput = document.createElement('input');
-    fileInput.type      = 'file';
-    fileInput.accept    = 'image/*';
-    fileInput.id        = 'album-file-input';
-    fileInput.className = 'hidden';
-    fileInput.multiple  = true;
-    document.body.appendChild(fileInput);
-
-    fileInput.addEventListener('change', () => {
-      const files = Array.from(fileInput.files);
-      if (!files.length) return;
-      // read all files then show preview overlay one by one
-      const srcs = [];
-      let loaded  = 0;
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          srcs.push(e.target.result);
-          loaded++;
-          if (loaded === files.length) openPhotoPreviewQueue(srcs);
-        };
-        reader.readAsDataURL(file);
-      });
-      fileInput.value = '';
-    });
-  }
-
-  // build photo grid
-  photosContainer.innerHTML = '';
-
-  const header = document.createElement('div');
-  header.className = 'album-grid-header';
-  header.innerHTML = `
-    <span class="album-section-label mono">Photos</span>
-    <button class="album-add-btn mono" id="album-add-btn">+ Add photos</button>
-  `;
-  photosContainer.appendChild(header);
-  document.getElementById('album-add-btn').addEventListener('click', () => fileInput.click());
-
-  if (photos.length === 0) {
-    const empty = document.createElement('p');
-    empty.className   = 'album-empty mono';
-    empty.textContent = 'No photos yet. Add some above.';
-    photosContainer.appendChild(empty);
-  } else {
-    const grid = document.createElement('div');
-    grid.className = 'album-photo-grid';
-
-    photos.forEach((photo, idx) => {
-      const cell = document.createElement('div');
-      cell.className = 'album-grid-cell';
-
-      const locationBadge = photo.location
-        ? `<span class="album-grid-location mono">${photo.location}</span>`
-        : '';
-
-      cell.innerHTML = `
-        <img src="${photo.src}" class="album-grid-img" alt="photo ${idx + 1}">
-        ${locationBadge}
-        <button class="album-grid-remove" title="Remove photo" aria-label="Remove photo">
-          <svg width="11" height="12" viewBox="0 0 13 14" fill="none">
-            <path d="M1 3.5h11M4.5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M2 3.5l.75 8a.5.5 0 0 0 .5.5h6.5a.5.5 0 0 0 .5-.5L11 3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-            <line x1="5" y1="6" x2="5" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-            <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
-          </svg>
-        </button>
-      `;
-
-      // find original index in unsorted array for safe deletion
-      const allPhotos   = getAlbumPhotos();
-      const originalIdx = allPhotos.findIndex(p => p.src === photo.src && p.addedAt === photo.addedAt);
-
-      cell.querySelector('.album-grid-img').addEventListener('click', () => openAlbumLightbox(photo.src));
-      cell.querySelector('.album-grid-remove').addEventListener('click', (e) => {
-        e.stopPropagation();
-        const current = getAlbumPhotos();
-        current.splice(originalIdx, 1);
-        saveAlbumPhotos(current);
-        renderAlbumView();
-      });
-
-      grid.appendChild(cell);
-    });
-
-    photosContainer.appendChild(grid);
-  }
-
-  // songs section
-  const songs = sessions
-    .map(s => localStorage.getItem(`${CURRENT_DISTRICT}-music-name-${s.timestamp}`))
-    .filter(Boolean);
-
-  songsContainer.innerHTML = songs.length
-    ? `<div class="album-section-label mono">Songs</div>
-       ${songs.map(name => `
-         <div class="album-song-row">
-           <span class="album-song-icon">&#9654;</span>
-           <span class="mono">${name}</span>
-         </div>`).join('')}`
-    : `<div class="album-section-label mono">Songs</div>
-       <p class="album-empty mono">No songs attached yet.</p>`;
-}
-
-
-// photo preview queue — shown after selecting files, one per image
-
-let previewQueue = [];
-
-function openPhotoPreviewQueue(srcs) {
-  previewQueue = [...srcs];
-  showNextPreview();
-}
-
-function showNextPreview() {
-  if (previewQueue.length === 0) return;
-  const src = previewQueue.shift();
-  openPhotoPreviewOverlay(src, previewQueue.length);
-}
-
-function openPhotoPreviewOverlay(src, remaining) {
-  document.getElementById('photo-preview-overlay')?.remove();
-
-  const locations = getLocationsSortedByRecency();
-
-  const locationOptions = locations.length
-    ? `<option value="">No location</option>` +
-      locations.map(([name]) => `<option value="${name}">${name}</option>`).join('')
-    : `<option value="">No locations logged yet</option>`;
-
-  const overlay = document.createElement('div');
-  overlay.id = 'photo-preview-overlay';
-  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,5,155,0.15);display:flex;align-items:center;justify-content:center;z-index:1000;';
-  overlay.innerHTML = `
-    <div class="overlay-content photo-preview-content">
-      <div class="photo-preview-img-wrap">
-        <img src="${src}" class="photo-preview-img" alt="preview">
-      </div>
-      <div class="photo-preview-form">
-        <label class="photo-preview-label mono">Attach to a location</label>
-        <select class="photo-preview-select mono" id="photo-preview-select">
-          ${locationOptions}
-        </select>
-        ${remaining > 0 ? `<p class="photo-preview-remaining mono">${remaining} more photo${remaining > 1 ? 's' : ''} after this</p>` : ''}
-        <div class="photo-preview-actions">
-          <button class="overlay-btn mono" id="photo-preview-skip">Skip</button>
-          <button class="overlay-btn mono primary" id="photo-preview-save">Save</button>
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-
-  // clicking outside closes and discards remaining queue
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      overlay.remove();
-      previewQueue = [];
-    }
-  });
-
-  document.getElementById('photo-preview-skip').addEventListener('click', () => {
-    overlay.remove();
-    showNextPreview();
-  });
-
-  document.getElementById('photo-preview-save').addEventListener('click', () => {
-    const location = document.getElementById('photo-preview-select').value || null;
-    const photos   = getAlbumPhotos();
-    photos.push({ src, location, addedAt: Date.now() });
-    saveAlbumPhotos(photos);
-    overlay.remove();
-    renderAlbumView();
-    showNextPreview();
-  });
-}
-
-
-// album lightbox
-
-function openAlbumLightbox(src) {
-  let lb = document.getElementById('album-lightbox');
-  if (!lb) {
-    lb = document.createElement('div');
-    lb.id = 'album-lightbox';
-    lb.className = 'album-lightbox';
-    lb.innerHTML = `
-      <div class="album-lightbox-bg"></div>
-      <div class="album-lightbox-content">
-        <img class="album-lightbox-img" id="album-lightbox-img" src="" alt="">
-        <button class="album-lightbox-close mono">Close</button>
-      </div>
-    `;
-    document.body.appendChild(lb);
-    lb.querySelector('.album-lightbox-bg').addEventListener('click', closeAlbumLightbox);
-    lb.querySelector('.album-lightbox-close').addEventListener('click', closeAlbumLightbox);
-  }
-  lb.querySelector('#album-lightbox-img').src = src;
-  lb.classList.add('active');
-}
-
-function closeAlbumLightbox() {
-  document.getElementById('album-lightbox')?.classList.remove('active');
-}
-
-
-// navigation
-
-function relogExistingLocation(locationName) {
-  localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
-  localStorage.setItem(`${CURRENT_DISTRICT}-relog-prefill`, locationName);
-  window.location.href = `${CURRENT_DISTRICT}.html`;
-}
-
-function openRelogOverlay() {
-  const locations = [...new Map(
-    sessions.filter(s => s.answers[0] && !s.isTrainThought).map(s => [s.answers[0], s.answers[0]])
-  ).values()];
-
-  if (!document.getElementById('relog-overlay')) {
-    const el = document.createElement('div');
-    el.id = 'relog-overlay';
-    el.className = 'relog-overlay';
-    el.innerHTML = `
-      <div class="relog-overlay-content">
-        <p class="relog-overlay-title">Start a new log entry. Your previous entries will be kept.</p>
-        <button class="relog-new-btn mono" id="relog-new-btn">Log a new location →</button>
-        <div class="relog-existing-row">
-          <div style="flex:1">
-            <p class="relog-existing-label">Add to existing location</p>
-            <div style="display:flex;gap:0.75rem">
-              <select class="relog-existing-select" id="relog-existing-select">
-                <option value="">Select a location...</option>
-                ${locations.map(l => `<option value="${l}">${l}</option>`).join('')}
-              </select>
-              <button class="relog-go-btn mono" id="relog-go-btn">Go →</button>
-            </div>
-          </div>
-        </div>
-        <button class="relog-cancel-btn mono" id="relog-cancel-btn">cancel</button>
-      </div>
-    `;
-    document.body.appendChild(el);
-
-    document.getElementById('relog-new-btn').addEventListener('click', () => {
-      closeRelogOverlay();
-      localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
-      localStorage.removeItem(`${CURRENT_DISTRICT}-relog-prefill`);
-      window.location.href = `${CURRENT_DISTRICT}.html`;
-    });
-
-    document.getElementById('relog-go-btn').addEventListener('click', () => {
-      const selected = document.getElementById('relog-existing-select').value;
-      if (!selected) return;
-      closeRelogOverlay();
-      localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
-      localStorage.setItem(`${CURRENT_DISTRICT}-relog-prefill`, selected);
-      window.location.href = `${CURRENT_DISTRICT}.html`;
-    });
-
-    document.getElementById('relog-cancel-btn').addEventListener('click', closeRelogOverlay);
-    el.addEventListener('click', e => { if (e.target.id === 'relog-overlay') closeRelogOverlay(); });
-  }
-
-  requestAnimationFrame(() => document.getElementById('relog-overlay').classList.add('active'));
-}
-
-function closeRelogOverlay() {
-  document.getElementById('relog-overlay')?.classList.remove('active');
-}
-
-
 // listeners
 
 function setupListeners() {
-
-  // inline title editing
   const titleCell  = document.getElementById('title-cell');
   const titleEl    = document.getElementById('district-title');
   const titleInput = document.getElementById('district-title-input');
@@ -788,7 +488,6 @@ function setupListeners() {
     titleInput.classList.add('hidden');
   }
 
-  // skin thumbs: auto-save on click
   document.querySelectorAll('.skin-thumb').forEach(t => {
     t.addEventListener('click', () => {
       currentSkin = parseInt(t.dataset.skin);
@@ -796,10 +495,8 @@ function setupListeners() {
     });
   });
 
-  // log again button
   document.getElementById('add-location-btn')?.addEventListener('click', openRelogOverlay);
 
-  // view toggles
   document.getElementById('journal-toggle')?.addEventListener('click', switchToJournal);
   document.getElementById('graph-toggle')?.addEventListener('click', switchToGraph);
   document.getElementById('album-toggle')?.addEventListener('click', switchToAlbum);
@@ -849,6 +546,18 @@ function setActiveToggle(activeId) {
   ['journal-toggle', 'graph-toggle', 'album-toggle'].forEach(id => {
     document.getElementById(id)?.classList.toggle('active', id === activeId);
   });
+
+  // swap description line to match active view
+  const descEl = document.getElementById('view-descriptions');
+  if (!descEl) return;
+
+  const journalDesc = document.getElementById('desc-journal');
+  const graphDesc   = document.getElementById('desc-graph');
+  const albumDesc   = document.getElementById('desc-album');
+
+  if (journalDesc) journalDesc.style.display = activeId === 'journal-toggle' ? '' : 'none';
+  if (graphDesc)   graphDesc.style.display   = activeId === 'graph-toggle'   ? '' : 'none';
+  if (albumDesc)   albumDesc.style.display   = activeId === 'album-toggle'   ? '' : 'none';
 }
 
 
@@ -881,7 +590,6 @@ function buildAnchors(filtered) {
       label: place, ax: positions[i].ax, ay: positions[i].ay, px: 0, py: 0
     }));
   } else {
-    // count how often each emotion word appears across all responses
     const freq = {};
     filtered.forEach(session => {
       Object.entries(session.answers).forEach(([qi, answer]) => {
@@ -891,14 +599,9 @@ function buildAnchors(filtered) {
         });
       });
     });
-
-    const emotionList = Object.entries(freq)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 5)
-      .map(([word]) => word);
-
-    const finalList = emotionList.length > 0 ? emotionList : [config.emotionWord];
-    const positions = computeAnchorPositions(finalList.length);
+    const emotionList = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([word]) => word);
+    const finalList   = emotionList.length > 0 ? emotionList : [config.emotionWord];
+    const positions   = computeAnchorPositions(finalList.length);
     return finalList.map((word, i) => ({
       label: word, ax: positions[i].ax, ay: positions[i].ay, px: 0, py: 0
     }));
@@ -930,7 +633,6 @@ function initGraph() {
   if (!container) return;
   if (graphSketch) { graphSketch.remove(); graphSketch = null; }
 
-  // controls bar: created once, kept alive across rebuilds
   if (!document.getElementById('memory-controls')) {
     const sliderMax   = TIME_OPTIONS.length - 1;
     const currentIdx  = TIME_OPTIONS.findIndex(o => o.value === memoryTimeRange);
@@ -1083,7 +785,6 @@ function initGraph() {
       frame++;
       const damping = Math.min(0.92 + frame * 0.0003, 0.98);
 
-      // repulsion between word nodes
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
           const a = nodes[i], b = nodes[j];
@@ -1095,7 +796,6 @@ function initGraph() {
         }
       }
 
-      // repulsion from anchor labels
       nodes.forEach(n => {
         anchors.forEach(a => {
           const dx = n.x - a.px, dy = n.y - a.py;
@@ -1108,7 +808,6 @@ function initGraph() {
         });
       });
 
-      // soft pull toward each node's anchor
       nodes.forEach(n => {
         const a = anchors[n.anchorIdx] || anchors[0];
         n.vx += (a.px - n.x) * 0.002;
@@ -1118,7 +817,6 @@ function initGraph() {
         n.y = Math.max(24, Math.min(H - 24, n.y + n.vy));
       });
 
-      // duplicate word connecting lines
       if (duplicatePairs.length > 0) {
         sk.strokeWeight(0.8);
         sk.stroke(DIST_COLOR + '50');
@@ -1126,7 +824,6 @@ function initGraph() {
         sk.noStroke();
       }
 
-      // root-related word connecting lines
       if (rootPairs.length > 0) {
         sk.strokeWeight(0.5);
         sk.stroke(DIST_COLOR + '28');
@@ -1134,7 +831,6 @@ function initGraph() {
         sk.noStroke();
       }
 
-      // anchor labels
       anchors.forEach(a => {
         sk.textFont('monospace');
         sk.textSize(ANCHOR_FONT);
@@ -1154,7 +850,6 @@ function initGraph() {
         sk.text(a.label, a.px, a.py);
       });
 
-      // word nodes
       nodes.forEach((n, idx) => {
         const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
         const fontSize = 10 + t * 8;
@@ -1163,8 +858,8 @@ function initGraph() {
         const rw = tw + PAD_X * 2;
         const rh = fontSize + PAD_Y * 2;
 
-        const opacity = 0.55 + n.recency * 0.45;
-        const opHex   = Math.round(opacity * 255).toString(16).padStart(2, '0');
+        const opacity   = 0.55 + n.recency * 0.45;
+        const opHex     = Math.round(opacity * 255).toString(16).padStart(2, '0');
         const isHovered = idx === hoveredIdx;
 
         sk.noStroke();
@@ -1181,35 +876,28 @@ function initGraph() {
         }
       });
 
-      // hover tooltip
+      // word count tooltip on hover
       if (hoveredIdx !== null) {
-        const n        = nodes[hoveredIdx];
-        const t        = maxCount === minCount ? 0.5 : (n.count - minCount) / (maxCount - minCount);
-        const fontSize = 10 + t * 8;
-        const rh       = fontSize + PAD_Y * 2;
-
-        let tipText;
-        if (memoryAnchorMode === 'location') {
-          const anchorSet = new Set(nodes.filter(nd => nd.word === n.word).map(nd => nd.anchorIdx));
-          tipText = `Appearance: ${anchorSet.size}`;
-        } else {
-          tipText = `Appearance: ${n.count}`;
-        }
-
-        const TIP_FONT = 9;
+        const n       = nodes[hoveredIdx];
+        const label   = `${n.count} ${n.count === 1 ? 'time' : 'times'}`;
+        const tipFont = 10;
+        sk.textSize(tipFont);
         sk.textFont('monospace');
-        sk.textSize(TIP_FONT);
-        const tipW = sk.textWidth(tipText) + 12;
-        const tipH = TIP_FONT + 10;
-        const tipX = n.x - tipW / 2;
-        const tipY = n.y - rh / 2 - tipH - 4;
-
+        const tw  = sk.textWidth(label);
+        const tpx = 6, tpy = 4;
+        const trw = tw + tpx * 2;
+        const trh = tipFont + tpy * 2;
+        // position above the node, clamped to canvas
+        let tx = n.x - trw / 2;
+        let ty = n.y - (nodes[hoveredIdx].count > 0 ? 14 : 10) - trh;
+        tx = Math.max(4, Math.min(W - trw - 4, tx));
+        ty = Math.max(4, ty);
         sk.noStroke();
         sk.fill(DIST_COLOR);
-        sk.rect(tipX, tipY, tipW, tipH);
+        sk.rect(tx, ty, trw, trh);
         sk.fill(bg);
         sk.textAlign(sk.LEFT, sk.TOP);
-        sk.text(tipText, tipX + 6, tipY + 5);
+        sk.text(label, tx + tpx, ty + tpy);
       }
     };
 
@@ -1237,6 +925,11 @@ function initGraph() {
       if (dragAnchorIdx !== null) {
         anchors[dragAnchorIdx].px = Math.max(60, Math.min(W - 60, sk.mouseX - dragOffX));
         anchors[dragAnchorIdx].py = Math.max(30, Math.min(H - 30, sk.mouseY - dragOffY));
+        nodes.forEach(n => {
+          if (n.anchorIdx === dragAnchorIdx) {
+            n.anchorIdx = dragAnchorIdx;
+          }
+        });
       }
     };
 
@@ -1309,15 +1002,14 @@ function rebuildGraph() {
   document.querySelector('#p5-canvas-container canvas')?.remove();
   document.getElementById('memory-empty-state')?.remove();
   document.getElementById('memory-tooltip')?.remove();
-  // controls are kept alive across rebuilds
   initGraph();
 }
 
-function showInfoPanel(node) {}  // unused, kept for safety
-function hideInfoPanel() {}      // unused, kept for safety
+function showInfoPanel(node) {}
+function hideInfoPanel() {}
 
 
-// media (photo + music)
+// media (sidebar photo + music — legacy, still used by sidebar section)
 
 function loadMedia() {
   updateMusicPreview(localStorage.getItem(`${CURRENT_DISTRICT}-music-name`));
@@ -1361,4 +1053,482 @@ function initMediaListeners() {
     localStorage.removeItem(`${CURRENT_DISTRICT}-music-name`);
     updateMusicPreview(null);
   });
+}
+
+
+// songs (album view)
+
+function getAlbumSongs() {
+  return JSON.parse(localStorage.getItem(`${CURRENT_DISTRICT}-album-songs`) || '[]');
+}
+
+function saveAlbumSongs(songs) {
+  localStorage.setItem(`${CURRENT_DISTRICT}-album-songs`, JSON.stringify(songs));
+}
+
+function detectPlatform(url) {
+  if (!url) return 'generic';
+  if (url.includes('spotify.com'))     return 'spotify';
+  if (url.includes('music.apple.com')) return 'apple';
+  return 'generic';
+}
+
+function platformLabel(platform) {
+  if (platform === 'spotify') return 'Spotify';
+  if (platform === 'apple')   return 'Apple Music';
+  return 'Music';
+}
+
+function platformColor(platform) {
+  if (platform === 'spotify') return '#1DB954';
+  if (platform === 'apple')   return '#FC3C44';
+  return 'var(--blue)';
+}
+
+function openAddSongOverlay() {
+  document.getElementById('add-song-overlay')?.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'add-song-overlay';
+  overlay.style.cssText = [
+    'position:fixed','top:0','left:0','width:100vw','height:100vh',
+    'background:rgba(10,5,155,0.15)','display:flex','align-items:center',
+    'justify-content:center','z-index:2000'
+  ].join(';');
+  overlay.innerHTML = `
+    <div class="add-song-box">
+      <h2 class="add-song-title">Add a song</h2>
+      <div class="add-song-field">
+        <label class="add-song-label mono">Song name</label>
+        <input class="add-song-input mono" id="add-song-name" type="text" placeholder="What's it called?" maxlength="100" autocomplete="off">
+      </div>
+      <div class="add-song-field">
+        <label class="add-song-label mono">Spotify or Apple Music link</label>
+        <input class="add-song-input mono" id="add-song-url" type="url" placeholder="Paste a link…" autocomplete="off">
+      </div>
+      <p class="add-song-hint mono" id="add-song-platform-hint"></p>
+      <div class="add-song-actions">
+        <button class="add-song-btn mono" id="add-song-cancel">Cancel</button>
+        <button class="add-song-btn primary mono" id="add-song-save">Save</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const nameInput = document.getElementById('add-song-name');
+  const urlInput  = document.getElementById('add-song-url');
+  const hint      = document.getElementById('add-song-platform-hint');
+
+  urlInput.addEventListener('input', () => {
+    const platform = detectPlatform(urlInput.value.trim());
+    hint.textContent = urlInput.value.trim() ? `Detected: ${platformLabel(platform)}` : '';
+  });
+
+  function closeAddSong() {
+    overlay.remove();
+  }
+
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) closeAddSong(); });
+  document.getElementById('add-song-cancel').addEventListener('click', closeAddSong);
+
+  document.getElementById('add-song-save').addEventListener('click', () => {
+    const name = nameInput.value.trim();
+    const url  = urlInput.value.trim();
+    if (!name) { nameInput.style.borderColor = '#c0392b'; nameInput.focus(); return; }
+    const songs = getAlbumSongs();
+    songs.push({ name, url: url || null, platform: detectPlatform(url), addedAt: Date.now() });
+    saveAlbumSongs(songs);
+    closeAddSong();
+    renderAlbumView();
+  });
+
+  nameInput.focus();
+}
+
+function renderSongsSection(songsContainer) {
+  songsContainer.innerHTML = '';
+
+  const header = document.createElement('div');
+  header.className = 'album-section-header';
+  header.innerHTML = `
+    <span class="album-section-label mono">Songs</span>
+    <div class="album-section-row">
+      <div class="album-sort-toggle">
+        <button class="album-sort-btn mono ${songSortOrder === 'latest' ? 'active' : ''}" id="song-sort-latest">Latest</button>
+        <button class="album-sort-btn mono ${songSortOrder === 'earliest' ? 'active' : ''}" id="song-sort-earliest">Earliest</button>
+      </div>
+      <button class="album-add-btn mono" id="album-add-song-btn">+ Add song</button>
+    </div>
+  `;
+  songsContainer.appendChild(header);
+  document.getElementById('album-add-song-btn').addEventListener('click', openAddSongOverlay);
+  document.getElementById('song-sort-latest').addEventListener('click', () => {
+    songSortOrder = 'latest';
+    renderAlbumView();
+  });
+  document.getElementById('song-sort-earliest').addEventListener('click', () => {
+    songSortOrder = 'earliest';
+    renderAlbumView();
+  });
+
+  // backfill old music-name-${ts} entries into new format
+  const existing = getAlbumSongs();
+  const backfilled = [];
+  sessions.forEach(s => {
+    const oldName = localStorage.getItem(`${CURRENT_DISTRICT}-music-name-${s.timestamp}`);
+    if (oldName && !existing.some(sg => sg.name === oldName)) {
+      backfilled.push({ name: oldName, url: null, platform: 'generic', addedAt: s.timestamp });
+    }
+  });
+  if (backfilled.length) saveAlbumSongs([...existing, ...backfilled]);
+
+  const songs = [...getAlbumSongs()].sort((a, b) =>
+    songSortOrder === 'latest' ? b.addedAt - a.addedAt : a.addedAt - b.addedAt
+  );
+
+  if (songs.length === 0) {
+    const empty = document.createElement('p');
+    empty.className   = 'album-empty mono';
+    empty.textContent = 'No songs yet.';
+    songsContainer.appendChild(empty);
+    return;
+  }
+
+  const list = document.createElement('div');
+  list.className = 'album-songs-list';
+
+  songs.forEach((song, idx) => {
+    const row = document.createElement('div');
+    row.className = 'album-song-card';
+
+    row.innerHTML = `
+      <div class="album-song-card-inner">
+        <span class="album-song-num mono">${idx + 1}</span>
+        <span class="album-song-name mono">${song.name}</span>
+        ${song.url
+          ? `<a class="album-song-play mono" href="${song.url}" target="_blank" rel="noopener" title="Open in ${platformLabel(song.platform)}">&#9654;</a>`
+          : '<span class="album-song-play-placeholder"></span>'
+        }
+        <button class="album-song-remove" data-idx="${idx}" title="Remove">
+          <svg width="11" height="12" viewBox="0 0 13 14" fill="none">
+            <path d="M1 3.5h11M4.5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M2 3.5l.75 8a.5.5 0 0 0 .5.5h6.5a.5.5 0 0 0 .5-.5L11 3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="5" y1="6" x2="5" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+            <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+    `;
+
+    row.querySelector('.album-song-remove').addEventListener('click', (e) => {
+      e.stopPropagation();
+      const current = getAlbumSongs();
+      current.splice(idx, 1);
+      saveAlbumSongs(current);
+      renderAlbumView();
+    });
+
+    list.appendChild(row);
+  });
+
+  songsContainer.appendChild(list);
+}
+
+
+// album view (photos)
+
+function getAlbumPhotos() {
+  return JSON.parse(localStorage.getItem(`${CURRENT_DISTRICT}-album-photos`) || '[]');
+}
+
+function saveAlbumPhotos(photos) {
+  localStorage.setItem(`${CURRENT_DISTRICT}-album-photos`, JSON.stringify(photos));
+}
+
+function getLocationsSortedByRecency() {
+  const seen = new Map();
+  [...sessions]
+    .filter(s => !s.isTrainThought && s.answers[0])
+    .sort((a, b) => b.timestamp - a.timestamp)
+    .forEach(s => {
+      if (!seen.has(s.answers[0])) seen.set(s.answers[0], s.timestamp);
+    });
+  return [...seen.entries()];
+}
+
+function sortAlbumPhotos(photos) {
+  return [...photos].sort((a, b) =>
+    photoSortOrder === 'latest' ? b.addedAt - a.addedAt : a.addedAt - b.addedAt
+  );
+}
+
+function renderAlbumView() {
+  const photosContainer = document.getElementById('album-photos');
+  const songsContainer  = document.getElementById('album-songs');
+  if (!photosContainer || !songsContainer) return;
+
+  const photos = sortAlbumPhotos(getAlbumPhotos());
+
+  // hidden file input — created once, reused across renders
+  let fileInput = document.getElementById('album-file-input');
+  if (!fileInput) {
+    fileInput = document.createElement('input');
+    fileInput.type      = 'file';
+    fileInput.accept    = 'image/*';
+    fileInput.id        = 'album-file-input';
+    fileInput.className = 'hidden';
+    fileInput.multiple  = true;
+    document.body.appendChild(fileInput);
+
+    fileInput.addEventListener('change', () => {
+      const files = Array.from(fileInput.files);
+      if (!files.length) return;
+      const srcs = [];
+      let loaded  = 0;
+      files.forEach(file => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          srcs.push(e.target.result);
+          loaded++;
+          if (loaded === files.length) openPhotoPreviewQueue(srcs);
+        };
+        reader.readAsDataURL(file);
+      });
+      fileInput.value = '';
+    });
+  }
+
+  // photos section
+  photosContainer.innerHTML = '';
+
+  const header = document.createElement('div');
+  header.className = 'album-section-header';
+  header.innerHTML = `
+    <span class="album-section-label mono">Photos</span>
+    <div class="album-section-row">
+      <div class="album-sort-toggle">
+        <button class="album-sort-btn mono ${photoSortOrder === 'latest' ? 'active' : ''}" id="sort-latest">Latest</button>
+        <button class="album-sort-btn mono ${photoSortOrder === 'earliest' ? 'active' : ''}" id="sort-earliest">Earliest</button>
+      </div>
+      <button class="album-add-btn mono" id="album-add-btn">+ Add photos</button>
+    </div>
+  `;
+  photosContainer.appendChild(header);
+  document.getElementById('album-add-btn').addEventListener('click', () => fileInput.click());
+  document.getElementById('sort-latest').addEventListener('click', () => {
+    photoSortOrder = 'latest';
+    renderAlbumView();
+  });
+  document.getElementById('sort-earliest').addEventListener('click', () => {
+    photoSortOrder = 'earliest';
+    renderAlbumView();
+  });
+
+  if (photos.length === 0) {
+    const empty = document.createElement('p');
+    empty.className   = 'album-empty mono';
+    empty.textContent = 'No photos yet.';
+    photosContainer.appendChild(empty);
+  } else {
+    const grid = document.createElement('div');
+    grid.className = 'album-photo-grid';
+
+    photos.forEach((photo, idx) => {
+      const cell = document.createElement('div');
+      cell.className = 'album-grid-cell';
+
+      const locationBadge = photo.location
+        ? `<span class="album-grid-location mono">${photo.location}</span>`
+        : '';
+
+      cell.innerHTML = `
+        <img src="${photo.src}" class="album-grid-img" alt="photo ${idx + 1}">
+        ${locationBadge}
+        <button class="album-grid-remove" title="Remove photo" aria-label="Remove photo">
+          <svg width="11" height="12" viewBox="0 0 13 14" fill="none">
+            <path d="M1 3.5h11M4.5 3.5V2.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v1M2 3.5l.75 8a.5.5 0 0 0 .5.5h6.5a.5.5 0 0 0 .5-.5L11 3.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="5" y1="6" x2="5" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+            <line x1="8" y1="6" x2="8" y2="10" stroke="currentColor" stroke-width="1" stroke-linecap="round"/>
+          </svg>
+        </button>
+      `;
+
+      const allPhotos   = getAlbumPhotos();
+      const originalIdx = allPhotos.findIndex(p => p.src === photo.src && p.addedAt === photo.addedAt);
+
+      cell.querySelector('.album-grid-img').addEventListener('click', () => openAlbumLightbox(photo.src));
+      cell.querySelector('.album-grid-remove').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const current = getAlbumPhotos();
+        current.splice(originalIdx, 1);
+        saveAlbumPhotos(current);
+        renderAlbumView();
+      });
+
+      grid.appendChild(cell);
+    });
+
+    photosContainer.appendChild(grid);
+  }
+
+  // songs section
+  renderSongsSection(songsContainer);
+}
+
+
+// photo preview queue
+
+let previewQueue = [];
+
+function openPhotoPreviewQueue(srcs) {
+  previewQueue = [...srcs];
+  showNextPreview();
+}
+
+function showNextPreview() {
+  if (previewQueue.length === 0) return;
+  const src = previewQueue.shift();
+  openPhotoPreviewOverlay(src, previewQueue.length);
+}
+
+function openPhotoPreviewOverlay(src, remaining) {
+  document.getElementById('photo-preview-overlay')?.remove();
+
+  const locations = getLocationsSortedByRecency();
+
+  const locationOptions = locations.length
+    ? `<option value="">No location</option>` +
+      locations.map(([name]) => `<option value="${name}">${name}</option>`).join('')
+    : `<option value="">No locations logged yet</option>`;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'photo-preview-overlay';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(10,5,155,0.15);display:flex;align-items:center;justify-content:center;z-index:1000;';
+  overlay.innerHTML = `
+    <div class="overlay-content photo-preview-content">
+      <div class="photo-preview-img-wrap">
+        <img src="${src}" class="photo-preview-img" alt="preview">
+      </div>
+      <div class="photo-preview-form">
+        <label class="photo-preview-label mono">Attach to a location</label>
+        <select class="photo-preview-select mono" id="photo-preview-select">
+          ${locationOptions}
+        </select>
+        ${remaining > 0 ? `<p class="photo-preview-remaining mono">${remaining} more photo${remaining > 1 ? 's' : ''} after this</p>` : ''}
+        <div class="photo-preview-actions">
+          <button class="overlay-btn mono" id="photo-preview-skip">Skip</button>
+          <button class="overlay-btn mono primary" id="photo-preview-save">Save</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+      previewQueue = [];
+    }
+  });
+
+  document.getElementById('photo-preview-skip').addEventListener('click', () => {
+    overlay.remove();
+    showNextPreview();
+  });
+
+  document.getElementById('photo-preview-save').addEventListener('click', () => {
+    const location = document.getElementById('photo-preview-select').value || null;
+    const photos   = getAlbumPhotos();
+    photos.push({ src, location, addedAt: Date.now() });
+    saveAlbumPhotos(photos);
+    overlay.remove();
+    renderAlbumView();
+    showNextPreview();
+  });
+}
+
+
+// album lightbox
+
+function openAlbumLightbox(src) {
+  let lb = document.getElementById('album-lightbox');
+  if (!lb) {
+    lb = document.createElement('div');
+    lb.id = 'album-lightbox';
+    lb.className = 'album-lightbox';
+    lb.innerHTML = `
+      <div class="album-lightbox-bg"></div>
+      <div class="album-lightbox-content">
+        <img class="album-lightbox-img" id="album-lightbox-img" src="" alt="">
+        <button class="album-lightbox-close mono">Close</button>
+      </div>
+    `;
+    document.body.appendChild(lb);
+    lb.querySelector('.album-lightbox-bg').addEventListener('click', closeAlbumLightbox);
+    lb.querySelector('.album-lightbox-close').addEventListener('click', closeAlbumLightbox);
+  }
+  lb.querySelector('#album-lightbox-img').src = src;
+  lb.classList.add('active');
+}
+
+function closeAlbumLightbox() {
+  document.getElementById('album-lightbox')?.classList.remove('active');
+}
+
+
+// navigation / relog
+
+function relogExistingLocation(locationName) {
+  localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
+  localStorage.setItem(`${CURRENT_DISTRICT}-relog-prefill`, locationName);
+  window.location.href = `${CURRENT_DISTRICT}.html`;
+}
+
+function openRelogOverlay() {
+  const locations = [...new Map(
+    sessions.filter(s => s.answers[0] && !s.isTrainThought).map(s => [s.answers[0], s.answers[0]])
+  ).values()];
+
+  if (!document.getElementById('relog-overlay')) {
+    const el = document.createElement('div');
+    el.id = 'relog-overlay';
+    el.className = 'relog-overlay';
+    el.innerHTML = `
+      <div class="relog-overlay-content">
+        <p class="relog-overlay-title">Start a new log entry.</p>
+        <div class="relog-locations" id="relog-locations"></div>
+        <div class="relog-overlay-actions">
+          <button class="overlay-btn mono" id="relog-new-btn">A new place</button>
+          <button class="overlay-btn mono primary" id="relog-cancel-btn">Cancel</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(el);
+
+    document.getElementById('relog-new-btn').addEventListener('click', () => {
+      closeRelogOverlay();
+      window.location.href = `${CURRENT_DISTRICT}.html`;
+    });
+    document.getElementById('relog-cancel-btn').addEventListener('click', closeRelogOverlay);
+    el.addEventListener('click', e => { if (e.target.id === 'relog-overlay') closeRelogOverlay(); });
+  }
+
+  const locContainer = document.getElementById('relog-locations');
+  if (locContainer) {
+    locContainer.innerHTML = locations.length
+      ? locations.map(loc => `<button class="relog-location-btn mono" data-loc="${loc}">${loc}</button>`).join('')
+      : '<p class="mono" style="opacity:0.5;font-size:0.82rem;">No previous locations.</p>';
+
+    locContainer.querySelectorAll('.relog-location-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        closeRelogOverlay();
+        relogExistingLocation(btn.dataset.loc);
+      });
+    });
+  }
+
+  requestAnimationFrame(() => document.getElementById('relog-overlay').classList.add('active'));
+}
+
+function closeRelogOverlay() {
+  document.getElementById('relog-overlay')?.classList.remove('active');
 }

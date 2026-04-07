@@ -4,6 +4,26 @@
   --blue: #0A059B;
   --blue-faint: rgba(10, 5, 155, 0.08);
   --blue-mid: rgba(10, 5, 155, 0.2);
+  /* global select styling */
+
+  select {
+    border: 1px solid var(--blue);
+    background-color: var(--color-bg);
+    color: var(--blue);
+    font-family: var(--font-whois);
+    font-size: 0.88rem;
+    padding: 0.6rem 0.85rem;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    outline: none;
+    transition: background-color 0.2s;
+    letter-spacing: 0.02em;
+  }
+
+  select:hover  { background-color: var(--blue-faint); }
+  select:focus  { border-width: 2px; }
+  
 }
 
 html { font-size: 110%; }
@@ -328,7 +348,7 @@ html, body {
 
 .customize-header {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr;
   align-items: stretch;
   height: 90px;
   border-bottom: 2px solid var(--blue);
@@ -1422,3 +1442,230 @@ body.dark-mode .customize-right        { background-color: #101010; }
 body.dark-mode .district-image-container,
 body.dark-mode .skin-thumb             { background-color: #1a1a1a; }
 body.dark-mode .toggle-thumb           { background-color: #101010; }
+
+/* ─── add song overlay ───────────────────────────────────────────────────────── */
+
+.add-song-box {
+  background-color: var(--color-bg, #F7F2F1);
+  border: 2px solid var(--blue, #0A059B);
+  padding: 2.5rem;
+  max-width: 420px;
+  width: 92%;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  text-align: left;
+}
+
+.add-song-title {
+  font-family: var(--font-meta);
+  font-size: 1.6rem;
+  font-weight: normal;
+  color: var(--blue, #0A059B);
+  margin: 0;
+  line-height: 1.1;
+}
+
+.add-song-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.add-song-label {
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue, #0A059B);
+  opacity: 0.55;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.add-song-input {
+  font-family: var(--font-whois);
+  font-size: 0.9rem;
+  color: var(--blue, #0A059B);
+  background: var(--color-bg, #F7F2F1);
+  border: 1px solid var(--blue, #0A059B);
+  padding: 0.65rem 0.85rem;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-width 0.1s;
+}
+.add-song-input:focus        { border-width: 2px; }
+.add-song-input::placeholder { opacity: 0.35; }
+
+.add-song-hint {
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue, #0A059B);
+  opacity: 0.5;
+  margin: -0.5rem 0 0;
+  letter-spacing: 0.03em;
+  min-height: 1rem;
+}
+
+.add-song-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.add-song-btn {
+  font-family: var(--font-whois);
+  font-size: 0.85rem;
+  padding: 0.6rem 1.5rem;
+  background: none;
+  border: 1px solid var(--blue, #0A059B);
+  color: var(--blue, #0A059B);
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  transition: background-color 0.2s;
+}
+.add-song-btn:hover         { background-color: rgba(10,5,155,0.06); }
+.add-song-btn.primary       { background-color: rgba(10,5,155,0.15); }
+.add-song-btn.primary:hover { background-color: rgba(10,5,155,0.25); }
+
+
+/* ─── song cards in album view ───────────────────────────────────────────────── */
+
+.album-songs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.album-song-card {
+  border: 1px solid rgba(10, 5, 155, 0.2);
+  transition: border-color 0.15s;
+}
+.album-song-card:hover { border-color: var(--blue); }
+
+.album-song-card-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 1rem;
+}
+
+.album-song-num {
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue);
+  opacity: 0.4;
+  flex-shrink: 0;
+  width: 1.2rem;
+  text-align: right;
+}
+
+.album-song-name {
+  font-family: var(--font-whois);
+  font-size: 0.85rem;
+  color: var(--blue);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.album-song-play {
+  font-size: 0.75rem;
+  color: var(--blue);
+  opacity: 0.45;
+  text-decoration: none;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: opacity 0.2s;
+}
+.album-song-play:hover { opacity: 1; }
+
+.album-song-play-placeholder { flex-shrink: 0; width: 0.75rem; }
+
+.album-song-remove {
+  background: none;
+  border: none;
+  color: var(--blue);
+  opacity: 0.3;
+  cursor: pointer;
+  padding: 0.2rem;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+}
+.album-song-remove:hover { opacity: 1; }
+
+
+/* ─── stacked section header (label above, button below) ────────────────────── */
+
+.album-section-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+
+/* ─── photo sort toggle ──────────────────────────────────────────────────────── */
+
+.album-section-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.album-sort-toggle {
+  display: flex;
+  border: 1px solid var(--blue);
+}
+
+.album-sort-btn {
+  font-family: var(--font-whois);
+  font-size: 0.72rem;
+  color: var(--blue);
+  background: none;
+  border: none;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  opacity: 0.45;
+  transition: background-color 0.15s, opacity 0.15s;
+}
+.album-sort-btn + .album-sort-btn { border-left: 1px solid var(--blue); }
+.album-sort-btn:hover  { opacity: 0.8; background-color: var(--blue-faint, rgba(10,5,155,0.06)); }
+.album-sort-btn.active { opacity: 1; background-color: var(--blue-faint, rgba(10,5,155,0.06)); }
+
+
+/* ─── view descriptions ──────────────────────────────────────────────────────── */
+ 
+.view-descriptions {
+  padding: 0 2.5rem 0.1rem;
+  flex-shrink: 0;
+}
+ 
+.view-desc {
+  font-family: var(--font-whois);
+  font-size: 0.75rem;
+  color: var(--blue);
+  opacity: 0.45;
+  margin: 0;
+  line-height: 1.6;
+  letter-spacing: 0.02em;
+}
+ 
+/* reduce gap between toggle buttons and description/content */
+.view-toggle {
+  padding-bottom: 0.5rem;
+}
+ 
+.journal-view {
+  padding-top: 1rem;
+}
+ 
+.album-view {
+  padding-top: 1rem;
+}
+ 
