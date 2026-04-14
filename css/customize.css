@@ -1,9 +1,9 @@
 /* customize.css */
 
 :root {
-  --blue: #0A059B;
-  --blue-faint: rgba(10, 5, 155, 0.08);
-  --blue-mid: rgba(10, 5, 155, 0.2);
+  --blue: #0c2177;
+  --blue-faint: rgba(12, 33, 119, 0.08);
+  --blue-mid: rgba(12, 33, 119, 0.2);
   /* global select styling */
 
   select {
@@ -31,6 +31,16 @@ html, body {
   overflow: hidden;
   height: 100vh;
   width: 100vw;
+}
+
+body {
+  background-image:
+    linear-gradient(rgba(12,33,119,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12,33,119,0.05) 1px, transparent 1px),
+    linear-gradient(rgba(12,33,119,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12,33,119,0.025) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 30px 30px, 30px 30px;
+  background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
 }
 
 
@@ -518,7 +528,7 @@ html, body {
 }
 
 .journal-location-group:last-child {
-  border-bottom: 1px solid rgba(10, 5, 155, 0.15);
+  border-bottom: 1px solid rgba(12, 33, 119, 0.15);
   margin-bottom: 1.5rem;
 }
 
@@ -1098,7 +1108,7 @@ html, body {
 .album-lightbox-bg {
   position: absolute;
   inset: 0;
-  background: rgba(10, 5, 155, 0.45);
+  background: rgba(12, 33, 119, 0.45);
   cursor: pointer;
 }
 
@@ -1141,7 +1151,7 @@ html, body {
   align-items: center;
   gap: 0.75rem;
   padding: 0.65rem 1rem;
-  border: 1px solid rgba(10, 5, 155, 0.2);
+  border: 1px solid rgba(12, 33, 119, 0.2);
   font-family: var(--font-whois);
   font-size: 0.85rem;
   color: var(--blue);
@@ -1164,7 +1174,7 @@ html, body {
   position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
-  background-color: rgba(10, 5, 155, 0.15);
+  background-color: rgba(12, 33, 119, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1224,7 +1234,7 @@ html, body {
   display: flex;
   gap: 0.75rem;
   justify-content: flex-end;
-  border-top: 1px solid rgba(10, 5, 155, 0.15);
+  border-top: 1px solid rgba(12, 33, 119, 0.15);
   padding-top: 1.25rem;
 }
  
@@ -1309,7 +1319,7 @@ html, body {
   position: fixed;
   top: 0; left: 0;
   width: 100vw; height: 100vh;
-  background-color: rgba(10, 5, 155, 0.15);
+  background-color: rgba(12, 33, 119, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1358,7 +1368,7 @@ html, body {
 .media-lightbox-bg {
   position: absolute;
   inset: 0;
-  background: rgba(10, 5, 155, 0.5);
+  background: rgba(12, 33, 119, 0.5);
   cursor: pointer;
 }
 
@@ -1403,7 +1413,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(10, 5, 155, 0.5);
+  background: rgba(12, 33, 119, 0.5);
   opacity: 0;
   transition: opacity 0.3s ease;
   pointer-events: none;
@@ -1482,7 +1492,7 @@ body.dark-mode .toggle-thumb           { background-color: #101010; }
 
 .add-song-box {
   background-color: var(--color-bg, #F7F2F1);
-  border: 2px solid var(--blue, #0A059B);
+  border: 2px solid var(--blue, #0c2177);
   padding: 2.5rem;
   max-width: 420px;
   width: 92%;
@@ -1496,7 +1506,7 @@ body.dark-mode .toggle-thumb           { background-color: #101010; }
   font-family: var(--font-meta);
   font-size: 1.6rem;
   font-weight: normal;
-  color: var(--blue, #0A059B);
+  color: var(--blue, #0c2177);
   margin: 0;
   line-height: 1.1;
 }
@@ -1510,7 +1520,7 @@ body.dark-mode .toggle-thumb           { background-color: #101010; }
 .add-song-label {
   font-family: var(--font-whois);
   font-size: 0.72rem;
-  color: var(--blue, #0A059B);
+  color: var(--blue, #0c2177);
   opacity: 0.55;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -1519,9 +1529,9 @@ body.dark-mode .toggle-thumb           { background-color: #101010; }
 .add-song-input {
   font-family: var(--font-whois);
   font-size: 0.9rem;
-  color: var(--blue, #0A059B);
+  color: var(--blue, #0c2177);
   background: var(--color-bg, #F7F2F1);
-  border: 1px solid var(--blue, #0A059B);
+  border: 1px solid var(--blue, #0c2177);
   padding: 0.65rem 0.85rem;
   outline: none;
   width: 100%;
@@ -1534,7 +1544,7 @@ body.dark-mode .toggle-thumb           { background-color: #101010; }
 .add-song-hint {
   font-family: var(--font-whois);
   font-size: 0.72rem;
-  color: var(--blue, #0A059B);
+  color: var(--blue, #0c2177);
   opacity: 0.5;
   margin: -0.5rem 0 0;
   letter-spacing: 0.03em;
@@ -1552,8 +1562,8 @@ body.dark-mode .toggle-thumb           { background-color: #101010; }
   font-size: 0.85rem;
   padding: 0.6rem 1.5rem;
   background: none;
-  border: 1px solid var(--blue, #0A059B);
-  color: var(--blue, #0A059B);
+  border: 1px solid var(--blue, #0c2177);
+  color: var(--blue, #0c2177);
   cursor: pointer;
   letter-spacing: 0.03em;
   transition: background-color 0.2s;
@@ -1572,7 +1582,7 @@ body.dark-mode .toggle-thumb           { background-color: #101010; }
 }
 
 .album-song-card {
-  border: 1px solid rgba(10, 5, 155, 0.2);
+  border: 1px solid rgba(12, 33, 119, 0.2);
   transition: border-color 0.15s;
 }
 .album-song-card:hover { border-color: var(--blue); }

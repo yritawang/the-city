@@ -1,6 +1,6 @@
 /* guide-additions.css */
 
-/* ─── scrim ─────────────────────────────────────────────────────────────────── */
+/* scrim */
 
 .guide-scrim {
   position: fixed;
@@ -16,15 +16,14 @@
 }
 
 
-/* ─── mascot wrapper ─────────────────────────────────────────────────────────── */
-/* row: bird on the left, bubble on the right, tail on bubble points left */
+/* mascot wrapper */
 
 .guide-mascot {
   position: fixed;
   z-index: 1300;
   display: flex;
   flex-direction: row;
-  align-items: flex-end;   /* bird and bubble share bottom edge */
+  align-items: flex-end;
   gap: 0;
   pointer-events: none;
   opacity: 0;
@@ -47,23 +46,20 @@
 }
 
 
-/* ─── bird ───────────────────────────────────────────────────────────────────── */
+/* bird */
 
 .guide-bird {
   flex-shrink: 0;
   width: 150px;
   height: 150px;
   cursor: pointer;
-  pointer-events: all;   /* override parent's pointer-events: none */
-  /* no animation by default */
+  pointer-events: all;
 }
 
-/* hover: bob up and down */
 .guide-bird:hover {
   animation: birdBob 1.8s ease-in-out infinite;
 }
 
-/* jump overrides hover */
 .guide-bird.bird-jumping {
   animation: birdJump 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
 }
@@ -88,12 +84,11 @@
 }
 
 
-/* ─── speech bubble ──────────────────────────────────────────────────────────── */
-/* tail always points left toward the bird */
+/* speech bubble — tail points left toward the bird */
 
 .guide-bubble {
   background: var(--color-bg, #fffdf5);
-  border: 1.5px solid var(--blue, #0A059B);
+  border: 1.5px solid var(--blue, #0c2177);
   padding: 1.2rem 1.5rem;
   max-width: 340px;
   min-width: 280px;
@@ -102,7 +97,6 @@
   pointer-events: all;
 }
 
-/* left-pointing tail */
 .guide-bubble::before {
   content: '';
   position: absolute;
@@ -112,7 +106,7 @@
   height: 0;
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
-  border-right: 11px solid var(--blue, #0A059B);
+  border-right: 11px solid var(--blue, #0c2177);
 }
 
 .guide-bubble::after {
@@ -127,26 +121,25 @@
   border-right: 10px solid var(--color-bg, #fffdf5);
 }
 
-/* no tail for centered / summary bubbles */
 .guide-bubble.tail-none::before,
 .guide-bubble.tail-none::after {
   display: none;
 }
 
 
-/* ─── bubble text ────────────────────────────────────────────────────────────── */
+/* bubble text — paragraph line height stays generous */
 
 .guide-bubble-text {
   font-family: var(--font-whois);
   font-size: 0.95rem;
-  color: var(--blue, #0A059B);
-  line-height: 1.8;
+  color: var(--blue, #0c2177);
+  line-height: 1.7;
   letter-spacing: 0.01em;
   margin: 0 0 1rem;
 }
 
 
-/* ─── bubble nav ─────────────────────────────────────────────────────────────── */
+/* bubble nav */
 
 .guide-bubble-nav {
   display: flex;
@@ -158,15 +151,15 @@
 .guide-bubble-progress {
   font-family: var(--font-whois);
   font-size: 0.72rem;
-  color: var(--blue, #0A059B);
+  color: var(--blue, #0c2177);
   opacity: 0.45;
   letter-spacing: 0.04em;
 }
 
 .guide-bubble-btn {
   background: none;
-  border: 1px solid var(--blue, #0A059B);
-  color: var(--blue, #0A059B);
+  border: 1px solid var(--blue, #0c2177);
+  color: var(--blue, #0c2177);
   font-family: var(--font-whois);
   font-size: 0.8rem;
   padding: 0.38rem 0.9rem;
@@ -177,19 +170,19 @@
 }
 
 .guide-bubble-btn:hover {
-  background-color: var(--blue, #0A059B);
+  background-color: var(--blue, #0c2177);
   color: var(--color-bg, #fffdf5);
 }
 
 .guide-bubble-btn.primary {
-  background-color: var(--blue, #0A059B);
+  background-color: var(--blue, #0c2177);
   color: var(--color-bg, #fffdf5);
 }
 
 .guide-bubble-btn.primary:hover { opacity: 0.8; }
 
 
-/* ─── skip button ────────────────────────────────────────────────────────────── */
+/* skip button */
 
 .guide-skip {
   position: fixed;
@@ -212,35 +205,52 @@
 .guide-skip:hover   { opacity: 1; }
 
 
-/* ─── summary lines ──────────────────────────────────────────────────────────── */
+/* summary lines — numbered list, tight line height */
 
 .guide-summary-line {
-  display: block;
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
   font-family: var(--font-whois);
   font-size: 0.9rem;
-  color: var(--blue, #0A059B);
-  line-height: 1.9;
+  color: var(--blue, #0c2177);
+  line-height: 1.35;
   letter-spacing: 0.01em;
-  padding-left: 0.9rem;
-  position: relative;
+  margin-top: 1rem;
+  margin-bottom: 0.55rem;
+  counter-increment: summary-counter;
 }
 
 .guide-summary-line::before {
-  content: '—';
-  position: absolute;
-  left: 0;
-  opacity: 0.4;
+  content: counter(summary-counter) '.';
+  font-family: var(--font-whois);
+  font-size: 0.75rem;
+  opacity: 0.45;
+  flex-shrink: 0;
+  min-width: 1.2rem;
+  text-align: right;
+}
+
+/* reset counter on the container that holds the lines */
+.guide-bubble-text,
+#guide-mascot-text,
+#cust-guide-mascot-text {
+  counter-reset: summary-counter;
 }
 
 
-/* ─── constellation mascot ───────────────────────────────────────────────────── */
+/* constellation mascot */
 
 .constellation-mascot { z-index: 1400; }
 
+
 /* paragraph breaks inside guide bubble messages */
+
 .guide-msg-para {
   display: block;
+  line-height: 1.3;
 }
+
 .guide-msg-para + .guide-msg-para {
-  margin-top: 0.75rem;
+  margin-top: 0.65rem;
 }

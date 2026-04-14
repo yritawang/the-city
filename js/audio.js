@@ -7,7 +7,7 @@
 // initAudioForPage() called on every other page type
 
 
-// ─── page type detection ──────────────────────────────────────────────────────
+// page type detection
 
 var PAGE_TYPE = (function() {
   var path = window.location.pathname;
@@ -20,7 +20,7 @@ var PAGE_TYPE = (function() {
 var ASSET_PREFIX = window.location.pathname.includes('/districts/') ? '../' : '';
 
 
-// ─── track definitions ────────────────────────────────────────────────────────
+// track definitions
 
 var TRACKS = [
   {
@@ -46,7 +46,7 @@ var TRACKS = [
 var currentTrackIdx = parseInt(localStorage.getItem('radioTrack') || '0');
 
 
-// ─── volume levels per page type ─────────────────────────────────────────────
+// volume levels per page type
 
 var VOLUMES = {
   map:       0.55,
@@ -56,7 +56,7 @@ var VOLUMES = {
 };
 
 
-// ─── state ────────────────────────────────────────────────────────────────────
+// state
 
 var audioCtx      = null;
 var masterGain    = null;
@@ -66,7 +66,7 @@ var reverbGain    = null;
 var dryGain       = null;
 var delayNode     = null;
 var delayGain     = null;
-var sourceNode    = null;   // MediaElementSourceNode for current track
+var sourceNode    = null;   // mediaElementSourceNode for current track
 var audioEl       = null;   // the <audio> element
 var audioStarted  = false;
 var audioMuted    = false;
@@ -99,7 +99,7 @@ var CLICK_SELECTOR = [
 ].join(', ');
 
 
-// ─── init ─────────────────────────────────────────────────────────────────────
+// init
 
 function initAudio() {
   audioMuted = localStorage.getItem('audioMuted') === 'true';
@@ -210,8 +210,8 @@ function _buildReverb() {
 function _buildAudioEl() {
   if (audioEl) return;
   var track = TRACKS[currentTrackIdx];
-  audioEl        = new Audio(ASSET_PREFIX + 'assets/sounds/' + track.file);
-  audioEl.loop   = true;
+  audioEl         = new Audio(ASSET_PREFIX + 'assets/sounds/' + track.file);
+  audioEl.loop    = true;
   audioEl.preload = 'auto';
   audioEl.crossOrigin = 'anonymous';
 }
@@ -236,18 +236,18 @@ function _applyPageEffects() {
   if (PAGE_TYPE === 'district') {
     // submersion: wet reverb + echo
     reverbGain.gain.setTargetAtTime(0.65, audioCtx.currentTime, 1.5);
-    delayGain.gain.setTargetAtTime(0.3,  audioCtx.currentTime, 1.5);
-    dryGain.gain.setTargetAtTime(0.5,    audioCtx.currentTime, 1.5);
+    delayGain.gain.setTargetAtTime(0.3,   audioCtx.currentTime, 1.5);
+    dryGain.gain.setTargetAtTime(0.5,     audioCtx.currentTime, 1.5);
   } else {
     // no effects on other pages
-    reverbGain.gain.setTargetAtTime(0,   audioCtx.currentTime, 0.5);
-    delayGain.gain.setTargetAtTime(0,    audioCtx.currentTime, 0.5);
-    dryGain.gain.setTargetAtTime(1,      audioCtx.currentTime, 0.5);
+    reverbGain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.5);
+    delayGain.gain.setTargetAtTime(0,  audioCtx.currentTime, 0.5);
+    dryGain.gain.setTargetAtTime(1,    audioCtx.currentTime, 0.5);
   }
 }
 
 
-// ─── track switching ──────────────────────────────────────────────────────────
+// track switching
 
 function switchTrack(idx) {
   if (idx === currentTrackIdx && audioStarted) return;
@@ -261,15 +261,14 @@ function switchTrack(idx) {
   setTimeout(function() {
     if (audioEl) {
       audioEl.pause();
-      // disconnect old source
       if (sourceNode) { try { sourceNode.disconnect(); } catch(e) {} }
-      sourceNode  = null;
+      sourceNode   = null;
       audioStarted = false;
     }
 
-    audioEl           = new Audio(ASSET_PREFIX + 'assets/sounds/' + track.file);
-    audioEl.loop      = true;
-    audioEl.preload   = 'auto';
+    audioEl             = new Audio(ASSET_PREFIX + 'assets/sounds/' + track.file);
+    audioEl.loop        = true;
+    audioEl.preload     = 'auto';
     audioEl.crossOrigin = 'anonymous';
 
     if (audioCtx) {
@@ -285,7 +284,7 @@ function switchTrack(idx) {
 }
 
 
-// ─── mute toggle ──────────────────────────────────────────────────────────────
+// mute toggle
 
 function toggleAudioMute() {
   audioMuted = !audioMuted;
@@ -316,19 +315,20 @@ function _fadeMasterTo(target, durationMs) {
 }
 
 
-// ─── radio on map ─────────────────────────────────────────────────────────────
+// radio on map
 
 function _placeRadioOnMap() {
   var md = document.querySelector('.map-districts');
   if (!md) return;
 
-  var el    = document.createElement('div');
-  el.id     = 'radio-on-map';
+  var el = document.createElement('div');
+  el.id  = 'radio-on-map';
   el.style.cssText = [
     'position:absolute',
-    'right:20px',
-    'bottom:60px',
-    'z-index:8',
+    'left:50%',
+    'transform:translateX(-50%)',
+    'bottom:80px',
+    'z-index:1000',
     'opacity:0',
     'cursor:pointer',
     'display:flex',
@@ -336,32 +336,15 @@ function _placeRadioOnMap() {
     'align-items:center',
     'gap:0.4rem',
     'transition:opacity 0.5s ease, transform 0.25s ease',
-    'transform:translateY(0)',
   ].join(';');
 
   el.innerHTML = [
-    '<svg width="48" height="40" viewBox="0 0 48 40" fill="none" xmlns="http://www.w3.org/2000/svg">',
-    // body
-    '  <rect x="4" y="14" width="40" height="24" rx="1" stroke="var(--blue)" stroke-width="1.4" fill="none"/>',
-    // speaker grille lines
-    '  <line x1="8" y1="19" x2="8" y2="33" stroke="var(--blue)" stroke-width="1" opacity="0.5"/>',
-    '  <line x1="11" y1="19" x2="11" y2="33" stroke="var(--blue)" stroke-width="1" opacity="0.5"/>',
-    '  <line x1="14" y1="19" x2="14" y2="33" stroke="var(--blue)" stroke-width="1" opacity="0.5"/>',
-    '  <line x1="17" y1="19" x2="17" y2="33" stroke="var(--blue)" stroke-width="1" opacity="0.5"/>',
-    // tuning dial
-    '  <circle cx="33" cy="26" r="6" stroke="var(--blue)" stroke-width="1.4" fill="none"/>',
-    '  <line x1="33" y1="21" x2="33" y2="23" stroke="var(--blue)" stroke-width="1.2"/>',
-    // antenna
-    '  <line x1="34" y1="14" x2="40" y2="3" stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round"/>',
-    '  <line x1="14" y1="14" x2="10" y2="5" stroke="var(--blue)" stroke-width="1.4" stroke-linecap="round"/>',
-    // small buttons
-    '  <rect x="22" y="31" width="4" height="3" rx="0" stroke="var(--blue)" stroke-width="1" fill="none"/>',
-    '</svg>',
-    '<span class="radio-map-label mono">Radio</span>',
+    '<img src="assets/radio.png" alt="Radio" style="width:72px;height:auto;display:block;pointer-events:none;">',
+    // '<span class="radio-map-label mono">Radio</span>',
   ].join('');
 
-  el.addEventListener('mouseenter', function() { el.style.transform = 'translateY(-4px)'; });
-  el.addEventListener('mouseleave', function() { el.style.transform = 'translateY(0)'; });
+  el.addEventListener('mouseenter', function() { el.style.transform = 'translateX(-50%) translateY(-4px)'; });
+  el.addEventListener('mouseleave', function() { el.style.transform = 'translateX(-50%) translateY(0)'; });
   el.addEventListener('click', function(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -373,7 +356,7 @@ function _placeRadioOnMap() {
 }
 
 
-// ─── radio overlay ────────────────────────────────────────────────────────────
+// radio overlay
 
 function openRadioOverlay() {
   document.getElementById('radio-overlay')?.remove();
@@ -402,16 +385,16 @@ function openRadioOverlay() {
 
   overlay.querySelector('#radio-close-btn').addEventListener('click', closeRadioOverlay);
   overlay.querySelector('#radio-playpause-btn').addEventListener('click', function() {
-  if (audioEl && !audioEl.paused) {
-    audioEl.pause();
-    _fadeMasterTo(0, 400);
-    overlay.querySelector('#radio-playpause-btn').textContent = '▶';
-  } else if (audioEl) {
-    audioEl.play().catch(function() {});
-    _fadeMasterTo(audioMuted ? 0 : VOLUMES[PAGE_TYPE] || 0.45, 400);
-    overlay.querySelector('#radio-playpause-btn').textContent = '⏸';
-  }
-});
+    if (audioEl && !audioEl.paused) {
+      audioEl.pause();
+      _fadeMasterTo(0, 400);
+      overlay.querySelector('#radio-playpause-btn').textContent = '▶';
+    } else if (audioEl) {
+      audioEl.play().catch(function() {});
+      _fadeMasterTo(audioMuted ? 0 : VOLUMES[PAGE_TYPE] || 0.45, 400);
+      overlay.querySelector('#radio-playpause-btn').textContent = '⏸';
+    }
+  });
 }
 
 function _radioOverlayHTML() {
@@ -429,26 +412,16 @@ function _radioOverlayHTML() {
     '<div class="overlay-content radio-overlay-content">',
     '  <div class="radio-overlay-header">',
     '    <div class="radio-overlay-header-left">',
-    '      <svg width="28" height="24" viewBox="0 0 48 40" fill="none" xmlns="http://www.w3.org/2000/svg">',
-    '        <rect x="4" y="14" width="40" height="24" rx="1" stroke="var(--blue)" stroke-width="1.8" fill="none"/>',
-    '        <line x1="8" y1="19" x2="8" y2="33" stroke="var(--blue)" stroke-width="1.2" opacity="0.5"/>',
-    '        <line x1="11" y1="19" x2="11" y2="33" stroke="var(--blue)" stroke-width="1.2" opacity="0.5"/>',
-    '        <line x1="14" y1="19" x2="14" y2="33" stroke="var(--blue)" stroke-width="1.2" opacity="0.5"/>',
-    '        <line x1="17" y1="19" x2="17" y2="33" stroke="var(--blue)" stroke-width="1.2" opacity="0.5"/>',
-    '        <circle cx="33" cy="26" r="6" stroke="var(--blue)" stroke-width="1.8" fill="none"/>',
-    '        <line x1="33" y1="21" x2="33" y2="23" stroke="var(--blue)" stroke-width="1.4"/>',
-    '        <line x1="34" y1="14" x2="40" y2="3" stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round"/>',
-    '        <line x1="14" y1="14" x2="10" y2="5" stroke="var(--blue)" stroke-width="1.8" stroke-linecap="round"/>',
-    '      </svg>',
+    '      <img src="assets/radio.png" alt="Radio" style="width:28px;height:auto;">',
     '      <div>',
     '        <h2 class="radio-overlay-title">The Radio</h2>',
-    '        <p class="radio-overlay-subtitle mono">choose a station</p>',
-'      </div>',
-'    </div>',
-'    <div style="display:flex;align-items:center;gap:0.75rem;">',
-'      <button class="radio-playpause-btn mono" id="radio-playpause-btn">' + (audioEl && audioEl.paused ? '▶' : '⏸') + '</button>',
-'      <button class="radio-close-btn" id="radio-close-btn">×</button>',
-'    </div>',
+    '        <p class="radio-overlay-subtitle mono">Choose a station</p>',
+    '      </div>',
+    '    </div>',
+    '    <div style="display:flex;align-items:center;gap:0.75rem;">',
+    '      <button class="radio-playpause-btn mono" id="radio-playpause-btn">' + (audioEl && audioEl.paused ? '▶' : '⏸') + '</button>',
+    '      <button class="radio-close-btn" id="radio-close-btn">×</button>',
+    '    </div>',
     '  </div>',
     '  <div class="radio-tracks" id="radio-tracks">',
     tracksHTML,
@@ -468,13 +441,13 @@ function _updateRadioOverlay() {
 function closeRadioOverlay() {
   var overlay = document.getElementById('radio-overlay');
   if (!overlay) return;
-  overlay.style.opacity = '0';
+  overlay.style.opacity   = '0';
   overlay.style.transition = 'opacity 0.2s ease';
   setTimeout(function() { overlay.remove(); }, 220);
 }
 
 
-// ─── sfx ──────────────────────────────────────────────────────────────────────
+// sfx
 
 function playSfxClick() {
   if (!audioCtx || audioMuted) return;
@@ -514,7 +487,7 @@ function playSfxChime() {
 }
 
 
-// ─── wire up sfx ──────────────────────────────────────────────────────────────
+// wire up sfx
 
 function attachGlobalSfx() {
   document.addEventListener('click', function(e) {

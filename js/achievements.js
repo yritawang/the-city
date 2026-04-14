@@ -250,7 +250,7 @@ function initAchievementsPanel() {
   const btn = document.createElement('div');
   btn.id        = 'achievements-toggle-btn';
   btn.className = 'achievements-toggle-btn';
-  btn.innerHTML = `<span class="achievements-btn-label">Archie's Log</span>`;
+  btn.innerHTML = `<span class="achievements-btn-label">Achievements</span>`;
   document.body.appendChild(btn);
   btn.addEventListener('click', openAchievementsPanel);
 }

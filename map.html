@@ -64,13 +64,78 @@
   <div class="constellation-btn locked" id="constellation-btn">
     <span class="constellation-btn-label">See Memories</span>
   </div>
+
   <div class="constellation-time-btn hidden" id="constellation-time-btn">
-  <span class="constellation-btn-label" id="constellation-time-btn-label">All time</span>
-</div>
+    <span class="constellation-btn-label" id="constellation-time-btn-label">All time</span>
+  </div>
+
   <div class="constellation-overlay hidden" id="constellation-overlay">
-    <div id="constellation-canvas-container">
-      <div class="constellation-info-panel" id="constellation-info-panel"></div>
+
+    <!-- layer picker — shown when overlay first opens -->
+    <div id="memories-picker">
+      <div class="memories-picker-title mono">your memories</div>
+      <div class="memories-stack" id="memories-stack">
+
+        <div class="memories-layer" data-view="topography">
+          <div class="memories-layer-left">
+            <span class="memories-layer-num mono">I</span>
+            <span class="memories-layer-label mono">Topography</span>
+            <span class="memories-layer-sub">Rings of recency</span>
+          </div>
+          <div class="memories-layer-right">
+            <div class="memories-layer-preview memories-preview-topo">
+              <span></span><span></span><span></span>
+            </div>
+            <span class="memories-layer-arrow mono">→</span>
+          </div>
+        </div>
+
+        <div class="memories-layer" data-view="constellation">
+          <div class="memories-layer-left">
+            <span class="memories-layer-num mono">II</span>
+            <span class="memories-layer-label mono">Constellation</span>
+            <span class="memories-layer-sub">Word frequencies</span>
+          </div>
+          <div class="memories-layer-right">
+            <div class="memories-layer-preview memories-preview-const"></div>
+            <span class="memories-layer-arrow mono">→</span>
+          </div>
+        </div>
+
+        <div class="memories-layer" data-view="report">
+          <div class="memories-layer-left">
+            <span class="memories-layer-num mono">III</span>
+            <span class="memories-layer-label mono">Report</span>
+            <span class="memories-layer-sub">City analysis</span>
+          </div>
+          <div class="memories-layer-right">
+            <div class="memories-layer-preview memories-preview-report">
+              <span style="width:20px"></span>
+              <span style="width:14px"></span>
+              <span style="width:20px"></span>
+              <span style="width:10px"></span>
+            </div>
+            <span class="memories-layer-arrow mono">→</span>
+          </div>
+        </div>
+
+      </div>
     </div>
+
+    <!-- active view container — hidden until a layer is selected -->
+    <div id="memories-view" class="hidden">
+      <button class="memories-back-btn mono" id="memories-back-btn">← views</button>
+      <div class="memories-view-label mono" id="memories-view-label"></div>
+
+      <!-- view II: existing constellation canvas lives here -->
+      <div id="constellation-canvas-container" class="hidden">
+        <div class="constellation-info-panel" id="constellation-info-panel"></div>
+      </div>
+
+      <!-- views I, III, IV: rendered into this div -->
+      <div id="memories-view-canvas"></div>
+    </div>
+
   </div>
 
   <div class="overlay" id="city-name-overlay">
@@ -91,27 +156,23 @@
     </div>
   </div>
 
-<div class="overlay" id="about-overlay">
-  <div class="overlay-content about-overlay-content">
-    <h2 class="guide-concept-title">Your City is Always Being Built</h2>
-    <p class="guide-concept-text">This website and architecture illustrations were created by Rita Wang for the Communication Design BFA Capstone at Washington University in St. Louis (2026). The typefaces used are Luuse's Meta Old French and Raphaël Bastide’s Whois Mono.</p>
-    <p class="guide-concept-text">My many thanks belong to: Bei Hu for her endless kindness and patience, my fellow capstone cohort for their support and feedback (shoutout Mahjong group), my friends for enduring my endless user testing requests, and my mom for her courage to move to a foreign country for my education.</p>
-    <div class="overlay-footer">
-      <button class="overlay-btn mono" id="about-close-btn">Close</button>
+  <div class="overlay" id="about-overlay">
+    <div class="overlay-content about-overlay-content">
+      <h2 class="guide-concept-title">Your City is Always Being Built</h2>
+      <p class="guide-concept-text">This website and architecture illustrations were created by Rita Wang for the Communication Design BFA Capstone at Washington University in St. Louis (2026). The typefaces used are Luuse's Meta Old French and Raphaël Bastide's Whois Mono.</p>
+      <p class="guide-concept-text">My many thanks belong to: Bei Hu for her endless kindness and patience, my fellow capstone cohort for their support and feedback (shoutout Mahjong group), my friends for enduring my endless user testing requests, and my mom for her courage to move to a foreign country for my education.</p>
+      <div class="overlay-footer">
+        <button class="overlay-btn mono" id="about-close-btn">Close</button>
+      </div>
     </div>
   </div>
-</div>
-
-
 
   <div class="overlay" id="share-overlay">
     <div class="overlay-content share-overlay-content">
-
       <div class="share-tabs">
         <button class="share-tab active" id="share-tab-share">Share</button>
         <button class="share-tab" id="share-tab-log">Friend Cities</button>
       </div>
-
       <div class="share-tab-panel active" id="share-panel-share">
         <p class="share-hint mono">Share your city with someone. They can visit your map and constellation in a read-only view.</p>
         <div class="share-code-display">
@@ -127,10 +188,9 @@
             <span class="share-code-value mono" id="share-code-value">—</span>
             <button class="share-copy-btn mono" id="share-copy-btn">Copy</button>
           </div>
-</div>
+        </div>
         <p class="share-hint mono">Send this code to a friend. They paste it into their Friends Cities to see your city.</p>
       </div>
-
       <div class="share-tab-panel hidden" id="share-panel-log">
         <div class="visitor-log-input-row">
           <input type="text" class="visitor-code-input mono" id="visitor-code-input" placeholder="Paste a city code…" maxlength="16">
@@ -139,11 +199,9 @@
         <p class="visitor-error mono hidden" id="visitor-error">Invalid code. Please check and try again.</p>
         <div class="visitor-cities-list" id="visitor-cities-list"></div>
       </div>
-
       <div class="overlay-footer">
         <button class="overlay-btn mono" id="share-close-btn">Close ×</button>
       </div>
-
     </div>
   </div>
 
@@ -165,12 +223,10 @@
   <script src="js/guide.js"></script>
   <script src="js/audio.js"></script>
   <script src="js/cursor-loader.js"></script>
-<script>
-  document.querySelector('.header-left').addEventListener('click', openCityNameOverlay);
-  initAchievementsPanel();
-  initAudio();
-  attachGlobalSfx();
-  
-</script>
+  <script>
+    initAchievementsPanel();
+    initAudio();
+    attachGlobalSfx();
+  </script>
 </body>
 </html>

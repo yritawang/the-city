@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Print — your city</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    :root { --color-bg:#F7F2F1; --blue:#0c2177; --blue-faint:rgba(12,33,119,0.06); }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      background-color:var(--color-bg); color:var(--blue);
+      font-family:var(--font-whois),monospace;
+      min-height:100vh; display:flex; flex-direction:column; align-items:center; padding-bottom:4rem;
+    }
+
+    .print-header {
+      width:100%; max-width:680px; display:flex; justify-content:space-between; align-items:center;
+      padding:2rem 0 1.5rem; border-bottom:1px solid rgba(12,33,119,0.15);
+    }
+    .print-header-title { font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; }
+    .print-header-city  { font-family:var(--font-meta); font-size:1rem; margin-top:0.25rem; }
+    .back-link { font-size:0.72rem; letter-spacing:0.05em; text-decoration:none; color:var(--blue); opacity:0.5; transition:opacity 0.15s; }
+    .back-link:hover { opacity:1; }
+
+    .printer-controls {
+      width:100%; max-width:480px; margin-top:2rem; display:flex; flex-direction:column; gap:0.85rem;
+    }
+    .printer-row { display:flex; gap:0.75rem; align-items:stretch; }
+    .printer-input {
+      flex:1; background:none; border:1px solid var(--blue); color:var(--blue);
+      font-family:var(--font-whois); font-size:0.82rem; padding:0.6rem 0.85rem;
+      outline:none; letter-spacing:0.02em;
+    }
+    .printer-input::placeholder { opacity:0.35; }
+    .printer-input:focus { border-width:2px; }
+    .printer-btn {
+      font-family:var(--font-whois); font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase;
+      border:1px solid var(--blue); background:none; color:var(--blue);
+      padding:0.6rem 1.2rem; cursor:pointer; transition:background-color 0.15s,opacity 0.15s; white-space:nowrap;
+    }
+    .printer-btn:hover:not(:disabled) { background-color:var(--blue-faint); }
+    .printer-btn:disabled { opacity:0.3; cursor:not-allowed; }
+    .printer-btn.primary { background:var(--blue); color:var(--color-bg); }
+    .printer-btn.primary:hover:not(:disabled) { opacity:0.82; }
+    .print-status { font-size:0.72rem; letter-spacing:0.04em; opacity:0.5; min-height:1.2em; }
+    .print-status.ok    { opacity:1; }
+    .print-status.error { opacity:1; color:#c0392b; }
+
+    /* receipt */
+    .receipt {
+      width:100%; max-width:480px; border:1px solid var(--blue); margin:2rem 0 0;
+      display:flex; flex-direction:column;
+    }
+    .receipt-section { padding:1.6rem 2rem; border-bottom:1px solid rgba(12,33,119,0.15); }
+    .receipt-section:last-child { border-bottom:none; }
+    .receipt-label {
+      font-size:0.65rem; letter-spacing:0.12em; text-transform:uppercase;
+      opacity:0.5; margin-bottom:0.75rem;
+    }
+    .receipt-city-name { font-family:var(--font-meta); font-size:1.8rem; line-height:1.15; font-weight:normal; }
+    .receipt-date { font-size:0.75rem; margin-top:0.4rem; opacity:0.6; }
+
+    .receipt-district-row {
+      display:flex; justify-content:space-between; align-items:baseline;
+      padding:0.55rem 0; border-bottom:0.5px solid rgba(12,33,119,0.08);
+    }
+    .receipt-district-row:last-child { border-bottom:none; }
+    .receipt-loc-name {
+      font-family:var(--font-meta); font-size:0.88rem; flex:1;
+    }
+    .receipt-loc-district {
+      font-family:var(--font-whois); font-size:0.72rem;
+      letter-spacing:0.05em; text-transform:uppercase;
+      flex-shrink:0; margin-left:1rem; opacity:0.85;
+    }
+
+    /* words */
+    .receipt-words { display:flex; flex-wrap:wrap; gap:6px; align-items:baseline; padding-top:0.25rem; }
+
+    .receipt-footer {
+      padding:1.2rem 2rem; font-size:0.65rem;
+      letter-spacing:0.08em; text-align:center; opacity:0.5;
+    }
+
+    @media print {
+      body { background:white; }
+      .print-header, .printer-controls { display:none; }
+      .receipt { border:1px solid #000; margin:0; max-width:100%; }
+      * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="print-header">
+    <div>
+      <div class="print-header-title">City receipt</div>
+      <div class="print-header-city" id="page-city-title">Your city</div>
+    </div>
+    <a href="map.html" class="back-link">← Back to city</a>
+  </div>
+
+  <div class="printer-controls">
+    <div class="printer-row">
+      <input type="text" class="printer-input" id="user-name-input"
+        placeholder="Your name (optional)" maxlength="40">
+    </div>
+    <div class="printer-row">
+      <button class="printer-btn" id="connect-btn">Connect printer</button>
+      <button class="printer-btn primary" id="print-btn" disabled>Print receipt</button>
+    </div>
+    <div class="print-status" id="print-status">Connect your Rongta RP326 via USB to begin.</div>
+  </div>
+
+  <div class="receipt" id="receipt">
+    <div class="receipt-section" style="text-align:center;">
+      <pre class="receipt-ascii" id="receipt-ascii" style="font-size:0.62rem;line-height:1.3;display:inline-block;text-align:left;margin-bottom:1rem;color:var(--blue);opacity:0.6;"></pre>
+      <div class="receipt-label" style="text-align:left;">Your emotional hometown</div>
+      <div class="receipt-city-name" id="receipt-city-name">Your city</div>
+      <div class="receipt-date" id="receipt-date"></div>
+    </div>
+    <div class="receipt-section" id="receipt-districts"></div>
+    <div class="receipt-section">
+      <div class="receipt-label">Most frequent words</div>
+      <div class="receipt-words" id="receipt-words"></div>
+    </div>
+    <div class="receipt-footer">Your city is always being built.</div>
+  </div>
+
+  <script src="js/achievements.js"></script>
+  <script src="js/cursor-loader.js"></script>
+  <script src="js/printer.js"></script>
+  <script>
+
+    var DISTRICT_COLORS_PRINT = {
+      shrine:      '#DD6204',
+      garden:      '#6A6405',
+      cornerstore: '#D05038',
+      tower:       '#205A97',
+      plaza:       '#6E4C77',
+    };
+
+    var DISTRICTS_PRINT = ['garden','cornerstore','shrine','tower','plaza'];
+
+    function extractKeywordsPrint(topN) {
+      var stopwords = new Set(['that','this','with','have','from','they','their','would','could','should','about','there','which','when','what','just','been','will','your','more','also','into','some','than','then','were','very','much','each','over','think','place','feel','felt','thought','remember','know','still','even','always','never','every','back','here','thing','things','really','because','something','anything','nothing','going','getting','being','having','doing','making']);
+      var freq = {}, source = {};
+      DISTRICTS_PRINT.forEach(function(key) {
+        JSON.parse(localStorage.getItem(key+'-sessions')||'[]')
+          .filter(function(s){return !s.isTrainThought;})
+          .forEach(function(s){
+            Object.entries(s.answers||{}).forEach(function(e){
+              if(parseInt(e[0])===0||!e[1]) return;
+              e[1].toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/)
+                .filter(function(w){return w.length>3&&!stopwords.has(w);})
+                .forEach(function(w){ freq[w]=(freq[w]||0)+1; if(!source[w])source[w]=key; });
+            });
+          });
+      });
+      return Object.entries(freq).sort(function(a,b){return b[1]-a[1];}).slice(0,topN)
+        .map(function(e){return {word:e[0],district:source[e[0]]||'shrine'};});
+    }
+
+    function getDistrictData() {
+      return DISTRICTS_PRINT.map(function(key) {
+        var sessions = JSON.parse(localStorage.getItem(key+'-sessions')||'[]')
+          .filter(function(s){return !s.isTrainThought;});
+        if(!sessions.length) return null;
+        // collect unique locations in chronological order
+        var seen = {}, locations = [];
+        sessions.slice().sort(function(a,b){return (a.timestamp||0)-(b.timestamp||0);}).forEach(function(s){
+          var loc = s.answers && s.answers[0] ? s.answers[0].trim() : '';
+          if(loc && !seen[loc.toLowerCase()]){ seen[loc.toLowerCase()]=true; locations.push(loc); }
+        });
+        return {
+          key:        key,
+          color:      DISTRICT_COLORS_PRINT[key]||'#0c2177',
+          customName: localStorage.getItem(key+'-name')||'',
+          locations:  locations,
+        };
+      }).filter(Boolean);
+    }
+
+    function initReceipt() {
+      var cityName = localStorage.getItem('cityName') || 'Your city';
+      document.getElementById('receipt-city-name').textContent = cityName;
+      document.getElementById('page-city-title').textContent   = cityName;
+      document.title = 'Print — ' + cityName;
+      document.getElementById('receipt-date').textContent =
+        new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+
+      // star ascii art in preview
+      var star = [
+        "             *             ",
+        "            ***            ",
+        "           *****           ",
+        "  ******** ***** ********  ",
+        "   *********************** ",
+        "    *********************  ",
+        "      *****************    ",
+        "     *****************     ",
+        "   *******     ********    ",
+        "  *****              ***   ",
+      ].join('\n');
+      var asciiEl = document.getElementById('receipt-ascii');
+      if(asciiEl) asciiEl.textContent = star;
+
+      var districts = getDistrictData();
+      var distHTML = '<div class="receipt-label">Districts</div>';
+      districts.forEach(function(d) {
+        var label = d.key.charAt(0).toUpperCase()+d.key.slice(1);
+        d.locations.forEach(function(loc) {
+          distHTML += '<div class="receipt-district-row">'
+            + '<span class="receipt-loc-name">' + loc + '</span>'
+            + '<span class="receipt-loc-district" style="color:'+d.color+';">' + label + '</span>'
+            + '</div>';
+        });
+      });
+      document.getElementById('receipt-districts').innerHTML = distHTML;
+
+      var kws = extractKeywordsPrint(12);
+      document.getElementById('receipt-words').innerHTML = kws.map(function(k,i){
+        var col = DISTRICT_COLORS_PRINT[k.district]||'#0c2177';
+        var fs  = Math.round(22 - i*0.9);
+        return '<span style="font-family:var(--font-meta);font-size:'+fs+'px;color:'+col+';line-height:1.3;">'+k.word+'</span>';
+      }).join('');
+    }
+
+    // override printer.js buildReceiptBytes to match HTML preview
+    function buildReceiptBytes(data) {
+      var cityName = localStorage.getItem('cityName') || 'Unnamed city';
+      var userName = (document.getElementById('user-name-input')||{}).value || '';
+      var now      = new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
+      var districts = getDistrictData();
+      var topWords  = extractKeywordsPrint(10).map(function(k){return k.word;});
+
+      var parts = [];
+      parts.push(cmd.init());
+      parts.push(cmd.feedLines(1));
+      parts.push(cmd.alignCenter());
+      ASCII_ART_SAFE.forEach(function(l){parts.push(cmd.textLine(l));});
+      parts.push(cmd.emptyLine());
+      parts.push(cmd.bold(true));
+      parts.push(cmd.doubleWidth(true));
+      parts.push(cmd.textLine(cityName.slice(0,20).toUpperCase()));
+      parts.push(cmd.doubleWidth(false));
+      parts.push(cmd.bold(false));
+      if(userName) parts.push(cmd.textLine(userName));
+      parts.push(cmd.textLine('Emotional hometown'));
+      parts.push(cmd.textLine(now));
+      parts.push(cmd.emptyLine());
+      parts.push(cmd.alignLeft());
+      parts.push(cmd.textLine('-'.repeat(42)));
+
+      districts.forEach(function(d){
+        var label = d.key.charAt(0).toUpperCase()+d.key.slice(1);
+        d.locations.forEach(function(loc){
+          // location name left, district right, padded to 42 chars
+          var right = label;
+          var left  = loc.slice(0, 42 - right.length - 2);
+          parts.push(cmd.textLine(left.padEnd(42 - right.length) + right));
+        });
+      });
+
+      parts.push(cmd.emptyLine());
+      parts.push(cmd.textLine('-'.repeat(42)));
+      if(topWords.length){
+        parts.push(cmd.emptyLine());
+        wrap(topWords.join('  '),42).forEach(function(l){parts.push(cmd.textLine(l));});
+      }
+      parts.push(cmd.emptyLine());
+      parts.push(cmd.alignCenter());
+      parts.push(cmd.textLine('-'.repeat(42)));
+      parts.push(cmd.textLine('A city built from memory'));
+      parts.push(cmd.feedLines(4));
+      parts.push(cmd.cut());
+      return buildBuffer(parts);
+    }
+
+    document.addEventListener('DOMContentLoaded', initReceipt);
+
+  </script>
+</body>
+</html>

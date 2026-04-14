@@ -8,6 +8,16 @@ html, body {
   padding: 0;
 }
 
+body {
+  background-image:
+    linear-gradient(rgba(12,33,119,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12,33,119,0.05) 1px, transparent 1px),
+    linear-gradient(rgba(12,33,119,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(12,33,119,0.025) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 30px 30px, 30px 30px;
+  background-position: -1px -1px, -1px -1px, -1px -1px, -1px -1px;
+}
+
 .entering-overlay {
   position: fixed;
   top: 0; left: 0;

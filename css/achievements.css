@@ -8,7 +8,7 @@
   bottom: 2rem;
   left: 2rem;
   width: 280px;
-  border: 2px solid #0A059B;
+  border: 2px solid #0c2177;
   background-color: var(--color-bg, #F7F2F1);
   z-index: 9999;
   cursor: pointer;
@@ -34,8 +34,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 0.75rem;
-  border-bottom: 1px solid #0A059B;
-  background-color: #0A059B;
+  border-bottom: 1px solid #0c2177;
+  background-color: #0c2177;
   transition: background-color 0.2s ease;
 }
 .achievement-toast:hover .achievement-toast-header { background-color: white; }
@@ -48,7 +48,7 @@
   text-transform: uppercase;
   transition: color 0.2s ease;
 }
-.achievement-toast:hover .achievement-toast-eyebrow { color: #0A059B; }
+.achievement-toast:hover .achievement-toast-eyebrow { color: #0c2177; }
 
 .achievement-toast-close {
   font-family: var(--font-whois);
@@ -63,7 +63,7 @@
   transition: color 0.2s ease, opacity 0.2s ease;
 }
 .achievement-toast-close:hover { opacity: 1; }
-.achievement-toast:hover .achievement-toast-close { color: #0A059B; }
+.achievement-toast:hover .achievement-toast-close { color: #0c2177; }
 
 .achievement-toast-body {
   display: flex;
@@ -87,7 +87,7 @@
 .achievement-toast-title {
   font-family: var(--font-whois);
   font-size: 0.88rem;
-  color: var(--blue, #0A059B);
+  color: var(--blue, #0c2177);
   line-height: 1.4;
   margin: 0;
 }
@@ -95,7 +95,7 @@
 .achievement-toast-quip {
   font-family: var(--font-whois);
   font-size: 0.78rem;
-  color: var(--blue, #0A059B);
+  color: var(--blue, #0c2177);
   opacity: 0.55;
   line-height: 1.5;
   margin: 0;
@@ -228,7 +228,7 @@
   width: 100%;
   background: none;
   border: none;
-  border-bottom: 1px solid rgba(10, 5, 155, 0.1);
+  border-bottom: 1px solid rgba(12, 33, 119, 0.1);
   padding: 0.75rem 0;
   display: flex;
   align-items: center;
@@ -275,7 +275,7 @@
 
 .ach-item {
   padding: 0.55rem 0;
-  border-bottom: 1px solid rgba(10, 5, 155, 0.08);
+  border-bottom: 1px solid rgba(12, 33, 119, 0.08);
   display: flex;
   align-items: flex-start;
   gap: 0.65rem;

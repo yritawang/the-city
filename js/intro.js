@@ -1,12 +1,11 @@
 // Intro screen auto-fade after 5 seconds
+// (Auto-redirect disabled - users can click to proceed)
 document.addEventListener('DOMContentLoaded', () => {
   const introScreen = document.getElementById('intro-screen');
   const mainPage = document.getElementById('main-page');
 
-  // Auto-fade after 5 seconds
-  setTimeout(() => {
-    fadeToMainPage();
-  }, 5000);
+  // Optional: allow manual fade by clicking
+  introScreen?.addEventListener('click', fadeToMainPage);
 
   function fadeToMainPage() {
     // Fade out intro

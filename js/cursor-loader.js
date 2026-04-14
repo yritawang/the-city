@@ -26,7 +26,7 @@
   };
 
   var districtName  = document.body.dataset.district || '';
-  var districtColor = districtColorMap[districtName] || '#0A059B';
+  var districtColor = districtColorMap[districtName] || '#0c2177';
 
 
   // ─── custom cursor ────────────────────────────────────────────────────────

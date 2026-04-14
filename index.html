@@ -3,48 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>somewhere i belong</title>
+  <title>your city</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <style>
 
-    /* base */
     html { scroll-behavior: auto; }
     body {
       background-color: #F7F2F1;
-      color: #090595;
+      color: #0c2177;
       overflow-x: hidden;
       margin: 0;
       padding: 0;
     }
     * { box-sizing: border-box; }
-    :root { --blue: #090595; --fg: #F7F2F1; }
+    :root { --blue: #0c2177; --fg: #F7F2F1; }
 
 
-    /* scroll progress bar */
+    /* scroll progress bar — positioned lower */
     .scroll-progress-wrap {
       position: fixed;
-      top: 0;
+      top: 2.5rem;
       left: 50%;
       transform: translateX(-50%);
       width: 20vw;
       height: 2px;
-      background: rgba(9, 5, 149, 0.15);
+      background: rgba(12, 33, 119, 0.15);
       z-index: 9999;
     }
     .scroll-progress-bar {
       height: 100%;
       width: 0%;
-      background: #090595;
+      background: #0c2177;
       transition: width 0.1s linear;
     }
 
 
-    /* quote: wrapper gives scroll height, section sticks and dissolves */
-    .quote-scroll-wrapper {
-      position: relative;
-      height: 250vh;
-    }
+    /* quote */
+    .quote-scroll-wrapper { position: relative; height: 250vh; }
     .section-quote {
       min-height: 0;
       height: 100vh;
@@ -61,7 +57,7 @@
       font-family: var(--font-meta);
       font-size: clamp(1.4rem, 3vw, 2.6rem);
       font-weight: normal;
-      color: #090595;
+      color: #0c2177;
       letter-spacing: -0.01em;
       line-height: 1.3;
       text-align: center;
@@ -74,7 +70,7 @@
       font-family: var(--font-whois);
       font-size: 0.65rem;
       letter-spacing: 0.14em;
-      color: #090595;
+      color: #0c2177;
       opacity: 0;
       text-transform: uppercase;
       will-change: opacity, color;
@@ -87,17 +83,14 @@
     }
 
 
-    /* hero: wrapper gives scroll height so hero pins before scrolling away */
-    .hero-scroll-wrapper {
-      position: relative;
-      height: 220vh;
-    }
+    /* hero */
+    .hero-scroll-wrapper { position: relative; height: 220vh; }
     .hero {
       width: 100vw;
       height: 100vh;
       display: flex;
       flex-direction: column;
-      border-bottom: 2px solid #090595;
+      border-bottom: 2px solid #0c2177;
       position: sticky;
       top: 0;
     }
@@ -106,7 +99,6 @@
       flex: 1;
       min-height: 0;
     }
-    .hero-row:last-child { border-bottom: none; }
     .hero-cell {
       display: flex;
       align-items: center;
@@ -115,10 +107,8 @@
       overflow: hidden;
       flex-shrink: 0;
     }
-    .hero-cell:last-child { border-right: none; }
-    .hero-row:last-child .hero-cell { border-bottom: none; }
-    .cell-white { background: #F7F2F1; color: #090595; border-right: 1px solid #090595; border-bottom: 1px solid #090595; }
-    .cell-blue  { background: #090595; color: #F7F2F1; border-right: 1px solid #F7F2F1; border-bottom: 1px solid #F7F2F1; }
+    .cell-white { background: #F7F2F1; color: #0c2177; border-right: 1px solid #0c2177; border-bottom: 1px solid #0c2177; }
+    .cell-blue  { background: #0c2177; color: #F7F2F1; border-right: 1px solid rgba(247,242,241,0.2); border-bottom: 1px solid rgba(247,242,241,0.2); }
     .hero-word {
       font-family: var(--font-meta);
       font-weight: normal;
@@ -126,7 +116,7 @@
       line-height: 0.9;
       letter-spacing: -0.05em;
     }
-    .cell-white .hero-word { color: #090595; }
+    .cell-white .hero-word { color: #0c2177; }
     .cell-blue  .hero-word { color: #F7F2F1; }
     .cell-author {
       align-items: flex-end;
@@ -138,7 +128,7 @@
       font-size: 0.9rem;
       letter-spacing: 0.06em;
       line-height: 1.5;
-      color: #090595;
+      color: #0c2177;
       will-change: transform;
     }
     .cell-yourcity {
@@ -156,8 +146,8 @@
       white-space: nowrap;
       will-change: transform;
     }
-    .cell-white .dist-label { color: #090595; border-color: #090595; }
-    .cell-blue  .dist-label { color: #F7F2F1; border-color: #F7F2F1; }
+    .cell-white .dist-label { color: #0c2177; border-color: #0c2177; }
+    .cell-blue  .dist-label { color: #F7F2F1; border-color: rgba(247,242,241,0.5); }
     .community-label {
       position: absolute;
       top: 0.6rem;
@@ -166,7 +156,7 @@
       font-family: var(--font-whois);
       font-size: 0.82rem;
       letter-spacing: 0.06em;
-      border: 1px solid #F7F2F1;
+      border: 1px solid rgba(247,242,241,0.5);
       padding: 0.18rem 0.5rem;
       color: #F7F2F1;
       white-space: nowrap;
@@ -177,10 +167,7 @@
 
 
     /* scroll section */
-    .scroll-section {
-      position: relative;
-      height: 700vh;
-    }
+    .scroll-section { position: relative; height: 700vh; }
     .scroll-sticky {
       position: sticky;
       top: 0;
@@ -201,29 +188,25 @@
       justify-content: center;
       padding: 3rem 3rem 3rem 5vw;
       gap: 1.25rem;
-      background: #090595;
+      background: #0c2177;
       border-right: 1px solid rgba(247,242,241,0.2);
     }
     .scroll-box {
-      border: 1px solid #090595;
+      border: 1px solid rgba(247,242,241,0.35);
       padding: 1.25rem 1.5rem;
       font-family: var(--font-whois);
       font-size: 1.1rem;
       line-height: 1.5;
-      color: #090595;
-      background: #F7F2F1;
+      color: #F7F2F1;
       max-width: 300px;
       opacity: 0;
       transform: translateY(14px);
       transition: opacity 0.55s ease, transform 0.55s ease;
     }
-    .scroll-box.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .scroll-box.visible { opacity: 1; transform: translateY(0); }
     .scroll-right {
       position: relative;
-      background: #090595;
+      background: #0c2177;
       overflow: hidden;
     }
     .scroll-right canvas {
@@ -239,11 +222,11 @@
       background: #F7F2F1;
       display: grid;
       grid-template-rows: auto 1fr;
-      border-top: 2px solid #090595;
+      border-top: 2px solid #0c2177;
     }
     .cta-top {
       padding: 8vh 5vw 4vh;
-      border-bottom: 1px solid rgba(10,5,155,0.2);
+      border-bottom: 1px solid rgba(12,33,119,0.2);
     }
     .cta-headline {
       font-family: var(--font-meta);
@@ -251,7 +234,7 @@
       font-weight: normal;
       line-height: 0.95;
       letter-spacing: -0.05em;
-      color: #090595;
+      color: #0c2177;
     }
     .cta-bottom {
       display: grid;
@@ -261,13 +244,13 @@
       padding: 4vh 5vw;
       display: flex;
       align-items: flex-end;
-      border-right: 1px solid rgba(10,5,155,0.2);
+      border-right: 1px solid rgba(12,33,119,0.2);
     }
     .cta-sub {
       font-family: var(--font-whois);
       font-size: 1.05rem;
       line-height: 1.5;
-      color: #090595;
+      color: #0c2177;
       opacity: 0.5;
       max-width: 38ch;
     }
@@ -281,7 +264,7 @@
     .cta-ready {
       font-family: var(--font-meta);
       font-size: clamp(3rem, 5.5vw, 5.5rem);
-      color: #090595;
+      color: #0c2177;
       font-weight: normal;
     }
     .cta-btn {
@@ -300,13 +283,11 @@
 </head>
 <body>
 
-  <!-- scroll progress bar -->
   <div class="scroll-progress-wrap">
     <div class="scroll-progress-bar" id="scroll-progress-bar"></div>
   </div>
 
 
-  <!-- opening quote: pinned for 150vh, dissolves cream to blue on scroll -->
   <div class="quote-scroll-wrapper" id="quote-scroll-wrapper">
     <section class="section-quote" id="section-quote">
       <p class="quote-text" id="quote-text">I'm a museum of everything I've ever loved.</p>
@@ -315,11 +296,9 @@
   </div>
 
 
-  <!-- hero: pinned for 120vh, small elements parallax upward, then scrolls away -->
   <div class="hero-scroll-wrapper" id="hero-scroll-wrapper">
     <section class="hero" id="hero">
 
-      <!-- row 1: Your City | is | meow1 -->
       <div class="hero-row">
         <div class="hero-cell cell-blue cell-yourcity" style="width:50%;">
           <span class="hero-word">Your City</span>
@@ -333,11 +312,10 @@
         </div>
       </div>
 
-      <!-- row 2: meow2 | Always | meow3 | small blue square -->
       <div class="hero-row">
         <div class="hero-cell cell-white" style="width:22%;">
           <div class="dist-label" style="top:0.75rem;left:0.5rem;">Home as Growth</div>
-          <div class="dist-label" style="top:2.2rem;left:1.2rem;background:#090595;color:#F7F2F1;border-color:#090595;">Home is Reverence</div>
+          <div class="dist-label" style="top:2.2rem;left:1.2rem;background:#0c2177;color:#F7F2F1;border-color:#0c2177;">Home is Reverence</div>
           <img id="meow2" src="assets/districts/meow2.png" alt="Shrine" style="max-width:75%;max-height:75%;object-fit:contain;opacity:0.9;will-change:transform;">
         </div>
         <div class="hero-cell cell-blue" style="flex:1;">
@@ -350,7 +328,6 @@
         <div class="hero-cell cell-blue" style="width:8%;"></div>
       </div>
 
-      <!-- row 3: author | Being | Built | arrow -->
       <div class="hero-row">
         <div class="hero-cell cell-white cell-author" style="width:14%;">
           <div class="hero-author" id="hero-author">
@@ -371,7 +348,6 @@
           <svg class="hero-arrow" id="hero-arrow" width="60" height="60" viewBox="0 0 80 80" fill="none">
             <polyline points="40,10 40,62" stroke="#F7F2F1" stroke-width="2"/>
             <polyline points="18,42 40,64 62,42" stroke="#F7F2F1" stroke-width="2" fill="none"/>
-            <rect x="5" y="5" width="70" height="70" stroke="#F7F2F1" stroke-width="1" fill="none" opacity="0.35"/>
           </svg>
         </div>
       </div>
@@ -380,20 +356,16 @@
   </div>
 
 
-  <!-- scroll section -->
   <div class="scroll-section" id="scroll-section">
     <div class="scroll-sticky" id="scroll-sticky">
 
-      <!-- intro text band -->
-      <div style="background:#090595;padding:2.5rem 5vw;border-bottom:1px solid rgba(247,242,241,0.2);flex-shrink:0;">
+      <div style="background:#0c2177;padding:2.5rem 5vw;border-bottom:1px solid rgba(247,242,241,0.2);flex-shrink:0;">
         <p style="font-family:var(--font-meta);font-size:clamp(2rem,3.8vw,3.2rem);font-weight:normal;line-height:1.2;color:#F7F2F1;margin:0;">
           The places you've lived stay with you.<br>Now, you can visualize it.
         </p>
       </div>
 
       <div class="scroll-body">
-
-        <!-- left: stacking text boxes -->
         <div class="scroll-left" id="scroll-left">
           <div class="scroll-box" id="box1">
             There are places that shaped you before you had words for what was happening.
@@ -405,16 +377,13 @@
             To name a place is to refuse to let it disappear.
           </div>
         </div>
-
-        <!-- right: p5 pixel city canvas -->
         <div class="scroll-right" id="p5-container"></div>
-
       </div>
+
     </div>
   </div>
 
 
-  <!-- cta section -->
   <section class="cta-section" id="cta-section">
     <div class="cta-top">
       <h2 class="cta-headline">Document your life.<br>Build your city.<br>Share it with friends.</h2>
@@ -429,9 +398,8 @@
         <span class="cta-ready">Ready?</span>
         <a href="map.html" class="cta-btn" aria-label="Build your city">
           <svg class="arrow-animate" width="80" height="80" viewBox="0 0 80 80" fill="none">
-            <polyline points="10,40 62,40" stroke="#090595" stroke-width="2"/>
-            <polyline points="42,18 64,40 42,62" stroke="#090595" stroke-width="2" fill="none"/>
-            <rect x="4" y="4" width="72" height="72" stroke="#090595" stroke-width="1" fill="none" opacity="0.4"/>
+            <polyline points="10,40 62,40" stroke="#0c2177" stroke-width="2"/>
+            <polyline points="42,18 64,40 42,62" stroke="#0c2177" stroke-width="2" fill="none"/>
           </svg>
         </a>
       </div>
@@ -451,14 +419,14 @@
     })();
 
 
-    // quote dissolve — bg interpolates cream to blue, text fades out
+    // quote dissolve — bg cream to blue, text fades out
     (function () {
       const wrapper = document.getElementById('quote-scroll-wrapper');
       const section = document.getElementById('section-quote');
       const text    = document.getElementById('quote-text');
       const hint    = document.getElementById('quote-scroll-hint');
       const cream   = { r: 247, g: 242, b: 241 };
-      const blue    = { r:   9, g:   5, b: 149 };
+      const blue    = { r:  12, g:  33, b: 119 };
       let handedOff = false;
 
       function lerp(a, b, t) { return Math.round(a + (b - a) * t); }
@@ -483,8 +451,8 @@
           const op = Math.max(0, 1 - p / 0.4);
           text.style.opacity = op;
           hint.style.opacity = op;
-          text.style.color   = p > 0.25 ? '#F7F2F1' : '#090595';
-          hint.style.color   = p > 0.25 ? '#F7F2F1' : '#090595';
+          text.style.color   = p > 0.25 ? '#F7F2F1' : '#0c2177';
+          hint.style.color   = p > 0.25 ? '#F7F2F1' : '#0c2177';
         }
       }
 
@@ -493,7 +461,7 @@
     })();
 
 
-    // hero parallax — labels float up, images at half rate for depth
+    // hero parallax
     (function () {
       const wrapper        = document.getElementById('hero-scroll-wrapper');
       const distLabels     = wrapper.querySelectorAll('.dist-label');
@@ -529,7 +497,7 @@
     })();
 
 
-    // scroll section: text box reveals + p5 redraw trigger
+    // scroll section text reveals
     const scrollSection = document.getElementById('scroll-section');
     const box1 = document.getElementById('box1');
     const box2 = document.getElementById('box2');
@@ -582,10 +550,11 @@
       };
 
       sk.draw = () => {
-        sk.background(9, 5, 149);
+        sk.background(12, 33, 119);
         const cellW = pW / IMG_COLS;
         const cellH = pH / IMG_ROWS;
-        const p     = scrollProgress;
+        // force p=1 at end so all pixels render fully
+        const p     = Math.min(1, scrollProgress * 1.15);
         const MOUSE_R = 45;
 
         function hash(r, c) {
@@ -595,13 +564,14 @@
         }
 
         const step            = Math.max(1, Math.round(sk.lerp(5, 1, sk.pow(p, 0.65))));
-        const globalThreshold = sk.lerp(0.78, 0.04, sk.pow(p, 0.55));
-        const gapFraction     = sk.lerp(0.35, 0.06, sk.pow(p, 0.5));
+        // at p=1 threshold goes to 0 so every bright pixel renders
+        const globalThreshold = sk.lerp(0.78, 0.0, sk.pow(p, 0.55));
+        const gapFraction     = sk.lerp(0.35, 0.04, sk.pow(p, 0.5));
         const pixelFill       = 1 - gapFraction;
 
         for (let r = 0; r < IMG_ROWS; r += step) {
           const spatialT         = r / (IMG_ROWS - 1);
-          const spatialDensity   = sk.lerp(0.18, 0.9, sk.pow(spatialT, 0.5));
+          const spatialDensity   = sk.lerp(0.18, 1.0, sk.pow(spatialT, 0.5));
           const density          = Math.min(1.0, spatialDensity + p * 0.7);
           const spatialThreshold = sk.lerp(globalThreshold + 0.18, globalThreshold, sk.pow(spatialT, 0.5));
 
