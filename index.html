@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>your city</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/mobile-overlay.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <style>
 
@@ -282,6 +283,19 @@
   </style>
 </head>
 <body>
+  <!-- paste these two pieces into every HTML page -->
+
+
+<!-- 2. as the FIRST element inside <body>, before anything else: -->
+<div class="mobile-overlay" aria-hidden="true">
+  <div class="mobile-overlay-message">
+    This website is best viewed on desktop! Start building your city there.
+  </div>
+  <div class="mobile-overlay-doc">
+    Documentation of this project can be found at
+    <a href="https://www.ritawangarchive.com/" target="_blank" rel="noopener">Rita's Portfolio</a>
+  </div>
+</div>
 
   <div class="scroll-progress-wrap">
     <div class="scroll-progress-bar" id="scroll-progress-bar"></div>

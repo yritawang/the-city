@@ -13,8 +13,12 @@ if (typeof unlockAchievement === 'undefined') {
   };
 }
 
-// fade to white then navigate — fallback if cursor-loader isn't present
+// fade to white then navigate — fallback if page-loader isn't present
 function fadeToPage(url) {
+  if (typeof window.pageLoaderNavigate === 'function') {
+    window.pageLoaderNavigate(url);
+    return;
+  }
   const overlay = document.createElement('div');
   overlay.style.cssText = [
     'position:fixed', 'inset:0', 'background:white',
@@ -31,53 +35,35 @@ function fadeToPage(url) {
   });
 }
 
+// re-trigger float-up animation on the question card
+function animateQuestionCard() {
+  const card = document.querySelector('.question-card');
+  if (!card) return;
+  card.classList.remove('card-animate');
+  void card.offsetWidth; // force reflow
+  card.classList.add('card-animate');
+}
+
 document.addEventListener('DOMContentLoaded', () => {
 
+  // detect which district this page is for and tag the body
+  const screen = document.querySelector('[class$="-screen"]') || document.querySelector('[id$="-intro"]');
+  if (screen) {
+    const match = (screen.className || screen.id).match(/^(shrine|garden|cornerstore|tower|plaza)/);
+    if (match) document.body.dataset.district = match[1];
+  }
+
+  // page-loader handles the entrance transition now.
+  // just hide the old entering overlay and reveal district content immediately.
   const enteringOverlay = document.getElementById('entering-overlay');
   const districtContent = document.getElementById('district-content');
-  const textEl          = enteringOverlay?.querySelector('.entering-text');
-  const fullText        = textEl ? textEl.textContent.trim() : '';
 
-  if (textEl) textEl.textContent = '';
+  if (enteringOverlay) enteringOverlay.style.display = 'none';
+  if (districtContent) districtContent.classList.remove('hidden');
 
-  // type forward character by character
-  let i = 0;
-  const typeInterval = setInterval(() => {
-    if (!textEl) return;
-    textEl.textContent = fullText.slice(0, i + 1);
-    i++;
-    if (i >= fullText.length) {
-      clearInterval(typeInterval);
-
-      // pause at full text, then erase backwards
-      setTimeout(() => {
-        let j = fullText.length;
-        const eraseInterval = setInterval(() => {
-          textEl.textContent = fullText.slice(0, j - 1);
-          j--;
-          if (j <= 0) {
-            clearInterval(eraseInterval);
-
-            // trigger column fill in district color (defined in cursor-loader.js)
-            if (typeof window.triggerDistrictEnterColumns === 'function') {
-              window.triggerDistrictEnterColumns();
-            }
-
-            // fade out the entering overlay and show district content
-            enteringOverlay.classList.add('fade-out');
-            setTimeout(() => {
-              enteringOverlay.style.display = 'none';
-              districtContent.classList.remove('hidden');
-
-              if (window.DISTRICT_BEGAN_ID) {
-                unlockAchievement(window.DISTRICT_BEGAN_ID);
-              }
-            }, 800);
-          }
-        }, 35);   // erase speed ms per character
-      }, 500);    // pause before erasing
-    }
-  }, 55);         // type speed ms per character
+  if (window.DISTRICT_BEGAN_ID) {
+    unlockAchievement(window.DISTRICT_BEGAN_ID);
+  }
 
 
   // back buttons: save answer then navigate with transition
@@ -124,5 +110,23 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof nextQuestion === 'function') nextQuestion();
     }
   });
+
+
+  // patch renderQuestion once each district's JS defines it
+  // this fires animateQuestionCard on every question transition
+  let attempts = 0;
+  function patchRenderQuestion() {
+    if (typeof window.renderQuestion === 'function') {
+      const orig = window.renderQuestion;
+      window.renderQuestion = function() {
+        orig.apply(this, arguments);
+        animateQuestionCard();
+      };
+    } else if (attempts < 60) {
+      attempts++;
+      setTimeout(patchRenderQuestion, 50);
+    }
+  }
+  patchRenderQuestion();
 
 });

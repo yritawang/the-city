@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Print — your city</title>
   <link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/mobile-overlay.css">
   <style>
     :root { --color-bg:#F7F2F1; --blue:#0c2177; --blue-faint:rgba(12,33,119,0.06); }
     * { box-sizing:border-box; margin:0; padding:0; }
@@ -24,7 +25,7 @@
     .back-link:hover { opacity:1; }
 
     .printer-controls {
-      width:100%; max-width:480px; margin-top:2rem; display:flex; flex-direction:column; gap:0.85rem;
+      width:100%; max-width:680px; margin-top:2rem; display:flex; flex-direction:column; gap:0.85rem;
     }
     .printer-row { display:flex; gap:0.75rem; align-items:stretch; }
     .printer-input {
@@ -61,18 +62,35 @@
     .receipt-city-name { font-family:var(--font-meta); font-size:1.8rem; line-height:1.15; font-weight:normal; }
     .receipt-date { font-size:0.75rem; margin-top:0.4rem; opacity:0.6; }
 
-    .receipt-district-row {
-      display:flex; justify-content:space-between; align-items:baseline;
-      padding:0.55rem 0; border-bottom:0.5px solid rgba(12,33,119,0.08);
+    .receipt-district-block {
+      padding: 0.6rem 0;
+      border-bottom: 0.5px solid rgba(12,33,119,0.08);
     }
-    .receipt-district-row:last-child { border-bottom:none; }
-    .receipt-loc-name {
-      font-family:var(--font-meta); font-size:0.88rem; flex:1;
+    .receipt-district-block:last-child { border-bottom: none; }
+    .receipt-district-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
     }
     .receipt-loc-district {
-      font-family:var(--font-whois); font-size:0.72rem;
-      letter-spacing:0.05em; text-transform:uppercase;
-      flex-shrink:0; margin-left:1rem; opacity:0.85;
+      font-family: var(--font-whois);
+      font-size: 0.82rem;
+      font-weight: bold;
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+    .receipt-loc-name {
+      font-family: var(--font-meta);
+      font-size: 0.88rem;
+      text-align: right;
+    }
+    .receipt-loc-secondary {
+      font-family: var(--font-meta);
+      font-size: 0.82rem;
+      opacity: 0.65;
+      padding-left: 0.5rem;
+      line-height: 1.5;
     }
 
     /* words */
@@ -92,7 +110,15 @@
   </style>
 </head>
 <body>
-
+<div class="mobile-overlay" aria-hidden="true">
+  <div class="mobile-overlay-message">
+    This website is best viewed on desktop! Start building your city there.
+  </div>
+  <div class="mobile-overlay-doc">
+    Documentation of this project can be found at
+    <a href="https://www.ritawangarchive.com/" target="_blank" rel="noopener">Rita's Portfolio</a>
+  </div>
+</div>
   <div class="print-header">
     <div>
       <div class="print-header-title">City receipt</div>
@@ -210,12 +236,19 @@
       var distHTML = '<div class="receipt-label">Districts</div>';
       districts.forEach(function(d) {
         var label = d.key.charAt(0).toUpperCase()+d.key.slice(1);
-        d.locations.forEach(function(loc) {
-          distHTML += '<div class="receipt-district-row">'
-            + '<span class="receipt-loc-name">' + loc + '</span>'
-            + '<span class="receipt-loc-district" style="color:'+d.color+';">' + label + '</span>'
-            + '</div>';
+        distHTML += '<div class="receipt-district-block">';
+        d.locations.forEach(function(loc, i) {
+          if(i === 0) {
+            // first location: district name left, location right on same line
+            distHTML += '<div class="receipt-district-row">'
+              + '<span class="receipt-loc-district" style="color:'+d.color+';">'+label+'</span>'
+              + '<span class="receipt-loc-name">'+loc+'</span>'
+              + '</div>';
+          } else {
+            distHTML += '<div class="receipt-loc-secondary">. '+loc+'</div>';
+          }
         });
+        distHTML += '</div>';
       });
       document.getElementById('receipt-districts').innerHTML = distHTML;
 
@@ -252,20 +285,35 @@
       parts.push(cmd.emptyLine());
       parts.push(cmd.alignLeft());
       parts.push(cmd.textLine('-'.repeat(42)));
+      parts.push(cmd.emptyLine());
+      parts.push(cmd.bold(true));
+      parts.push(cmd.textLine('Districts'));
+      parts.push(cmd.bold(false));
+      parts.push(cmd.emptyLine());
 
       districts.forEach(function(d){
         var label = d.key.charAt(0).toUpperCase()+d.key.slice(1);
-        d.locations.forEach(function(loc){
-          // location name left, district right, padded to 42 chars
-          var right = label;
-          var left  = loc.slice(0, 42 - right.length - 2);
-          parts.push(cmd.textLine(left.padEnd(42 - right.length) + right));
+        d.locations.forEach(function(loc, i){
+          if(i === 0) {
+            // district name left, first location right on same line
+            var left  = label.padEnd(14);
+            var right = loc.slice(0, 42 - 14);
+            parts.push(cmd.bold(true));
+            parts.push(cmd.textLine((left + right).slice(0, 42)));
+            parts.push(cmd.bold(false));
+          } else {
+            wrap('. ' + loc, 42).forEach(function(l){ parts.push(cmd.textLine(l)); });
+          }
         });
       });
 
       parts.push(cmd.emptyLine());
       parts.push(cmd.textLine('-'.repeat(42)));
+      parts.push(cmd.emptyLine());
       if(topWords.length){
+        parts.push(cmd.bold(true));
+        parts.push(cmd.textLine('Most frequent words'));
+        parts.push(cmd.bold(false));
         parts.push(cmd.emptyLine());
         wrap(topWords.join('  '),42).forEach(function(l){parts.push(cmd.textLine(l));});
       }

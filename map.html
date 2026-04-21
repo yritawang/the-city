@@ -8,10 +8,19 @@
   <link rel="stylesheet" href="css/map.css">
   <link rel="stylesheet" href="css/achievements.css">
   <link rel="stylesheet" href="css/guide-additions.css">
-  <link rel="stylesheet" href="css/notes.css">
+  <link rel="stylesheet" href="css/mobile-overlay.css">
+
 </head>
 <body>
-
+<div class="mobile-overlay" aria-hidden="true">
+  <div class="mobile-overlay-message">
+    This website is best viewed on desktop! Start building your city there.
+  </div>
+  <div class="mobile-overlay-doc">
+    Documentation of this project can be found at
+    <a href="https://www.ritawangarchive.com/" target="_blank" rel="noopener">Rita's Portfolio</a>
+  </div>
+</div>
   <header class="map-header">
     <div class="header-left">
       <div class="header-title">
@@ -216,7 +225,6 @@
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-  <script src="js/notes.js"></script>
   <script src="js/achievements.js"></script>
   <script src="js/map.js"></script>
   <script src="js/train.js"></script>

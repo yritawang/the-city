@@ -1,6 +1,16 @@
 // customize.js
 
 
+// small helper: route through the page loader if present, fall back to direct nav
+function goToPage(url) {
+  if (typeof window.navigateWithLoader === 'function') {
+    window.navigateWithLoader(url);
+  } else {
+    window.location.href = url;
+  }
+}
+
+
 // detect current district from the url
 
 const getCurrentDistrict = () => {
@@ -1480,7 +1490,7 @@ function closeAlbumLightbox() {
 function relogExistingLocation(locationName) {
   localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
   localStorage.setItem(`${CURRENT_DISTRICT}-relog-prefill`, locationName);
-  window.location.href = `${CURRENT_DISTRICT}.html`;
+  goToPage(`${CURRENT_DISTRICT}.html`);
 }
 
 function openRelogOverlay() {
@@ -1513,9 +1523,9 @@ function openRelogOverlay() {
 `;
     document.body.appendChild(el);
 
-document.getElementById('relog-new-btn').addEventListener('click', () => {
+    document.getElementById('relog-new-btn').addEventListener('click', () => {
       closeRelogOverlay();
-      window.location.href = `${CURRENT_DISTRICT}.html`;
+      goToPage(`${CURRENT_DISTRICT}.html`);
     });
 
     document.getElementById('relog-go-btn').addEventListener('click', () => {
@@ -1524,23 +1534,24 @@ document.getElementById('relog-new-btn').addEventListener('click', () => {
       closeRelogOverlay();
       localStorage.removeItem(`${CURRENT_DISTRICT}-answers`);
       localStorage.setItem(`${CURRENT_DISTRICT}-relog-prefill`, selected);
-      window.location.href = `${CURRENT_DISTRICT}.html`;
+      goToPage(`${CURRENT_DISTRICT}.html`);
     });
 
     document.getElementById('relog-cancel-btn').addEventListener('click', closeRelogOverlay);
 
-  const locContainer = document.getElementById('relog-locations');
-  if (locContainer) {
-    locContainer.innerHTML = locations.length
-      ? locations.map(loc => `<button class="relog-location-btn mono" data-loc="${loc}">${loc}</button>`).join('')
-      : '<p class="mono" style="opacity:0.5;font-size:0.82rem;">No previous locations.</p>';
+    const locContainer = document.getElementById('relog-locations');
+    if (locContainer) {
+      locContainer.innerHTML = locations.length
+        ? locations.map(loc => `<button class="relog-location-btn mono" data-loc="${loc}">${loc}</button>`).join('')
+        : '<p class="mono" style="opacity:0.5;font-size:0.82rem;">No previous locations.</p>';
 
-    locContainer.querySelectorAll('.relog-location-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        closeRelogOverlay();
-        relogExistingLocation(btn.dataset.loc);
+      locContainer.querySelectorAll('.relog-location-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          closeRelogOverlay();
+          relogExistingLocation(btn.dataset.loc);
+        });
       });
-    });
+    }
   }
 
   requestAnimationFrame(() => document.getElementById('relog-overlay').classList.add('active'));
@@ -1548,5 +1559,4 @@ document.getElementById('relog-new-btn').addEventListener('click', () => {
 
 function closeRelogOverlay() {
   document.getElementById('relog-overlay')?.classList.remove('active');
-}
 }

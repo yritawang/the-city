@@ -103,9 +103,9 @@ function handleDistrictClick(name) {
   localStorage.setItem('currentDistrict', name);
   const hasSessions = JSON.parse(localStorage.getItem(`${name}-sessions`) || '[]').length > 0;
   const states      = JSON.parse(localStorage.getItem('districtStates')) || {};
-  window.location.href = (states[name] === 'unlocked' || hasSessions)
+  window.navigateWithLoader((states[name] === 'unlocked' || hasSessions)
     ? `districts/${name}-customize.html`
-    : `districts/${name}.html`;
+    : `districts/${name}.html`);
 }
 
 function displayDistrictNames() {
@@ -136,7 +136,7 @@ function displayDistrictNames() {
     span.addEventListener('click', (e) => {
       e.stopPropagation();
       localStorage.setItem('currentDistrict', name);
-      window.location.href = `districts/${name}-customize.html`;
+      window.navigateWithLoader(`districts/${name}-customize.html`);
     });
     label.appendChild(span);
   });

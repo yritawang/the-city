@@ -1,37 +1,75 @@
 // cursor-loader.js
-// custom cursor + page transitions
+// custom cursor + page transitions with a real loading bar.
 //
-// map enter:        simple fade in
-// map leave:        instant navigate
-// district enter:   typewriter then column fill in district color
-// district leave:   column unfill in district color
-// customize enter:  panels float in from sides
-// customize leave:  panels float out to sides
+// how to use:
+//   anchor clicks (<a href="...">) are intercepted automatically.
+//   for programmatic navigation in your other js files, call:
+//     window.navigateWithLoader('path/to/page.html');
+//   instead of:
+//     window.location.href = 'path/to/page.html';
 
-(function() {
+(function () {
 
-  // ─── page type detection ──────────────────────────────────────────────────
+  // ─── page type detection ────────────────────────────────────────────────
 
   var path        = window.location.pathname;
-  var isCustomize = path.includes('-customize');
-  var isDistrict  = path.includes('/districts/') && !isCustomize;
-  var isMap       = !isCustomize && !isDistrict;
-
-  var districtColorMap = {
-    shrine:      '#DD6204',
-    garden:      '#6A6405',
-    cornerstore: '#D05038',
-    tower:       '#205A97',
-    plaza:       '#64436d',
-  };
-
-  var districtName  = document.body.dataset.district || '';
-  var districtColor = districtColorMap[districtName] || '#0c2177';
+  var isCustomize = path.indexOf('-customize') !== -1;
+  var isDistrict  = path.indexOf('/districts/') !== -1 && !isCustomize;
 
 
-  // ─── custom cursor ────────────────────────────────────────────────────────
+  // ─── inject loader + fade styles once ───────────────────────────────────
 
-  if (!window.matchMedia('(hover: none)').matches) {
+  (function injectStyles() {
+    if (document.getElementById('cursor-loader-styles')) return;
+    var css = [
+      '#page-loader-overlay{',
+      '  position:fixed;inset:0;z-index:2147483646;background-color:#F7F2F1;',
+      '  display:none;flex-direction:column;align-items:center;justify-content:center;',
+      '  gap:1.5rem;opacity:0;transition:opacity 0.25s ease;',
+      '  background-image:',
+      '    linear-gradient(rgba(12,33,119,0.05) 1px,transparent 1px),',
+      '    linear-gradient(90deg,rgba(12,33,119,0.05) 1px,transparent 1px),',
+      '    linear-gradient(rgba(12,33,119,0.025) 1px,transparent 1px),',
+      '    linear-gradient(90deg,rgba(12,33,119,0.025) 1px,transparent 1px);',
+      '  background-size:120px 120px,120px 120px,30px 30px,30px 30px;',
+      '}',
+      '#page-loader-overlay.active{display:flex;opacity:1;}',
+      '.page-loader-label{',
+      '  font-family:"Meta",serif;font-size:1.6rem;color:#0c2177;',
+      '  letter-spacing:-0.01em;text-align:center;',
+      '}',
+      '.page-loader-bar{',
+      '  width:320px;max-width:60vw;height:14px;border:1px solid #0c2177;',
+      '  background:transparent;position:relative;overflow:hidden;',
+      '}',
+      '.page-loader-fill{',
+      '  position:absolute;top:0;left:0;bottom:0;width:0%;',
+      '  background-color:#0c2177;transition:width 0.2s ease-out;',
+      '}',
+      '.page-loader-percent{',
+      '  font-family:"Whois",monospace;font-size:0.82rem;color:#0c2177;',
+      '  letter-spacing:0.08em;min-width:4ch;text-align:center;',
+      '}',
+      '#page-arrival-fade{',
+      '  position:fixed;inset:0;z-index:2147483645;background-color:#FFFFFF;',
+      '  pointer-events:none;opacity:1;transition:opacity 0.9s ease-out;',
+      '}',
+      '#page-arrival-fade.cleared{opacity:0;}',
+    ].join('');
+    var style = document.createElement('style');
+    style.id   = 'cursor-loader-styles';
+    style.textContent = css;
+    (document.head || document.documentElement).appendChild(style);
+  })();
+
+
+  // ─── custom cursor ──────────────────────────────────────────────────────
+
+  function initCursor() {
+    if (window.matchMedia('(hover: none)').matches) return;
+    if (document.getElementById('custom-cursor')) return;
+    if (!document.body) return;
+
     var cursor = document.createElement('div');
     cursor.id  = 'custom-cursor';
     cursor.innerHTML = [
@@ -50,14 +88,14 @@
       raf = null;
     }
 
-    document.addEventListener('mousemove', function(e) {
+    document.addEventListener('mousemove', function (e) {
       mouseX = e.clientX;
       mouseY = e.clientY;
       if (!raf) raf = requestAnimationFrame(moveCursor);
     });
 
-    document.addEventListener('mouseleave', function() { cursor.style.opacity = '0'; });
-    document.addEventListener('mouseenter', function() { cursor.style.opacity = '1'; });
+    document.addEventListener('mouseleave', function () { cursor.style.opacity = '0'; });
+    document.addEventListener('mouseenter', function () { cursor.style.opacity = '1'; });
 
     var POINTER_SEL = [
       'button', 'a', '[role="button"]',
@@ -74,7 +112,7 @@
 
     var isPointer = false;
 
-    document.addEventListener('mouseover', function(e) {
+    document.addEventListener('mouseover', function (e) {
       var over = e.target.closest(POINTER_SEL);
       if (over && !isPointer) {
         isPointer = true;
@@ -85,104 +123,309 @@
       }
     });
 
-    document.addEventListener('mousedown', function() { cursor.classList.add('pressed'); });
-    document.addEventListener('mouseup',   function() { cursor.classList.remove('pressed'); });
+    document.addEventListener('mousedown', function () { cursor.classList.add('pressed'); });
+    document.addEventListener('mouseup',   function () { cursor.classList.remove('pressed'); });
+  }
+
+  if (document.body) initCursor();
+  else document.addEventListener('DOMContentLoaded', initCursor);
+
+
+  // ─── destination labels ─────────────────────────────────────────────────
+
+  function getDestinationLabel(url) {
+    var p = url.toLowerCase();
+    if (p.indexOf('shrine') !== -1 && p.indexOf('customize') === -1)      return 'Entering Shrine';
+    if (p.indexOf('garden') !== -1 && p.indexOf('customize') === -1)      return 'Entering Garden';
+    if (p.indexOf('cornerstore') !== -1 && p.indexOf('customize') === -1) return 'Entering Cornerstore';
+    if (p.indexOf('tower') !== -1 && p.indexOf('customize') === -1)       return 'Entering Tower';
+    if (p.indexOf('plaza') !== -1 && p.indexOf('customize') === -1)       return 'Entering Plaza';
+    if (p.indexOf('customize') !== -1) return 'Loading your space';
+    if (p.indexOf('print') !== -1)     return 'Preparing the press';
+    if (p.indexOf('map') !== -1)       return 'Returning to your city';
+    if (p.indexOf('index') !== -1 || p === '/') return 'Loading home';
+    return 'Loading';
+  }
+
+  function isDistrictUrl(url) {
+    var p = url.toLowerCase();
+    if (p.indexOf('customize') !== -1) return false;
+    return (
+      p.indexOf('shrine') !== -1 ||
+      p.indexOf('garden') !== -1 ||
+      p.indexOf('cornerstore') !== -1 ||
+      p.indexOf('tower') !== -1 ||
+      p.indexOf('plaza') !== -1
+    );
   }
 
 
-  // ─── column fill overlay (district pages only) ────────────────────────────
+  // ─── chime playback ─────────────────────────────────────────────────────
 
-  var outOverlay = document.createElement('div');
-  outOverlay.id  = 'page-out-overlay';
+  function chimeSrc() {
+    var inSubfolder = window.location.pathname.indexOf('/districts/') !== -1;
+    return (inSubfolder ? '../' : '') + 'assets/sounds/chime1.wav';
+  }
 
-  var cellsHTML = Array.from({ length: 12 }, function(_, i) {
-    return '<div class="page-out-cell" style="animation-delay:' + (i * 0.03) + 's;background-color:' + districtColor + ';"></div>';
-  }).join('');
-
-  outOverlay.innerHTML = '<div class="page-out-grid">' + cellsHTML + '</div>';
-  document.body.appendChild(outOverlay);
-
-
-  // ─── navigation ───────────────────────────────────────────────────────────
-
-  window.pageTransitionOut = function(url, delay) {
-    if (isCustomize) {
-      // float panels out then navigate
-      document.body.classList.add('page-leaving');
-      setTimeout(function() { window.location.href = url; }, delay || 420);
-
-    } else if (isDistrict) {
-      // column unfill then navigate
-      outOverlay.classList.add('mode-columns-out', 'active');
-      setTimeout(function() { window.location.href = url; }, delay || 500);
-
-    } else {
-      // map: just navigate, no animation
-      setTimeout(function() { window.location.href = url; }, delay || 100);
-    }
-  };
+  function playArrivalChime() {
+    try {
+      var audio = new Audio(chimeSrc());
+      audio.volume = 0.6;
+      var promise = audio.play();
+      if (promise && promise.catch) promise.catch(function () {});
+    } catch (err) {}
+  }
 
 
-  // ─── entry animations ─────────────────────────────────────────────────────
+  // ─── build loader ui ────────────────────────────────────────────────────
 
-  if (isMap) {
-    // simple fade in via page-entering class + css
-    document.body.classList.add('page-entering');
-    window.addEventListener('load', function() {
-      setTimeout(function() {
-        document.body.classList.remove('page-entering');
-      }, 800);
+  function buildLoader() {
+    if (document.getElementById('page-loader-overlay')) return;
+    var overlay = document.createElement('div');
+    overlay.id  = 'page-loader-overlay';
+    overlay.innerHTML =
+      '<div class="page-loader-label" id="page-loader-label">Loading</div>' +
+      '<div class="page-loader-bar"><div class="page-loader-fill" id="page-loader-fill"></div></div>' +
+      '<div class="page-loader-percent" id="page-loader-percent">0%</div>';
+    (document.body || document.documentElement).appendChild(overlay);
+  }
+
+
+  // ─── fetch html with real download progress ─────────────────────────────
+
+  function fetchWithProgress(url, onChunk) {
+    return fetch(url, { cache: 'force-cache' }).then(function (response) {
+      if (!response.ok) return '';
+      var contentLength = response.headers.get('content-length');
+      var total  = contentLength ? parseInt(contentLength, 10) : 0;
+      var loaded = 0;
+
+      if (!response.body || !response.body.getReader) {
+        return response.text();
+      }
+
+      var reader  = response.body.getReader();
+      var decoder = new TextDecoder();
+      var text    = '';
+
+      function read() {
+        return reader.read().then(function (result) {
+          if (result.done) return text;
+          loaded += result.value.length;
+          text   += decoder.decode(result.value, { stream: true });
+          if (total > 0 && typeof onChunk === 'function') {
+            onChunk(loaded / total);
+          }
+          return read();
+        });
+      }
+      return read();
+    }).catch(function () { return ''; });
+  }
+
+
+  // ─── extract asset urls ─────────────────────────────────────────────────
+
+  function extractAssetUrls(htmlText, baseUrl) {
+    var doc = new DOMParser().parseFromString(htmlText, 'text/html');
+    var urls = [];
+    doc.querySelectorAll('link[rel="stylesheet"][href]').forEach(function (el) {
+      urls.push(new URL(el.getAttribute('href'), baseUrl).href);
     });
-
-  } else if (isCustomize) {
-    // float panels in
-    document.body.classList.add('page-entering');
-    window.addEventListener('load', function() {
-      setTimeout(function() {
-        document.body.classList.remove('page-entering');
-      }, 700);
+    doc.querySelectorAll('script[src]').forEach(function (el) {
+      urls.push(new URL(el.getAttribute('src'), baseUrl).href);
     });
-
-  } else if (isDistrict) {
-    // column fill triggered by district.js after typewriter
-    window.triggerDistrictEnterColumns = function() {
-      outOverlay.classList.add('mode-columns', 'active');
-      setTimeout(function() {
-        outOverlay.classList.remove('active');
-        setTimeout(function() { outOverlay.classList.remove('mode-columns'); }, 400);
-      }, 600);
-    };
+    doc.querySelectorAll('img[src]').forEach(function (el) {
+      urls.push(new URL(el.getAttribute('src'), baseUrl).href);
+    });
+    return urls;
   }
 
 
-  // ─── patch fadeToPage ─────────────────────────────────────────────────────
+  // ─── preload a single asset ─────────────────────────────────────────────
 
-  var attempts = 0;
-  function tryPatch() {
-    if (typeof window.fadeToPage === 'function') {
-      var orig = window.fadeToPage;
-      window.fadeToPage = function(url) {
-        window.pageTransitionOut ? window.pageTransitionOut(url, 500) : orig(url);
-      };
-    } else if (attempts < 40) {
-      attempts++;
-      setTimeout(tryPatch, 50);
+  function preloadAsset(url) {
+    return new Promise(function (resolve) {
+      var ext = url.split('?')[0].split('.').pop().toLowerCase();
+      if (['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'].indexOf(ext) !== -1) {
+        var img = new Image();
+        img.onload  = function () { resolve(); };
+        img.onerror = function () { resolve(); };
+        img.src = url;
+      } else {
+        fetch(url, { cache: 'force-cache' })
+          .then(function () { resolve(); })
+          .catch(function () { resolve(); });
+      }
+    });
+  }
+
+
+  // ─── main navigation with loader ────────────────────────────────────────
+
+  // minimum total duration (ms) for the loader bar
+  var MIN_LOADER_DURATION = 3700;
+  // pause at 100% before navigating
+  var SETTLE_DURATION     = 280;
+
+  // guard against multiple simultaneous loader calls
+  var loaderBusy = false;
+
+  function navigateWithLoader(url) {
+    if (loaderBusy) return;
+    if (!url) return;
+    loaderBusy = true;
+
+    buildLoader();
+    var overlay = document.getElementById('page-loader-overlay');
+    var label   = document.getElementById('page-loader-label');
+    var fill    = document.getElementById('page-loader-fill');
+    var percent = document.getElementById('page-loader-percent');
+
+    label.textContent = getDestinationLabel(url);
+    overlay.classList.add('active');
+
+    var realProgress  = 0;
+    var pacedProgress = 0;
+    var shown         = 0;
+    var startTime     = performance.now();
+    var realLoadDone  = false;
+    var tickHandle    = null;
+
+    function setRealProgress(p) {
+      realProgress = Math.max(realProgress, Math.min(100, p));
     }
+
+    function render() {
+      var target = Math.min(realProgress, pacedProgress);
+      if (!realLoadDone) target = Math.min(target, 99);
+      if (target > shown) {
+        shown = Math.round(target);
+        fill.style.width = shown + '%';
+        percent.textContent = shown + '%';
+      }
+    }
+
+    function tick() {
+      var elapsed = performance.now() - startTime;
+      var t = Math.min(1, elapsed / MIN_LOADER_DURATION);
+      pacedProgress = (1 - Math.pow(1 - t, 1.6)) * 100;
+      render();
+      if (shown < 100) {
+        tickHandle = requestAnimationFrame(tick);
+      }
+    }
+    tick();
+
+    var baseUrl = new URL(url, window.location.href).href;
+
+    fetchWithProgress(baseUrl, function (ratio) {
+      setRealProgress(2 + ratio * 28);
+    }).then(function (html) {
+      setRealProgress(30);
+      var assets = extractAssetUrls(html, baseUrl);
+      if (assets.length === 0) {
+        setRealProgress(100);
+        return;
+      }
+      var done = 0;
+      return Promise.all(assets.map(function (u) {
+        return preloadAsset(u).then(function () {
+          done++;
+          setRealProgress(30 + (done / assets.length) * 70);
+        });
+      }));
+    }).then(function () {
+      setRealProgress(100);
+      realLoadDone = true;
+
+      function waitForFull() {
+        if (shown >= 100) {
+          if (tickHandle) cancelAnimationFrame(tickHandle);
+          if (isDistrictUrl(url)) {
+            try { sessionStorage.setItem('play-arrival-chime', '1'); } catch (e) {}
+          }
+          setTimeout(function () { window.location.href = url; }, SETTLE_DURATION);
+        } else {
+          requestAnimationFrame(waitForFull);
+        }
+      }
+      waitForFull();
+    }).catch(function () {
+      window.location.href = url;
+    });
   }
-  tryPatch();
 
 
-  // ─── customize back button ────────────────────────────────────────────────
+  // ─── arrival fade + chime ───────────────────────────────────────────────
 
-  if (isCustomize) {
-    document.addEventListener('DOMContentLoaded', function() {
-      document.querySelectorAll('.sidebar-back-btn, .back-btn').forEach(function(el) {
-        el.addEventListener('click', function(e) {
-          e.preventDefault();
-          window.pageTransitionOut(el.getAttribute('href') || '../map.html', 420);
+  function injectArrivalFade() {
+    if (document.getElementById('page-arrival-fade')) return;
+    if (!document.body) return;
+    var fade = document.createElement('div');
+    fade.id  = 'page-arrival-fade';
+    document.body.insertBefore(fade, document.body.firstChild);
+
+    var shouldChime = false;
+    try {
+      shouldChime = sessionStorage.getItem('play-arrival-chime') === '1';
+      if (shouldChime) sessionStorage.removeItem('play-arrival-chime');
+    } catch (e) {}
+
+    window.addEventListener('load', function () {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          if (shouldChime) playArrivalChime();
+          setTimeout(function () {
+            fade.classList.add('cleared');
+            setTimeout(function () {
+              if (fade.parentNode) fade.parentNode.removeChild(fade);
+            }, 1000);
+          }, 200);
         });
       });
     });
   }
+
+  if (document.body) injectArrivalFade();
+  else document.addEventListener('DOMContentLoaded', injectArrivalFade);
+
+
+  // ─── expose nav helpers and stubs ───────────────────────────────────────
+  // these are the ONLY functions your other code should call for navigation.
+  // do NOT use window.location.href = '...' in your other js files.
+
+  window.navigateWithLoader = navigateWithLoader;
+  window.pageLoaderNavigate = navigateWithLoader;
+  window.pageTransitionOut  = function (url /*, delay */) { navigateWithLoader(url); };
+  window.fadeToPage         = function (url) { navigateWithLoader(url); };
+  window.triggerDistrictEnterColumns = function () {};
+
+
+  // ─── intercept same-site anchor clicks ──────────────────────────────────
+
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('a[href]');
+    if (!a) return;
+    var href = a.getAttribute('href');
+    if (!href) return;
+    if (a.target === '_blank') return;
+    if (a.hasAttribute('download')) return;
+    if (href.charAt(0) === '#') return;
+    if (/^(mailto:|tel:|javascript:)/i.test(href)) return;
+    if (/^https?:\/\//i.test(href)) {
+      try {
+        var dest = new URL(href, window.location.href);
+        if (dest.origin !== window.location.origin) return;
+      } catch (_) { return; }
+    }
+    var destUrl;
+    try { destUrl = new URL(href, window.location.href).href; }
+    catch (_) { return; }
+    if (destUrl === window.location.href) return;
+
+    e.preventDefault();
+    navigateWithLoader(destUrl);
+  }, true);
 
 })();
