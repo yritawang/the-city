@@ -1,10 +1,10 @@
 // audio.js
-// background music from real audio files, routed through web audio api
-// radio station object on map lets user switch between three tracks
-// district/question pages: reverb + echo submersion effect
-// customize pages: quieter, no effects
-// initAudio() + attachGlobalSfx() called from map.js
-// initAudioForPage() called on every other page type
+// background music from real audio files, routed through web audio api.
+// radio station object on map lets user switch between three tracks.
+// district/question pages: reverb + echo submersion effect.
+// customize pages: quieter, no effects.
+// music position is saved before navigation and resumed on the next page
+// so it feels seamless across the whole site.
 
 
 // page type detection
@@ -71,6 +71,43 @@ var audioEl       = null;   // the <audio> element
 var audioStarted  = false;
 var audioMuted    = false;
 var fadeInterval  = null;
+
+
+// cross-page position persistence
+// we save (trackIdx + currentTime + saveTimestamp) to sessionStorage right
+// before navigation. on the next page we read it back and seek to
+// currentTime plus the navigation elapsed so music feels continuous.
+
+var POSITION_KEY = 'audioPosition';
+
+function saveAudioPosition() {
+  if (!audioEl || !isFinite(audioEl.currentTime)) return;
+  try {
+    sessionStorage.setItem(POSITION_KEY, JSON.stringify({
+      trackIdx: currentTrackIdx,
+      time:     audioEl.currentTime,
+      savedAt:  Date.now(),
+    }));
+  } catch (e) {}
+}
+
+function readSavedAudioPosition() {
+  try {
+    var raw = sessionStorage.getItem(POSITION_KEY);
+    if (!raw) return null;
+    var data = JSON.parse(raw);
+    if (typeof data.time !== 'number' || !isFinite(data.time)) return null;
+    return data;
+  } catch (e) { return null; }
+}
+
+// save position before any navigation
+window.addEventListener('pagehide', saveAudioPosition);
+window.addEventListener('beforeunload', saveAudioPosition);
+
+// expose so page-loader can call it too, right before it navigates
+window.saveAudioPosition = saveAudioPosition;
+
 
 var CHIME_FILES = [
   ASSET_PREFIX + 'assets/sounds/chime1.wav',
@@ -209,10 +246,17 @@ function _buildReverb() {
 
 function _buildAudioEl() {
   if (audioEl) return;
+
+  // check if we have a saved position from a previous page to resume
+  var saved = readSavedAudioPosition();
+  if (saved && typeof saved.trackIdx === 'number' && TRACKS[saved.trackIdx]) {
+    currentTrackIdx = saved.trackIdx;
+  }
+
   var track = TRACKS[currentTrackIdx];
-  audioEl         = new Audio(ASSET_PREFIX + 'assets/sounds/' + track.file);
-  audioEl.loop    = true;
-  audioEl.preload = 'auto';
+  audioEl             = new Audio(ASSET_PREFIX + 'assets/sounds/' + track.file);
+  audioEl.loop        = true;
+  audioEl.preload     = 'auto';
   audioEl.crossOrigin = 'anonymous';
 }
 
@@ -223,6 +267,32 @@ function _startMusic() {
   // connect audio element into the web audio graph
   sourceNode = audioCtx.createMediaElementSource(audioEl);
   sourceNode.connect(trackGain);
+
+  // resume from saved position if we have one, estimating how much of the
+  // track would have played during navigation
+  var saved = readSavedAudioPosition();
+  if (saved && typeof saved.time === 'number') {
+    var elapsedSec = (Date.now() - (saved.savedAt || Date.now())) / 1000;
+    // cap elapsed to avoid jumping far ahead if user was away a long time
+    if (elapsedSec > 30) elapsedSec = 0;
+    var resumeAt = saved.time + elapsedSec;
+    var setTime = function() {
+      try {
+        if (isFinite(audioEl.duration) && audioEl.duration > 0) {
+          audioEl.currentTime = resumeAt % audioEl.duration;
+        } else {
+          audioEl.currentTime = resumeAt;
+        }
+      } catch (e) {}
+    };
+    if (audioEl.readyState >= 1) {
+      setTime();
+    } else {
+      audioEl.addEventListener('loadedmetadata', setTime, { once: true });
+    }
+    // clear the saved position once consumed
+    try { sessionStorage.removeItem(POSITION_KEY); } catch (e) {}
+  }
 
   audioEl.play().catch(function(e) { console.warn('audio play failed', e); });
 
@@ -340,7 +410,6 @@ function _placeRadioOnMap() {
 
   el.innerHTML = [
     '<img src="assets/radio.png" alt="Radio" style="width:72px;height:auto;display:block;pointer-events:none;">',
-    // '<span class="radio-map-label mono">Radio</span>',
   ].join('');
 
   el.addEventListener('mouseenter', function() { el.style.transform = 'translateX(-50%) translateY(-4px)'; });
@@ -506,3 +575,8 @@ function attachGlobalSfx() {
     }
   }, true);
 }
+
+
+// expose toggle globally so settings panels on any page can call it
+
+window.toggleAudioMute = toggleAudioMute;

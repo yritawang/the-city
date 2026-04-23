@@ -142,9 +142,23 @@
     if (p.indexOf('plaza') !== -1 && p.indexOf('customize') === -1)       return 'Entering Plaza';
     if (p.indexOf('customize') !== -1) return 'Loading your space';
     if (p.indexOf('print') !== -1)     return 'Preparing the press';
-    if (p.indexOf('map') !== -1)       return 'Returning to your city';
+    if (p.indexOf('map') !== -1)       return isFirstTimeVisitor() ? 'Entering Your City' : 'Returning to your city';
     if (p.indexOf('index') !== -1 || p === '/') return 'Loading home';
     return 'Loading';
+  }
+
+  // first-time visitor = no district has been logged yet
+  function isFirstTimeVisitor() {
+    try {
+      var districts = ['shrine', 'garden', 'cornerstore', 'tower', 'plaza'];
+      for (var i = 0; i < districts.length; i++) {
+        var sessions = localStorage.getItem(districts[i] + '-sessions');
+        if (sessions && JSON.parse(sessions).length > 0) return false;
+      }
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   function isDistrictUrl(url) {
@@ -345,6 +359,10 @@
           if (isDistrictUrl(url)) {
             try { sessionStorage.setItem('play-arrival-chime', '1'); } catch (e) {}
           }
+          // save audio position so music resumes seamlessly on the next page
+          if (typeof window.saveAudioPosition === 'function') {
+            try { window.saveAudioPosition(); } catch (e) {}
+          }
           setTimeout(function () { window.location.href = url; }, SETTLE_DURATION);
         } else {
           requestAnimationFrame(waitForFull);
@@ -427,5 +445,79 @@
     e.preventDefault();
     navigateWithLoader(destUrl);
   }, true);
+
+
+  // ─── inject a minimal settings panel on pages that don't already have one ─
+  // the map page creates its own settings panel in map.js with more options.
+  // on every other page we show a small panel with just the Sound toggle
+  // so users can mute/unmute anywhere.
+
+  function injectSettingsPanel() {
+    // bail if the map already put one here
+    if (document.getElementById('customize-toggle-btn')) return;
+    if (document.getElementById('loader-settings-btn')) return;
+    if (!document.body) return;
+
+    var wrap = document.createElement('div');
+    wrap.innerHTML = [
+      '<div class="customize-toggle-btn" id="loader-settings-btn">',
+      '  <span class="customize-btn-label">Settings</span>',
+      '</div>',
+      '<div class="customize-panel" id="loader-settings-panel">',
+      '  <div class="customize-panel-header" id="loader-settings-header">',
+      '    <span class="customize-panel-label">Settings</span>',
+      '    <span class="customize-panel-toggle">',
+      '      <svg width="12" height="8" viewBox="0 0 12 8" fill="none">',
+      '        <polyline points="1,7 6,1 11,7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>',
+      '      </svg>',
+      '    </span>',
+      '  </div>',
+      '  <div class="customize-panel-body">',
+      '    <div class="customize-row">',
+      '      <span class="customize-row-label">Sound</span>',
+      '      <div class="customize-toggle-cell" id="audio-mute-toggle">',
+      '        <div class="toggle-track" id="audio-mute-track"><div class="toggle-thumb"></div></div>',
+      '      </div>',
+      '    </div>',
+      '  </div>',
+      '</div>',
+    ].join('');
+    document.body.appendChild(wrap);
+
+    var btn    = document.getElementById('loader-settings-btn');
+    var panel  = document.getElementById('loader-settings-panel');
+    var header = document.getElementById('loader-settings-header');
+
+    btn.addEventListener('click', function () {
+      panel.classList.add('visible');
+      btn.style.display = 'none';
+    });
+    header.addEventListener('click', function () {
+      panel.classList.remove('visible');
+      btn.style.display = 'flex';
+    });
+
+    // reflect current mute state, then wire the toggle
+    var track = document.getElementById('audio-mute-track');
+    var muted = false;
+    try { muted = localStorage.getItem('audioMuted') === 'true'; } catch (e) {}
+    if (track) track.classList.toggle('on', !muted);
+
+    document.getElementById('audio-mute-toggle').addEventListener('click', function () {
+      if (typeof window.toggleAudioMute === 'function') {
+        window.toggleAudioMute();
+      } else {
+        // fallback: flip the storage flag so next page pickup honors it
+        try {
+          var now = localStorage.getItem('audioMuted') === 'true';
+          localStorage.setItem('audioMuted', String(!now));
+          if (track) track.classList.toggle('on', now);
+        } catch (e) {}
+      }
+    });
+  }
+
+  if (document.body) injectSettingsPanel();
+  else document.addEventListener('DOMContentLoaded', injectSettingsPanel);
 
 })();
