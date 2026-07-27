@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>the tower</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/district.css">
+  <link rel="stylesheet" href="../css/achievements.css">
+  <link rel="stylesheet" href="../css/mobile-overlay.css">
+
+</head>
+<body>
+  <div class="mobile-overlay" aria-hidden="true">
+  <div class="mobile-overlay-message">
+    This website is best viewed on desktop! Start building your city there.
+  </div>
+  <div class="mobile-overlay-doc">
+    Documentation of this project can be found at
+    <a href="https://www.ritawangarchive.com/" target="_blank" rel="noopener">Rita's Portfolio</a>
+  </div>
+</div>
+
+  <div class="entering-overlay" id="entering-overlay">
+    <h1 class="entering-text">Entering The Tower</h1>
+  </div>
+
+  <div class="district-content hidden" id="district-content">
+
+    <div class="tower-screen" id="tower-intro">
+      <header class="district-header">
+        <div class="district-header-left">
+          <button class="back-btn mono" id="back-btn">← Back to the city</button>
+        </div>
+        <div class="district-header-center">
+          <span class="district-header-title">The Tower: Solitude</span>
+        </div>
+        <div class="district-header-right">
+          <button class="district-guide-btn mono">Guide</button>
+        </div>
+      </header>
+      <div class="tower-prompt-container">
+        <h1 class="tower-main-prompt">Think of a place where you were alone with yourself.</h1>
+        <h3 class="tower-sub-prompt">A place where it was just you.</h3>
+        <button class="ready-btn mono hidden" id="ready-btn">Ready?</button>
+      </div>
+    </div>
+
+    <div class="tower-screen hidden" id="tower-questions">
+      <header class="district-header">
+        <div class="district-header-left">
+          <button class="back-btn mono" id="questions-back-btn">← Back to the city</button>
+        </div>
+        <div class="district-header-center">
+          <span class="district-header-title">The Tower: Solitude</span>
+        </div>
+        <div class="district-header-right">
+          <button class="district-guide-btn mono">Guide</button>
+        </div>
+      </header>
+      <div class="questions-container">
+        <div class="question-card">
+          <div class="question-content">
+            <h1 class="question-main" id="question-main"></h1>
+            <h3 class="question-sub" id="question-sub"></h3>
+            <textarea class="question-input" id="question-input" placeholder="Add text here" rows="8"></textarea>
+          </div>
+          <div class="question-nav">
+            <button class="nav-btn mono" id="prev-btn">Back</button>
+            <span class="question-progress mono" id="question-progress">1/6</span>
+            <button class="nav-btn mono" id="next-btn">Next</button>
+          </div>
+        </div>
+        <div class="stacked-cards" id="stacked-cards"></div>
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tower-screen hidden" id="tower-completion">
+      <header class="district-header">
+        <div class="district-header-left">
+          <button class="back-btn mono">← Back to the city</button>
+        </div>
+        <div class="district-header-center">
+          <span class="district-header-title">The Tower: Solitude</span>
+        </div>
+        <div class="district-header-right">
+          <button class="district-share-btn mono">Share</button>
+        </div>
+      </header>
+      <div class="completion-container">
+        <img src="../assets/districts/tower-unlocked.png" alt="" class="completion-illustration">
+        <h1 class="completion-title">You've completed<br>The Tower</h1>
+        <p class="completion-sentence">
+          <i class="fa-solid fa-location-dot"></i>
+          <span id="completion-place-name"></span> is a place you felt alone in.
+        </p>
+        <button class="completion-btn mono" id="done-btn">Done</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="district-guide-overlay hidden" id="district-guide-overlay">
+    <div class="district-guide-box tower-guide">
+      <h2 class="district-guide-title">The Tower: Solitude</h2>
+      <p class="district-guide-text">Think of a place where solitude felt like something more. Answer each question as honestly as you can. Your answers are private until you choose to share them.</p>
+      <button class="district-guide-close mono" id="district-guide-close">Close</button>
+    </div>
+  </div>
+
+  <script src="../js/achievements.js"></script>
+  <script src="../js/district.js"></script>
+  <script src="../js/tower.js"></script>
+  <script src="../js/audio.js"></script>
+  <script src="../js/cursor-loader.js"></script>
+  <script src="../js/exhibition.js"></script>
+
+  <script>
+    initAchievementsPanel();
+    initAudioForPage();
+    attachGlobalSfx();
+
+    document.querySelectorAll('.district-guide-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const ov = document.getElementById('district-guide-overlay');
+        ov.classList.remove('hidden');
+        ov.classList.add('active');
+      });
+    });
+    document.getElementById('district-guide-close').addEventListener('click', () => {
+      const ov = document.getElementById('district-guide-overlay');
+      ov.classList.remove('active');
+      ov.classList.add('hidden');
+    });
+  </script>
+
+</body>
+</html>

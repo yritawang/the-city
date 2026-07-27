@@ -1,0 +1,323 @@
+/* design system */
+@font-face {
+  font-family: 'Hershey';
+  src: url('../fonts/Hershey-Noailles-Futura-Simplex-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Meta';
+  src: url('../fonts/Meta-old-French.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Whois';
+  src: url('../fonts/whois-mono.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+:root {
+  --color-bg: #F7F2F1;
+  --color-black: #101010;
+  --color-shrine: #DD6204;
+  --color-shrine-card: #FCEBDF;
+  --color-garden: #6A6405;
+  --color-garden-card: #FAF4F0;
+  --color-cornerstore: #D05038;
+  --color-cornerstore-card: #FAF4F0;
+  --color-tower: #205A97;
+  --color-tower-card: #FAF4F0;
+  --color-plaza: #64436dff;
+  --color-plaza-card: #FAF4F0;
+  --color-card-1: #E0D0C5;
+  --color-card-2: #D4B49D;
+  --color-card-3: #BE9A80;
+  --color-card-4: #AC8467;
+  --color-card-5: #9F6F4C;
+  --blue: #0c2177;
+
+  --font-hershey: 'Hershey', sans-serif;
+  --font-meta: 'Meta', serif;
+  --font-whois: 'Whois', monospace;
+}
+
+
+/* base */
+
+*, html, html * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  cursor: none !important;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-black);
+  font-family: var(--font-meta);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+
+/* type */
+
+h1, h2, h3 {
+  font-family: var(--font-meta);
+  font-weight: normal;
+}
+
+p, .serif {
+  font-family: var(--font-meta);
+}
+
+.mono, button {
+  font-family: var(--font-whois);
+}
+
+
+/* utility */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.hidden {
+  display: none;
+}
+
+.fade-in {
+  animation: fadeIn 0.8s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+
+/* custom cursor */
+
+#custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin-left: -12px;
+  margin-top: -12px;
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+  z-index: 99999;
+  transition: opacity 0.2s ease;
+  will-change: transform;
+}
+
+.cursor-cross {
+  position: absolute;
+  inset: 0;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.cursor-h,
+.cursor-v {
+  position: absolute;
+  background-color: var(--blue, #0c2177);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.cursor-h {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  transform: translateY(-50%);
+}
+
+.cursor-v {
+  left: 50%;
+  top: 0;
+  height: 100%;
+  width: 1.5px;
+  transform: translateX(-50%);
+}
+
+.cursor-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  background-color: var(--blue, #0c2177);
+  border-radius: 0;
+  transform: translate(-50%, -50%) scale(1);
+  transition: transform 0.15s ease, background-color 0.15s ease, border-radius 0.15s ease;
+}
+
+#custom-cursor.pointer .cursor-cross {
+  transform: scale(1.2);
+  opacity: 0.7;
+}
+
+#custom-cursor.pointer .cursor-dot {
+  transform: translate(-50%, -50%) scale(2.5);
+}
+
+#custom-cursor.pressed .cursor-cross {
+  transform: scale(0.45);
+  opacity: 0.45;
+}
+
+#custom-cursor.pressed .cursor-dot {
+  transform: translate(-50%, -50%) scale(2.8);
+  border-radius: 50%;
+}
+
+body.dark-mode #custom-cursor .cursor-h,
+body.dark-mode #custom-cursor .cursor-v,
+body.dark-mode #custom-cursor .cursor-dot {
+  background-color: var(--blue, #EDDB97);
+}
+
+
+/* page exit overlay */
+
+#page-out-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.08s ease;
+  overflow: hidden;
+  display: none;
+}
+
+#page-out-overlay.active {
+  opacity: 1;
+  pointer-events: all;
+  display: block;
+}
+
+.page-out-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+}
+
+.page-out-cell {
+  transform: scaleY(1);
+  transform-origin: top center;
+  opacity: 0;
+}
+
+#page-out-overlay.mode-columns.active .page-out-cell {
+  animation: cellFillDown 0.35s ease forwards;
+  animation-delay: var(--cell-delay, 0s);
+}
+
+#page-out-overlay.mode-columns-out .page-out-cell {
+  opacity: 0.9;
+  transform: scaleY(1);
+}
+#page-out-overlay.mode-columns-out.active .page-out-cell {
+  animation: cellUnfill 0.35s ease forwards;
+  animation-delay: var(--cell-delay, 0s);
+}
+
+@keyframes cellFillDown {
+  0%   { transform: scaleY(0); opacity: 0.9; }
+  100% { transform: scaleY(1); opacity: 0.9; }
+}
+
+@keyframes cellUnfill {
+  0%   { transform: scaleY(1); opacity: 0.9; }
+  100% { transform: scaleY(0); opacity: 0; }
+}
+
+
+/* map page fade-in */
+
+body.page-entering .map-header,
+body.page-entering .map-districts,
+body.page-entering .achievements-toggle-btn,
+body.page-entering .constellation-btn,
+body.page-entering .customize-toggle-btn,
+body.page-entering .rita-notes-btn {
+  animation: fadeIn 0.7s ease forwards;
+  opacity: 0;
+}
+
+
+/* customize page: float in on enter, float out on leave */
+
+body.page-entering .customize-left {
+  animation: floatInFromLeft 0.45s ease forwards;
+  animation-delay: 0.05s;
+  opacity: 0;
+}
+
+body.page-entering .customize-right {
+  animation: floatInFromRight 0.45s ease forwards;
+  animation-delay: 0.15s;
+  opacity: 0;
+}
+
+body.page-leaving .customize-left {
+  animation: floatOutToLeft 0.38s ease forwards;
+}
+
+body.page-leaving .customize-right {
+  animation: floatOutToRight 0.38s ease forwards;
+}
+
+@keyframes floatInFromLeft {
+  from { opacity: 0; transform: translateX(-18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes floatInFromRight {
+  from { opacity: 0; transform: translateX(18px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes floatOutToLeft {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-18px); }
+}
+
+@keyframes floatOutToRight {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(18px); }
+}
+
+
+/* district question page stagger-in */
+
+body.page-entering .district-header {
+  animation: fadeSlideDown 0.45s ease forwards;
+  animation-delay: 0.05s;
+  opacity: 0;
+}
+
+body.page-entering .questions-container {
+  animation: fadeSlideUp 0.5s ease forwards;
+  animation-delay: 0.18s;
+  opacity: 0;
+}
+
+@keyframes fadeSlideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
