@@ -1,29 +1,14 @@
-// exhibition.js
-// three exhibition-mode features:
-//   1. inactivity timer: popup after 1 min, auto-reset after 60 more seconds
-//   2. restart button: top-left, clears all localStorage and returns to index
-//   3. district print buttons: appear on the completion screen of each district
-
-
 (function () {
 
-  // ─── config ─────────────────────────────────────────────────────────────
-
-  var INACTIVITY_MS    = 60 * 1000;   // 1 minute before popup appears
-  var AUTO_RESET_MS    = 60 * 1000;   // 60 seconds after popup before auto-reset
-  var ROOT_PATH        = (function () {
-    // district pages are in /districts/ subfolder — figure out path to root
+  var INACTIVITY_MS = 60 * 1000;
+  var ROOT_PATH = (function () {
     return window.location.pathname.indexOf('/districts/') !== -1 ? '../' : '';
   })();
-
-
-  // ─── inject css once ────────────────────────────────────────────────────
 
   (function injectStyles() {
     if (document.getElementById('exhibition-styles')) return;
     var css = [
 
-      // raise the custom cursor above the inactivity overlay
       '#custom-cursor { z-index: 10000000 !important; }',
       '#exhibition-restart-btn {',
       '  position: fixed;',
@@ -43,7 +28,6 @@
       '}',
       '#exhibition-restart-btn:hover { opacity: 0.7; }',
 
-      // inactivity overlay
       '#exhibition-inactivity-overlay {',
       '  position: fixed;',
       '  inset: 0;',
@@ -76,13 +60,6 @@
       '  text-align: center;',
       '  line-height: 1.3;',
       '}',
-      '#exhibition-inactivity-overlay .ei-countdown {',
-      '  font-family: var(--font-whois, monospace);',
-      '  font-size: 0.82rem;',
-      '  color: var(--blue, #0c2177);',
-      '  opacity: 0.5;',
-      '  letter-spacing: 0.06em;',
-      '}',
       '#exhibition-inactivity-overlay .ei-actions {',
       '  display: flex;',
       '  gap: 1rem;',
@@ -105,7 +82,6 @@
       '}',
       '#exhibition-inactivity-overlay .ei-btn.primary:hover { opacity: 0.85; }',
 
-      // district print buttons on the completion screen
       '.exhibition-print-row {',
       '  display: flex;',
       '  gap: 0.75rem;',
@@ -137,38 +113,29 @@
     (document.head || document.documentElement).appendChild(style);
   })();
 
-
-  // ─── helper: full reset ─────────────────────────────────────────────────
-
   function fullReset() {
     try { localStorage.clear(); } catch (e) {}
     try { sessionStorage.clear(); } catch (e) {}
-    // build the root index url cleanly regardless of current page depth
     var rootUrl = window.location.origin +
       window.location.pathname
-        .replace(/\/districts\/[^/]*$/, '/')   // strip /districts/pagename
-        .replace(/\/[^/]*\.html$/, '/')         // strip any root-level html filename
-        .replace(/\/$/, '') +                   // trim trailing slash
+        .replace(/\/districts\/[^/]*$/, '/')
+        .replace(/\/[^/]*\.html$/, '/')
+        .replace(/\/$/, '') +
       '/index.html';
     window.location.replace(rootUrl);
   }
-
-
-  // ─── 1. restart button ──────────────────────────────────────────────────
 
   function injectRestartButton() {
     if (document.getElementById('exhibition-restart-btn')) return;
     if (!document.body) return;
 
-    // only show on pages that have the header bar (map, district, customize)
-    // skip index/intro which have a different layout
     var path = window.location.pathname;
     var isIntro = path.endsWith('index.html') || path.endsWith('/');
     if (isIntro) return;
 
     var btn = document.createElement('button');
     btn.id          = 'exhibition-restart-btn';
-    btn.textContent = 'Restart';
+    btn.textContent = 'Reset';
     btn.setAttribute('title', 'Clear all data and start over');
     document.body.appendChild(btn);
 
@@ -177,10 +144,10 @@
         fullReset();
       } else {
         btn.dataset.armed = 'true';
-        btn.textContent   = 'This will reset the city. Click if you are a new user!';
+        btn.textContent   = 'Click again to reset';
         setTimeout(function () {
           btn.dataset.armed = 'false';
-          btn.textContent   = 'Restart';
+          btn.textContent   = 'Reset';
         }, 3000);
       }
     });
@@ -189,12 +156,7 @@
   if (document.body) injectRestartButton();
   else document.addEventListener('DOMContentLoaded', injectRestartButton);
 
-
-  // ─── 2. inactivity timer ────────────────────────────────────────────────
-
-  var inactivityTimer  = null;
-  var countdownTimer   = null;
-  var countdownSeconds = 0;
+  var inactivityTimer = null;
   var overlayVisible   = false;
 
   function resetInactivityTimer() {
@@ -206,30 +168,13 @@
   function showInactivityOverlay() {
     var overlay = document.getElementById('exhibition-inactivity-overlay');
     if (!overlay) return;
-    overlayVisible   = true;
-    countdownSeconds = AUTO_RESET_MS / 1000;
+    overlayVisible = true;
     overlay.classList.add('active');
-    updateCountdown();
-
-    countdownTimer = setInterval(function () {
-      countdownSeconds--;
-      updateCountdown();
-      if (countdownSeconds <= 0) {
-        clearInterval(countdownTimer);
-        fullReset();
-      }
-    }, 1000);
-  }
-
-  function updateCountdown() {
-    var el = document.getElementById('ei-countdown');
-    if (el) el.textContent = 'Restarting in ' + countdownSeconds + ' second' + (countdownSeconds !== 1 ? 's' : '') + '...';
   }
 
   function dismissInactivityOverlay() {
     var overlay = document.getElementById('exhibition-inactivity-overlay');
     if (overlay) overlay.classList.remove('active');
-    clearInterval(countdownTimer);
     overlayVisible = false;
     resetInactivityTimer();
   }
@@ -238,7 +183,6 @@
     if (document.getElementById('exhibition-inactivity-overlay')) return;
     if (!document.body) return;
 
-    // don't show on intro page — a new user sitting down is expected there
     var path = window.location.pathname;
     var isIntro = path.endsWith('index.html') || path.endsWith('/');
     if (isIntro) return;
@@ -247,7 +191,6 @@
     overlay.id  = 'exhibition-inactivity-overlay';
     overlay.innerHTML = [
       '<p class="ei-message">Are you still building?</p>',
-      '<p class="ei-countdown" id="ei-countdown">Restarting in 60 seconds...</p>',
       '<div class="ei-actions">',
       '  <button class="ei-btn primary" id="ei-continue-btn">Continue building</button>',
       '  <button class="ei-btn" id="ei-restart-btn">Start fresh</button>',
@@ -257,14 +200,11 @@
 
     document.getElementById('ei-continue-btn').addEventListener('click', dismissInactivityOverlay);
     document.getElementById('ei-restart-btn').addEventListener('click', function () {
-      clearInterval(countdownTimer);
       fullReset();
     });
 
-    // start the timer
     resetInactivityTimer();
 
-    // reset on any user interaction
     ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'].forEach(function (evt) {
       document.addEventListener(evt, resetInactivityTimer, { passive: true });
     });
@@ -272,11 +212,6 @@
 
   if (document.body) injectInactivityOverlay();
   else document.addEventListener('DOMContentLoaded', injectInactivityOverlay);
-
-
-  // ─── 3. district completion print buttons ───────────────────────────────
-  // watches for the completion screen to appear (it starts hidden and gets
-  // shown dynamically), then injects two print buttons below the done button.
 
   var DISTRICT_NAMES = {
     shrine:      'The Shrine',
@@ -319,7 +254,6 @@
     var emotion  = DISTRICT_EMOTIONS[districtKey] || '';
     var place    = (answers[0] || '').trim();
 
-    // use latest session answers if available
     if (sessions.length > 0) {
       var latest = sessions[sessions.length - 1];
       if (latest.answers) answers = latest.answers;
@@ -346,7 +280,6 @@
   }
 
   function printWholeCityFromDistrict() {
-    // navigate to print.html — it already builds the full city receipt
     if (typeof window.navigateWithLoader === 'function') {
       window.navigateWithLoader(ROOT_PATH + 'print.html');
     } else {
@@ -373,7 +306,6 @@
   }
 
   function injectCompletionPrintButtons(districtKey) {
-    // find the completion container — may not exist on non-district pages
     var container = document.querySelector('.completion-container');
     if (!container) return;
     if (container.querySelector('.exhibition-print-row')) return;
@@ -399,8 +331,6 @@
   function watchForCompletionScreen(districtKey) {
     if (!districtKey) return;
 
-    // the completion screen is a sibling div that starts hidden.
-    // watch for it to lose the 'hidden' class using a MutationObserver.
     var completionId = districtKey + '-completion';
 
     function tryInject() {
@@ -410,7 +340,6 @@
       }
     }
 
-    // also try immediately in case it's already visible
     tryInject();
 
     var observer = new MutationObserver(function (mutations) {
@@ -421,7 +350,6 @@
       });
     });
 
-    // observe the whole district content wrapper for class changes
     var wrapper = document.getElementById('district-content');
     if (wrapper) {
       observer.observe(wrapper, { attributes: true, subtree: true });
